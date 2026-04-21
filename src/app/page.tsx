@@ -43,7 +43,7 @@ const PageSkeleton = () => (
 export default function Page() {
   const { locale, dir } = useI18n()
   const { route } = useRouter()
-  const [stats, setStats] = useState({ totalProjects: 0, totalViews: 0 })
+  const [stats, setStats] = useState({ totalProjects: 0, totalViews: 0, totalCategories: 0 })
   const [projects, setProjects] = useState<Project[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,9 +52,14 @@ export default function Page() {
     try {
       const res = await fetch(`/api/projects?locale=${locale}`)
       const data = await res.json()
-      setProjects(data.projects || [])
-      setCategories(data.categories || [])
-      setStats(data.stats || { totalProjects: 0, totalViews: 0 })
+      const projectData = data.projects || []
+      const categoryData = data.categories || []
+      setProjects(projectData)
+      setCategories(categoryData)
+      setStats({
+        ...(data.stats || { totalProjects: 0, totalViews: 0 }),
+        totalCategories: categoryData.length,
+      })
     } catch {
       // ignore
     } finally {

@@ -108,8 +108,12 @@ const translations: Record<string, Record<string, string>> = {
   'projects.visit': { en: 'Visit', ar: 'زيارة', fr: 'Visiter', es: 'Visitar', de: 'Besuchen' },
   'projects.views': { en: 'views', ar: 'مشاهدة', fr: 'vues', es: 'vistas', de: 'Aufrufe' },
   'projects.view_details': { en: 'View Details', ar: 'عرض التفاصيل', fr: 'Voir les détails', es: 'Ver detalles', de: 'Details ansehen' },
+  'projects.project_count': { en: '{count} projects', ar: '{count} مشاريع', fr: '{count} projets', es: '{count} proyectos', de: '{count} Projekte' },
+  'projects.project_count_single': { en: '1 project', ar: 'مشروع واحد', fr: '1 projet', es: '1 proyecto', de: '1 Projekt' },
+  'projects.refresh': { en: 'Refresh', ar: 'تحديث', fr: 'Actualiser', es: 'Actualizar', de: 'Aktualisieren' },
   'project.details': { en: 'Project Details', ar: 'تفاصيل المشروع', fr: 'Détails du projet', es: 'Detalles del proyecto', de: 'Projektdetails' },
   'project.about': { en: 'About', ar: 'حول المشروع', fr: 'À propos', es: 'Acerca de', de: 'Über' },
+  'project.no_description': { en: 'No description available', ar: 'لا يوجد وصف متاح', fr: 'Aucune description disponible', es: 'No hay descripción disponible', de: 'Keine Beschreibung verfügbar' },
   'project.technologies': { en: 'Technologies', ar: 'التقنيات', fr: 'Technologies', es: 'Tecnologías', de: 'Technologien' },
   'project.visit_website': { en: 'Visit Website', ar: 'زيارة الموقع', fr: 'Visiter le site', es: 'Visitar sitio web', de: 'Website besuchen' },
   'project.back': { en: 'Back to Projects', ar: 'العودة للمشاريع', fr: 'Retour aux projets', es: 'Volver a proyectos', de: 'Zurück zu Projekten' },
@@ -139,6 +143,10 @@ const translations: Record<string, Record<string, string>> = {
   'about.stat_users': { en: 'Users', ar: 'مستخدمون', fr: 'Utilisateurs', es: 'Usuarios', de: 'Nutzer' },
   'about.stat_uptime': { en: 'Uptime', ar: 'وقت التشغيل', fr: 'Disponibilité', es: 'Disponibilidad', de: 'Verfügbarkeit' },
   'about.stat_support': { en: 'Support', ar: 'الدعم', fr: 'Support', es: 'Soporte', de: 'Support' },
+  'about.stat_products_value': { en: '9+', ar: '9+', fr: '9+', es: '9+', de: '9+' },
+  'about.stat_users_value': { en: '500K+', ar: '+500 ألف', fr: '500K+', es: '500K+', de: '500K+' },
+  'about.stat_uptime_value': { en: '99.9%', ar: '99.9%', fr: '99.9%', es: '99.9%', de: '99.9%' },
+  'about.stat_support_value': { en: '24/7', ar: '24/7', fr: '24/7', es: '24/7', de: '24/7' },
   'contact.badge': { en: 'Get in Touch', ar: 'تواصل معنا', fr: 'Contactez-nous', es: 'Contáctenos', de: 'Kontaktieren Sie uns' },
   'contact.title_1': { en: "Let's", ar: 'دعنا', fr: 'Travaillons', es: 'Trabajemos', de: 'Lassen Sie uns' },
   'contact.title_2': { en: 'work together', ar: 'نتعاون معاً', fr: 'ensemble', es: 'juntos', de: 'zusammenarbeiten' },
@@ -162,6 +170,8 @@ const translations: Record<string, Record<string, string>> = {
   'contact.sending': { en: 'Sending...', ar: 'جار الإرسال...', fr: 'Envoi...', es: 'Enviando...', de: 'Wird gesendet...' },
   'contact.success': { en: 'Message sent! We\'ll get back to you soon.', ar: 'تم الإرسال! سنتواصل معك قريباً.', fr: 'Message envoyé ! Nous vous répondrons bientôt.', es: '¡Mensaje enviado! Le responderemos pronto.', de: 'Nachricht gesendet! Wir melden uns bald.' },
   'contact.error': { en: 'Failed to send. Please try again.', ar: 'فشل الإرسال. حاول مجدداً.', fr: 'Échec de l\'envoi. Veuillez réessayer.', es: 'Error al enviar. Intente de nuevo.', de: 'Senden fehlgeschlagen. Bitte erneut versuchen.' },
+  'contact.validation_error': { en: 'This field is required', ar: 'هذا الحقل مطلوب', fr: 'Ce champ est requis', es: 'Este campo es obligatorio', de: 'Dieses Feld ist erforderlich' },
+  'footer.brand': { en: 'NexusLabs', ar: 'نكسوس لابس', fr: 'NexusLabs', es: 'NexusLabs', de: 'NexusLabs' },
   'footer.products': { en: 'Products', ar: 'المنتجات', fr: 'Produits', es: 'Productos', de: 'Produkte' },
   'footer.company': { en: 'Company', ar: 'الشركة', fr: 'Entreprise', es: 'Empresa', de: 'Unternehmen' },
   'footer.legal': { en: 'Legal', ar: 'قانوني', fr: 'Légal', es: 'Legal', de: 'Rechtliches' },
@@ -170,6 +180,12 @@ const translations: Record<string, Record<string, string>> = {
   'footer.terms': { en: 'Terms', ar: 'الشروط', fr: 'Conditions', es: 'Términos', de: 'AGB' },
   'footer.blog': { en: 'Blog', ar: 'المدونة', fr: 'Blog', es: 'Blog', de: 'Blog' },
   'footer.careers': { en: 'Careers', ar: 'وظائف', fr: 'Carrières', es: 'Carreras', de: 'Karriere' },
+  'footer.built_with': { en: 'Built with ❤️ for developers', ar: 'بُني بحب ❤️ للمطورين', fr: 'Construit avec ❤️ pour les développeurs', es: 'Construido con ❤️ para desarrolladores', de: 'Mit ❤️ für Entwickler gebaut' },
+  'footer.product_1': { en: 'CloudSync', ar: 'كلاود سينك', fr: 'CloudSync', es: 'CloudSync', de: 'CloudSync' },
+  'footer.product_2': { en: 'DataPulse', ar: 'داتا بولس', fr: 'DataPulse', es: 'DataPulse', de: 'DataPulse' },
+  'footer.product_3': { en: 'CodeForge', ar: 'كود فورج', fr: 'CodeForge', es: 'CodeForge', de: 'CodeForge' },
+  'footer.product_4': { en: 'PixelCraft', ar: 'بيكسل كرافت', fr: 'PixelCraft', es: 'PixelCraft', de: 'PixelCraft' },
+  'footer.product_5': { en: 'NovaMind', ar: 'نوفا مايند', fr: 'NovaMind', es: 'NovaMind', de: 'NovaMind' },
   'common.loading': { en: 'Loading...', ar: 'جار التحميل...', fr: 'Chargement...', es: 'Cargando...', de: 'Laden...' },
   'common.error': { en: 'Something went wrong', ar: 'حدث خطأ ما', fr: 'Une erreur est survenue', es: 'Algo salió mal', de: 'Etwas ist schiefgelaufen' },
   'common.save': { en: 'Save', ar: 'حفظ', fr: 'Enregistrer', es: 'Guardar', de: 'Speichern' },
@@ -197,6 +213,150 @@ const settings = [
   { key: 'site_name', value: 'NexusLabs', type: 'string' },
   { key: 'default_locale', value: 'en', type: 'string' },
   { key: 'available_locales', value: '["en","ar","fr","es","de"]', type: 'json' },
+]
+
+// =============================================================================
+// CMS Pages Seed Data
+// =============================================================================
+
+const pages = [
+  { slug: 'home', published: true, order: 0 },
+  { slug: 'about', published: true, order: 1 },
+  { slug: 'services', published: true, order: 2 },
+  { slug: 'careers', published: true, order: 3 },
+  { slug: 'privacy-policy', published: true, order: 4 },
+]
+
+const pageTranslations: Record<string, Record<string, { title: string; subtitle: string }>> = {
+  home: {
+    en: { title: 'Home', subtitle: 'Welcome to NexusLabs' },
+    ar: { title: 'الرئيسية', subtitle: 'مرحباً بكم في نكسوس لابس' },
+    fr: { title: 'Accueil', subtitle: 'Bienvenue chez NexusLabs' },
+    es: { title: 'Inicio', subtitle: 'Bienvenido a NexusLabs' },
+    de: { title: 'Startseite', subtitle: 'Willkommen bei NexusLabs' },
+  },
+  about: {
+    en: { title: 'About Us', subtitle: 'Learn about our mission and values' },
+    ar: { title: 'عن الشركة', subtitle: 'تعرف على مهمتنا وقيمنا' },
+    fr: { title: 'À propos', subtitle: 'Découvrez notre mission et nos valeurs' },
+    es: { title: 'Acerca de', subtitle: 'Conoce nuestra misión y valores' },
+    de: { title: 'Über uns', subtitle: 'Erfahren Sie mehr über unsere Mission und Werte' },
+  },
+  services: {
+    en: { title: 'Services', subtitle: 'What we offer' },
+    ar: { title: 'الخدمات', subtitle: 'ما نقدمه' },
+    fr: { title: 'Services', subtitle: 'Ce que nous offrons' },
+    es: { title: 'Servicios', subtitle: 'Lo que ofrecemos' },
+    de: { title: 'Leistungen', subtitle: 'Was wir anbieten' },
+  },
+  careers: {
+    en: { title: 'Careers', subtitle: 'Join our team' },
+    ar: { title: 'وظائف', subtitle: 'انضم لفريقنا' },
+    fr: { title: 'Carrières', subtitle: 'Rejoignez notre équipe' },
+    es: { title: 'Carreras', subtitle: 'Únete a nuestro equipo' },
+    de: { title: 'Karriere', subtitle: 'Treten Sie unserem Team bei' },
+  },
+  'privacy-policy': {
+    en: { title: 'Privacy Policy', subtitle: 'Your privacy matters to us' },
+    ar: { title: 'سياسة الخصوصية', subtitle: 'خصوصيتك تهمّنا' },
+    fr: { title: 'Politique de confidentialité', subtitle: 'Votre vie privée compte pour nous' },
+    es: { title: 'Política de privacidad', subtitle: 'Tu privacidad nos importa' },
+    de: { title: 'Datenschutz', subtitle: 'Ihre Privatsphäre ist uns wichtig' },
+  },
+}
+
+const pageSections: Record<string, { type: string; order: number; settings: string; translations: Record<string, { title: string; subtitle: string; content: string; buttonText: string }> }[]> = {
+  home: [
+    {
+      type: 'hero',
+      order: 0,
+      settings: JSON.stringify({ layout: 'centered', showCTA: true, backgroundColor: 'gradient' }),
+      translations: {
+        en: { title: 'We build digital products that matter', subtitle: 'NexusLabs creates world-class tools for developers, designers, and teams.', content: '', buttonText: 'Explore Projects' },
+        ar: { title: 'نبني منتجات رقمية تهم', subtitle: 'نكسوس لابس تصنع أدوات عالمية المستوى للمطورين والمصممين والفرق.', content: '', buttonText: 'استكشف المشاريع' },
+        fr: { title: 'Nous créons des produits numériques qui comptent', subtitle: 'NexusLabs crée des outils de classe mondiale pour les développeurs et les équipes.', content: '', buttonText: 'Explorer les projets' },
+        es: { title: 'Construimos productos digitales que importan', subtitle: 'NexusLabs crea herramientas de clase mundial para desarrolladores y equipos.', content: '', buttonText: 'Explorar proyectos' },
+        de: { title: 'Wir bauen digitale Produkte, die zählen', subtitle: 'NexusLabs erstellt erstklassige Tools für Entwickler, Designer und Teams.', content: '', buttonText: 'Projekte entdecken' },
+      },
+    },
+    {
+      type: 'featured-projects',
+      order: 1,
+      settings: JSON.stringify({ maxItems: 4, showTags: true }),
+      translations: {
+        en: { title: 'Spotlight Projects', subtitle: 'Our most impactful products driving innovation across industries.', content: '', buttonText: 'View All Projects' },
+        ar: { title: 'مشاريع مميزة', subtitle: 'منتجاتنا الأكثر تأثيراً التي تقود الابتكار عبر الصناعات.', content: '', buttonText: 'عرض جميع المشاريع' },
+        fr: { title: 'Projets phares', subtitle: 'Nos produits les plus impactants qui stimulent l\'innovation.', content: '', buttonText: 'Voir tous les projets' },
+        es: { title: 'Proyectos destacados', subtitle: 'Nuestros productos más impactantes que impulsan la innovación.', content: '', buttonText: 'Ver todos los proyectos' },
+        de: { title: 'Spotlight-Projekte', subtitle: 'Unsere wirkungsvollsten Produkte, die Innovation vorantreiben.', content: '', buttonText: 'Alle Projekte anzeigen' },
+      },
+    },
+    {
+      type: 'stats',
+      order: 2,
+      settings: JSON.stringify({ columns: 4, showIcons: true }),
+      translations: {
+        en: { title: 'By the Numbers', subtitle: 'Trusted by teams worldwide', content: '', buttonText: '' },
+        ar: { title: 'بالأرقام', subtitle: 'موثوق من فرق حول العالم', content: '', buttonText: '' },
+        fr: { title: 'En chiffres', subtitle: 'Adopté par des équipes du monde entier', content: '', buttonText: '' },
+        es: { title: 'En números', subtitle: 'Confiado por equipos en todo el mundo', content: '', buttonText: '' },
+        de: { title: 'In Zahlen', subtitle: 'Vertraut von Teams weltweit', content: '', buttonText: '' },
+      },
+    },
+  ],
+  about: [
+    {
+      type: 'mission',
+      order: 0,
+      settings: JSON.stringify({ layout: 'split', imagePosition: 'right' }),
+      translations: {
+        en: { title: 'Our Mission', subtitle: 'Democratizing access to powerful technology', content: 'We believe that world-class tools should be available to everyone — from solo developers to enterprise teams. Our mission drives every product we build and every decision we make.', buttonText: 'Learn More' },
+        ar: { title: 'مهمتنا', subtitle: 'ت democratize الوصول للتقنية القوية', content: 'نؤمن أن الأدوات عالمية المستوى يجب أن تكون متاحة للجميع — من المطورين الفرديين إلى فرق المؤسسات.', buttonText: 'اعرف المزيد' },
+        fr: { title: 'Notre mission', subtitle: 'Démocratiser l\'accès à la technologie puissante', content: 'Nous croyons que les outils de classe mondiale doivent être accessibles à tous.', buttonText: 'En savoir plus' },
+        es: { title: 'Nuestra misión', subtitle: 'Democratizar el acceso a tecnología poderosa', content: 'Creemos que herramientas de clase mundial deben estar disponibles para todos.', buttonText: 'Saber más' },
+        de: { title: 'Unsere Mission', subtitle: 'Den Zugang zu leistungsstarker Technologie demokratisieren', content: 'Wir glauben, dass erstklassige Tools für alle verfügbar sein sollten.', buttonText: 'Mehr erfahren' },
+      },
+    },
+    {
+      type: 'values',
+      order: 1,
+      settings: JSON.stringify({ columns: 3, showIcons: true }),
+      translations: {
+        en: { title: 'Our Values', subtitle: 'The principles that guide us', content: '', buttonText: '' },
+        ar: { title: 'قيمنا', subtitle: 'المبادئ التي توجهنا', content: '', buttonText: '' },
+        fr: { title: 'Nos valeurs', subtitle: 'Les principes qui nous guident', content: '', buttonText: '' },
+        es: { title: 'Nuestros valores', subtitle: 'Los principios que nos guían', content: '', buttonText: '' },
+        de: { title: 'Unsere Werte', subtitle: 'Die Prinzipien, die uns leiten', content: '', buttonText: '' },
+      },
+    },
+  ],
+  services: [
+    {
+      type: 'service-list',
+      order: 0,
+      settings: JSON.stringify({ columns: 3, showPricing: false }),
+      translations: {
+        en: { title: 'What We Do', subtitle: 'End-to-end digital product development', content: '', buttonText: 'Get Started' },
+        ar: { title: 'ما نقدمه', subtitle: 'تطوير منتجات رقمية شامل', content: '', buttonText: 'ابدأ الآن' },
+        fr: { title: 'Ce que nous faisons', subtitle: 'Développement de produits numériques de bout en bout', content: '', buttonText: 'Commencer' },
+        es: { title: 'Lo que hacemos', subtitle: 'Desarrollo de productos digitales de principio a fin', content: '', buttonText: 'Comenzar' },
+        de: { title: 'Was wir tun', subtitle: 'Durchgängige Entwicklung digitaler Produkte', content: '', buttonText: 'Loslegen' },
+      },
+    },
+  ],
+}
+
+// =============================================================================
+// Media Seed Data
+// =============================================================================
+
+const mediaItems = [
+  { filename: 'logo.svg', originalName: 'NexusLabs Logo', mimeType: 'image/svg+xml', size: 4096, url: '/media/logo.svg', alt: 'NexusLabs Logo', category: 'branding' },
+  { filename: 'hero-illustration.svg', originalName: 'Hero Illustration', mimeType: 'image/svg+xml', size: 12288, url: '/media/hero-illustration.svg', alt: 'Hero illustration showing digital products', category: 'illustrations' },
+  { filename: 'og-image.png', originalName: 'Open Graph Image', mimeType: 'image/png', size: 245760, url: '/media/og-image.png', alt: 'NexusLabs Open Graph image', category: 'social' },
+  { filename: 'favicon.ico', originalName: 'Favicon', mimeType: 'image/x-icon', size: 2048, url: '/media/favicon.ico', alt: '', category: 'branding' },
+  { filename: 'team-photo.jpg', originalName: 'Team Photo', mimeType: 'image/jpeg', size: 524288, url: '/media/team-photo.jpg', alt: 'The NexusLabs team', category: 'photos' },
+  { filename: 'office-photo.jpg', originalName: 'Office Photo', mimeType: 'image/jpeg', size: 393216, url: '/media/office-photo.jpg', alt: 'NexusLabs office in San Francisco', category: 'photos' },
 ]
 
 async function seed() {
@@ -249,6 +409,82 @@ async function seed() {
     })
   }
   console.log(`✅ Seeded ${settings.length} settings`)
+
+  // CMS Pages
+  let pageSectionCount = 0
+  let pageSectionTranslationCount = 0
+  for (const p of pages) {
+    const page = await db.page.upsert({
+      where: { slug: p.slug },
+      update: { published: p.published, order: p.order },
+      create: { slug: p.slug, published: p.published, order: p.order },
+    })
+
+    // Page translations
+    for (const locale of locales) {
+      const t = pageTranslations[p.slug]?.[locale]
+      if (t) {
+        await db.pageTranslation.upsert({
+          where: { pageId_locale: { pageId: page.id, locale } },
+          update: { title: t.title, subtitle: t.subtitle },
+          create: { pageId: page.id, locale, title: t.title, subtitle: t.subtitle },
+        })
+      }
+    }
+
+    // Page sections
+    const sections = pageSections[p.slug] ?? []
+    for (const s of sections) {
+      const section = await db.pageSection.create({
+        data: {
+          pageId: page.id,
+          type: s.type,
+          order: s.order,
+          settings: s.settings,
+        },
+      })
+      pageSectionCount++
+
+      for (const locale of locales) {
+        const st = s.translations[locale]
+        if (st) {
+          await db.pageSectionTranslation.create({
+            data: {
+              sectionId: section.id,
+              locale,
+              title: st.title,
+              subtitle: st.subtitle,
+              content: st.content,
+              buttonText: st.buttonText,
+            },
+          })
+          pageSectionTranslationCount++
+        }
+      }
+    }
+  }
+  console.log(`✅ Seeded ${pages.length} pages with ${pageSectionCount} sections and ${pageSectionTranslationCount} section translations`)
+
+  // Media
+  for (const m of mediaItems) {
+    await db.media.upsert({
+      where: { id: `seed-${m.filename}` },
+      update: {},
+      create: {
+        id: `seed-${m.filename}`,
+        filename: m.filename,
+        originalName: m.originalName,
+        mimeType: m.mimeType,
+        size: m.size,
+        url: m.url,
+        alt: m.alt,
+        category: m.category,
+      },
+    })
+  }
+  console.log(`✅ Seeded ${mediaItems.length} media items`)
+
+  console.log('🎉 Seed complete!')
 }
 
 seed().catch(console.error).finally(() => db.$disconnect())

@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// =============================================================================
+// Projects
+// =============================================================================
+
 model Project {
   id          String   @id @default(cuid())
   slug        String   @unique
@@ -21,28 +25,43 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   translations ProjectTranslation[]
+
+  @@index([slug])
+  @@index([category])
+  @@index([featured, published])
+  @@index([order])
 }
 
 model ProjectTranslation {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   projectId   String
   locale      String
-  name        String   @default("")
-  tagline     String   @default("")
-  description String   @default("")
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String  @default("")
+  tagline     String  @default("")
+  description String  @default("")
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, locale])
+  @@index([locale])
 }
+
+// =============================================================================
+// Global Translations (UI i18n)
+// =============================================================================
 
 model Translation {
-  id    String @id @default(cuid())
-  key   String
+  id     String @id @default(cuid())
+  key    String
   locale String
-  value String
+  value  String
 
   @@unique([key, locale])
+  @@index([locale])
 }
+
+// =============================================================================
+// Settings
+// =============================================================================
 
 model Setting {
   id    String @id @default(cuid())
@@ -50,6 +69,10 @@ model Setting {
   value String
   type  String @default("string")
 }
+
+// =============================================================================
+// Contact
+// =============================================================================
 
 model ContactSubmission {
   id        String   @id @default(cuid())
@@ -59,4 +82,80 @@ model ContactSubmission {
   message   String
   locale    String   @default("en")
   createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([email])
+}
+
+// =============================================================================
+// CMS Pages
+// =============================================================================
+
+model Page {
+  id            String            @id @default(cuid())
+  slug          String            @unique
+  published     Boolean           @default(true)
+  order         Int               @default(0)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  sections      PageSection[]
+  translations  PageTranslation[]
+
+  @@index([order])
+}
+
+model PageTranslation {
+  id        String @id @default(cuid())
+  pageId    String
+  locale    String
+  title     String @default("")
+  subtitle  String @default("")
+  page      Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, locale])
+  @@index([locale])
+}
+
+model PageSection {
+  id            String                    @id @default(cuid())
+  pageId        String
+  type          String                    @default("")
+  order         Int                       @default(0)
+  settings      String                    @default("{}")
+  page          Page                      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  translations  PageSectionTranslation[]
+
+  @@index([pageId, order])
+}
+
+model PageSectionTranslation {
+  id         String      @id @default(cuid())
+  sectionId  String
+  locale     String
+  title      String      @default("")
+  subtitle   String      @default("")
+  content    String      @default("")
+  buttonText String      @default("")
+  section    PageSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, locale])
+}
+
+// =============================================================================
+// Media Library
+// =============================================================================
+
+model Media {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String   @default("")
+  mimeType     String   @default("")
+  size         Int      @default(0)
+  url          String
+  alt          String   @default("")
+  category     String   @default("general")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category])
 }

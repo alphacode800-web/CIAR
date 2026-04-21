@@ -7,14 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
+import { cn } from "@/lib/utils"
 
 interface HomeStats {
   totalProjects: number
   totalViews: number
+  totalCategories: number
 }
 
 export function HomePage({ stats }: { stats: HomeStats }) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const { navigate } = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -26,17 +28,61 @@ export function HomePage({ stats }: { stats: HomeStats }) {
   const y = useTransform(scrollYProgress, [0, 1], [0, 200])
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
 
-  const categories = new Set<string>()
+  const formatNumber = (num: number) => {
+    try {
+      return num.toLocaleString(
+        locale === "ar" ? "ar-SA" : locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : locale === "de" ? "de-DE" : "en-US"
+      )
+    } catch {
+      return num.toLocaleString()
+    }
+  }
+
+  const statItems = [
+    {
+      icon: Layers,
+      value: formatNumber(stats.totalProjects),
+      label: t("hero.stat_products"),
+    },
+    {
+      icon: Eye,
+      value: formatNumber(stats.totalViews),
+      label: t("hero.stat_views"),
+    },
+    {
+      icon: Zap,
+      value: formatNumber(stats.totalCategories) + "+",
+      label: t("hero.stat_categories"),
+    },
+  ]
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Background effects */}
+      {/* Dot-grid background */}
       <div className="absolute inset-0 grid-pattern" />
-      <div className="absolute top-0 -start-40 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/10 blur-3xl" />
-      <div className="absolute top-20 -end-40 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-violet-500/15 to-fuchsia-500/10 blur-3xl" />
-      <div className="absolute bottom-0 start-1/3 h-[300px] w-[300px] rounded-full bg-gradient-to-br from-cyan-500/10 to-emerald-500/5 blur-3xl" />
 
-      {/* Hero content */}
+      {/* Animated gradient orbs */}
+      <div
+        className={cn(
+          "absolute top-0 -start-40 h-[500px] w-[500px] rounded-full blur-3xl",
+          "bg-gradient-to-br from-emerald-500/20 to-teal-500/10",
+          "animate-pulse"
+        )}
+      />
+      <div
+        className={cn(
+          "absolute top-20 -end-40 h-[400px] w-[400px] rounded-full blur-3xl",
+          "bg-gradient-to-br from-violet-500/15 to-fuchsia-500/10"
+        )}
+      />
+      <div
+        className={cn(
+          "absolute bottom-0 start-1/3 h-[300px] w-[300px] rounded-full blur-3xl",
+          "bg-gradient-to-br from-cyan-500/10 to-emerald-500/5"
+        )}
+      />
+
+      {/* Hero content with parallax */}
       <motion.div
         style={{ y, opacity }}
         className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 pb-20 sm:pt-40 sm:pb-28 flex flex-col items-center text-center"
@@ -55,7 +101,7 @@ export function HomePage({ stats }: { stats: HomeStats }) {
           </Badge>
         </motion.div>
 
-        {/* Heading */}
+        {/* Title – two parts */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -76,7 +122,7 @@ export function HomePage({ stats }: { stats: HomeStats }) {
           {t("hero.subtitle")}
         </motion.p>
 
-        {/* CTA Buttons */}
+        {/* CTA buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -101,30 +147,14 @@ export function HomePage({ stats }: { stats: HomeStats }) {
           </Button>
         </motion.div>
 
-        {/* Stats */}
+        {/* Stats row */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-16 grid grid-cols-3 gap-6 sm:gap-12"
         >
-          {[
-            {
-              icon: Layers,
-              value: stats.totalProjects,
-              label: t("hero.stat_products"),
-            },
-            {
-              icon: Eye,
-              value: stats.totalViews.toLocaleString(),
-              label: t("hero.stat_views"),
-            },
-            {
-              icon: Zap,
-              value: "6+",
-              label: t("hero.stat_categories"),
-            },
-          ].map((stat) => (
+          {statItems.map((stat) => (
             <div key={stat.label} className="flex flex-col items-center gap-1">
               <stat.icon className="h-5 w-5 text-emerald-400 mb-1" />
               <span className="text-2xl sm:text-3xl font-bold text-foreground">

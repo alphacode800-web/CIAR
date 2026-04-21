@@ -5,7 +5,9 @@ import { motion, useInView } from "framer-motion"
 import { Target, Lightbulb, Users, Rocket, Shield, Globe } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useI18n } from "@/lib/i18n-context"
+import { cn } from "@/lib/utils"
 
+// ── Values configuration – keys come from translations ──────────────────────
 const VALUES = [
   {
     icon: Lightbulb,
@@ -39,13 +41,15 @@ const VALUES = [
   },
 ]
 
+// ── Stats configuration ─────────────────────────────────────────────────────
 const STATS = [
-  { value: "9+", labelKey: "about.stat_products" },
-  { value: "500K+", labelKey: "about.stat_users" },
-  { value: "99.9%", labelKey: "about.stat_uptime" },
-  { value: "24/7", labelKey: "about.stat_support" },
+  { valueKey: "about.stat_products_value", labelKey: "about.stat_products" },
+  { valueKey: "about.stat_users_value", labelKey: "about.stat_users" },
+  { valueKey: "about.stat_uptime_value", labelKey: "about.stat_uptime" },
+  { valueKey: "about.stat_support_value", labelKey: "about.stat_support" },
 ]
 
+// ── Animated section wrapper using useInView ────────────────────────────────
 function AnimatedSection({
   children,
   className,
@@ -71,6 +75,7 @@ function AnimatedSection({
   )
 }
 
+// ── About page component ────────────────────────────────────────────────────
 export function AboutPage() {
   const { t, dir } = useI18n()
 
@@ -78,11 +83,21 @@ export function AboutPage() {
     <div dir={dir} className="relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 grid-pattern" />
-      <div className="absolute top-20 -end-40 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-emerald-500/15 to-teal-500/10 blur-3xl" />
-      <div className="absolute bottom-40 -start-40 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5 blur-3xl" />
+      <div
+        className={cn(
+          "absolute top-20 -end-40 h-[500px] w-[500px] rounded-full blur-3xl",
+          "bg-gradient-to-br from-emerald-500/15 to-teal-500/10"
+        )}
+      />
+      <div
+        className={cn(
+          "absolute bottom-40 -start-40 h-[400px] w-[400px] rounded-full blur-3xl",
+          "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5"
+        )}
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24">
-        {/* Header */}
+        {/* ── Header ──────────────────────────────────────────────────────── */}
         <AnimatedSection className="text-center mb-16">
           <Badge
             variant="secondary"
@@ -99,7 +114,7 @@ export function AboutPage() {
           </p>
         </AnimatedSection>
 
-        {/* Mission & Vision */}
+        {/* ── Mission & Vision cards ──────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
           <AnimatedSection delay={0.1}>
             <div className="rounded-2xl border border-border/50 bg-card p-8 hover:border-border hover:shadow-lg transition-all h-full">
@@ -130,13 +145,14 @@ export function AboutPage() {
           </AnimatedSection>
         </div>
 
-        {/* Values */}
+        {/* ── Values heading ──────────────────────────────────────────────── */}
         <AnimatedSection className="text-center mb-12" delay={0.1}>
           <h2 className="text-2xl sm:text-3xl font-bold">
             {t("about.values_title")}
           </h2>
         </AnimatedSection>
 
+        {/* ── Values grid (6 items) ───────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
           {VALUES.map((value, i) => (
             <AnimatedSection key={value.titleKey} delay={0.1 + i * 0.08}>
@@ -153,14 +169,14 @@ export function AboutPage() {
           ))}
         </div>
 
-        {/* Stats bar */}
+        {/* ── Stats bar ───────────────────────────────────────────────────── */}
         <AnimatedSection delay={0.2}>
           <div className="rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
               {STATS.map((stat) => (
                 <div key={stat.labelKey} className="text-center">
                   <div className="text-3xl sm:text-4xl font-bold gradient-text">
-                    {stat.value}
+                    {t(stat.valueKey)}
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
                     {t(stat.labelKey)}

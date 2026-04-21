@@ -1,64 +1,104 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { z } from 'zod'
+import {
+  getProjectById,
+  updateProject,
+  deleteProject,
+} from '@/services/project.service'
+
+// ── Validation Schemas ───────────────────────────────────────────────────────
+
+const updateProjectSchema = z.object({
+  imageUrl: z.string().optional(),
+  category: z.string().optional(),
+  externalUrl: z.string().url().optional().or(z.literal('')),
+  tags: z.string().optional(),
+  featured: z.boolean().optional(),
+  published: z.boolean().optional(),
+  order: z.number().int().optional(),
+  views: z.number().int().optional(),
+})
+
+// ── Route Handlers ───────────────────────────────────────────────────────────
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params
-    const project = await db.project.findUnique({
-      where: { id },
-      include: { translations: true },
-    })
-    if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    const project = await getProjectById(id)
+
+    if (!project) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
     return NextResponse.json(project)
   } catch (error) {
     console.error('GET /api/projects/[id] error:', error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params
     const body = await request.json()
-    const { slug, order, featured, published, imageUrl, category, externalUrl, tags } = body
+    const parsed = updateProjectSchema.safeParse(body)
 
-    const project = await db.project.update({
-      where: { id },
-      data: {
-        ...(slug !== undefined && { slug }),
-        ...(order !== undefined && { order }),
-        ...(featured !== undefined && { featured }),
-        ...(published !== undefined && { published }),
-        ...(imageUrl !== undefined && { imageUrl }),
-        ...(category !== undefined && { category }),
-        ...(externalUrl !== undefined && { externalUrl }),
-        ...(tags !== undefined && { tags: typeof tags === 'string' ? tags : JSON.stringify(tags) }),
-      },
-      include: { translations: true },
-    })
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation error',
+          details: parsed.error.flatten(),
+        },
+        { status: 400 },
+      )
+    }
+
+    // Verify project exists before updating
+    const existing = await getProjectById(id)
+    if (!existing) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    const project = await updateProject(id, parsed.data)
     return NextResponse.json(project)
   } catch (error) {
     console.error('PUT /api/projects/[id] error:', error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params
-    await db.project.delete({ where: { id } })
+
+    // Verify project exists before deleting
+    const existing = await getProjectById(id)
+    if (!existing) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    await deleteProject(id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('DELETE /api/projects/[id] error:', error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }

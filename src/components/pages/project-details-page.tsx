@@ -2,17 +2,18 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ArrowLeft, ExternalLink, Eye, Calendar, Star, Tag } from "lucide-react"
+import { ArrowLeft, ExternalLink, Eye, Calendar, Star, Tag, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
+import { cn } from "@/lib/utils"
 import type { Project } from "./projects-page"
 
 export function ProjectDetailsPage({ slug }: { slug: string }) {
   const { t, locale } = useI18n()
-  const { navigate, back } = useRouter()
+  const { navigate } = useRouter()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -34,12 +35,13 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
     fetchProject()
   }, [slug, locale])
 
+  // ── Loading skeleton ──────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-24">
-        <Skeleton className="h-8 w-32 mb-8" />
+        <Skeleton className="h-8 w-32 mb-8 rounded-lg" />
         <Skeleton className="h-64 w-full rounded-2xl mb-8" />
-        <Skeleton className="h-10 w-64 mb-4" />
+        <Skeleton className="h-10 w-64 mb-4 rounded-lg" />
         <Skeleton className="h-5 w-96 mb-2" />
         <Skeleton className="h-4 w-full mb-1" />
         <Skeleton className="h-4 w-full mb-1" />
@@ -48,14 +50,17 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
     )
   }
 
+  // ── Not found state ───────────────────────────────────────────────────────
   if (!project) {
     return (
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-24 text-center">
-        <p className="text-lg text-muted-foreground">{t("projects.no_results")}</p>
+        <p className="text-lg text-muted-foreground">
+          {t("projects.no_results")}
+        </p>
         <Button
           variant="outline"
           onClick={() => navigate({ page: "projects" })}
-          className="mt-4"
+          className="mt-4 rounded-xl"
         >
           {t("common.back")}
         </Button>
@@ -63,42 +68,57 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
     )
   }
 
-  const tr = project.translations[0] || { name: project.slug, tagline: "", description: "" }
+  // ── Derived data ──────────────────────────────────────────────────────────
+  const tr =
+    project.translations[0] || {
+      name: project.slug,
+      tagline: "",
+      description: "",
+    }
 
   let tags: string[] = []
   try {
     tags = JSON.parse(project.tags)
   } catch {
-    // ignore
+    // ignore parse errors
   }
 
   const formatDate = (dateStr: string) => {
     try {
-      return new Date(dateStr).toLocaleDateString(locale === "ar" ? "ar-SA" : locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : locale === "de" ? "de-DE" : "en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      const localeMap: Record<string, string> = {
+        ar: "ar-SA",
+        fr: "fr-FR",
+        es: "es-ES",
+        de: "de-DE",
+      }
+      return new Date(dateStr).toLocaleDateString(
+        localeMap[locale] || "en-US",
+        { year: "numeric", month: "long", day: "numeric" }
+      )
     } catch {
       return dateStr
     }
   }
 
+  // ── Page render ───────────────────────────────────────────────────────────
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-24">
       {/* Back button */}
-      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+      <motion.div
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+      >
         <Button
           variant="ghost"
           onClick={() => navigate({ page: "projects" })}
-          className="gap-2 text-muted-foreground hover:text-foreground mb-8"
+          className="gap-2 text-muted-foreground hover:text-foreground mb-8 rounded-xl"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("project.back")}
         </Button>
       </motion.div>
 
-      {/* Hero image */}
+      {/* Hero image with featured + category badges */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -118,47 +138,61 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
             </span>
           )}
         </div>
+
+        {/* Floating badges over image */}
+        {(project.featured || project.category) && (
+          <div className="absolute bottom-4 start-4 flex gap-2">
+            <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm border border-border/50">
+              {project.category}
+            </Badge>
+            {project.featured && (
+              <Badge className="bg-amber-500/90 text-white border-0">
+                <Star className="h-3 w-3 me-1" />
+                {t("project.featured")}
+              </Badge>
+            )}
+          </div>
+        )}
       </motion.div>
 
-      {/* Title and badges */}
+      {/* Title + tagline */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="mb-6"
+        className="mb-8"
       >
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <Badge variant="secondary" className="border border-border/50">
-            {project.category}
-          </Badge>
-          {project.featured && (
-            <Badge className="bg-amber-500/90 text-white border-0">
-              <Star className="h-3 w-3 me-1" />
-              {t("project.featured")}
-            </Badge>
-          )}
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{tr.name}</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+          {tr.name}
+        </h1>
         {tr.tagline && (
           <p className="mt-2 text-lg text-muted-foreground">{tr.tagline}</p>
         )}
       </motion.div>
 
-      {/* Description */}
-      {tr.description && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-8"
-        >
+      {/* About / Description */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mb-8"
+      >
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+          <BookOpen className="h-4 w-4" />
+          {t("project.about")}
+        </h2>
+        {tr.description ? (
           <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
             {tr.description}
           </p>
-        </motion.div>
-      )}
+        ) : (
+          <p className="text-muted-foreground/60 italic">
+            {t("project.no_description")}
+          </p>
+        )}
+      </motion.div>
 
-      {/* Technologies */}
+      {/* Technologies section */}
       {tags.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -184,7 +218,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
         </motion.div>
       )}
 
-      {/* Meta info */}
+      {/* Stats: views + date */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -203,7 +237,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
         )}
       </motion.div>
 
-      {/* Visit button */}
+      {/* Visit website CTA */}
       {project.externalUrl && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}

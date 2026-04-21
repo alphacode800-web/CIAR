@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
+import { cn } from "@/lib/utils"
 
 export interface Project {
   id: string
@@ -44,11 +45,13 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
   const [search, setSearch] = useState("")
   const [activeCategory, setActiveCategory] = useState("")
 
+  // Featured projects for horizontal scroll
   const featured = useMemo(
     () => projects.filter((p) => p.featured),
     [projects]
   )
 
+  // Filtered projects based on category + search
   const filtered = useMemo(() => {
     let result = projects
     if (activeCategory) result = result.filter((p) => p.category === activeCategory)
@@ -66,10 +69,15 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
     return result
   }, [projects, search, activeCategory])
 
-  const getTranslation = (p: Project) => p.translations[0] || { name: p.slug, tagline: "", description: "" }
+  const getTranslation = (p: Project) =>
+    p.translations[0] || { name: p.slug, tagline: "", description: "" }
 
   const getTags = (p: Project) => {
-    try { return JSON.parse(p.tags) as string[] } catch { return [] }
+    try {
+      return JSON.parse(p.tags) as string[]
+    } catch {
+      return []
+    }
   }
 
   return (
@@ -80,7 +88,10 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-16"
       >
-        <Badge variant="secondary" className="px-4 py-1.5 text-sm mb-4 border border-border/50">
+        <Badge
+          variant="secondary"
+          className="px-4 py-1.5 text-sm mb-4 border border-border/50"
+        >
           <Sparkles className="h-3.5 w-3.5 me-1.5" />
           {t("projects.featured")}
         </Badge>
@@ -92,7 +103,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
         </p>
       </motion.div>
 
-      {/* Featured projects row */}
+      {/* Featured projects horizontal scroll */}
       {featured.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -122,7 +133,9 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-4xl font-bold gradient-text">{tr.name[0]}</span>
+                      <span className="text-4xl font-bold gradient-text">
+                        {tr.name[0]}
+                      </span>
                     )}
                   </div>
                   <div className="p-4">
@@ -140,7 +153,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
         </motion.div>
       )}
 
-      {/* Search & filter */}
+      {/* Search & category filter pills */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -170,7 +183,9 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
               key={cat}
               size="sm"
               variant={activeCategory === cat ? "secondary" : "ghost"}
-              onClick={() => setActiveCategory(activeCategory === cat ? "" : cat)}
+              onClick={() =>
+                setActiveCategory(activeCategory === cat ? "" : cat)
+              }
               className="rounded-full text-xs"
             >
               {cat}
@@ -179,19 +194,33 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
         </div>
       </motion.div>
 
-      {/* Project count */}
+      {/* Project count – fully dynamic */}
       <p className="text-sm text-muted-foreground mb-6">
-        {filtered.length} {filtered.length === 1 ? "project" : "projects"}
+        {filtered.length === 1
+          ? t("projects.project_count_single").replace("{count}", "1")
+          : t("projects.project_count").replace(
+              "{count}",
+              String(filtered.length)
+            )}
       </p>
 
-      {/* Projects grid */}
+      {/* Projects grid or empty state */}
       {filtered.length === 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-center py-20"
         >
-          <p className="text-lg text-muted-foreground">{t("projects.no_results")}</p>
+          <p className="text-lg text-muted-foreground">
+            {t("projects.no_results")}
+          </p>
+          <Button
+            variant="outline"
+            onClick={onRefresh}
+            className="mt-4 rounded-xl"
+          >
+            {t("projects.refresh")}
+          </Button>
         </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -225,7 +254,10 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                     )}
                     {/* Badges overlay */}
                     <div className="absolute top-3 start-3 flex gap-1.5">
-                      <Badge variant="secondary" className="text-xs bg-background/80 backdrop-blur-sm">
+                      <Badge
+                        variant="secondary"
+                        className="text-xs bg-background/80 backdrop-blur-sm"
+                      >
                         {p.category}
                       </Badge>
                       {p.featured && (
@@ -269,21 +301,26 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                       </div>
                     )}
 
-                    {/* Footer */}
+                    {/* Footer: views + visit / view details */}
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Eye className="h-3.5 w-3.5" />
                         {p.views.toLocaleString()} {t("projects.views")}
                       </span>
-                      {p.externalUrl && (
-                        <span
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
-                        >
-                          {t("projects.visit")}
-                          <ExternalLink className="h-3 w-3" />
+                      <div className="flex items-center gap-2">
+                        {p.externalUrl && (
+                          <span
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
+                          >
+                            {t("projects.visit")}
+                            <ExternalLink className="h-3 w-3" />
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                          {t("projects.view_details")}
                         </span>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </button>

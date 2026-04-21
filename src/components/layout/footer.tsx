@@ -12,12 +12,15 @@ export function Footer() {
     <footer dir={dir} className="mt-auto border-t border-border/50 bg-card/50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand column */}
+          {/* ── Brand column ───────────────────────────────────────────────── */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <span className="gradient-text text-xl font-bold">NexusLabs</span>
+            <span className="gradient-text text-xl font-bold">
+              {t("footer.brand")}
+            </span>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-xs">
               {t("hero.subtitle")}
             </p>
+
             {/* Social icons */}
             <div className="flex items-center gap-3 mt-5">
               <a
@@ -60,33 +63,34 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Products column */}
+          {/* ── Products column ────────────────────────────────────────────── */}
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4">
               {t("footer.products")}
             </h3>
             <ul className="space-y-2.5">
-              {["CloudSync", "DataPulse", "CodeForge", "PixelCraft", "NovaMind"].map(
-                (name) => (
-                  <li key={name}>
-                    <button
-                      onClick={() =>
-                        navigate({
-                          page: "project",
-                          slug: name.toLowerCase(),
-                        })
-                      }
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {name}
-                    </button>
-                  </li>
-                )
-              )}
+              {[
+                { key: "footer.product_1", slug: "cloudsync" },
+                { key: "footer.product_2", slug: "datapulse" },
+                { key: "footer.product_3", slug: "codeforge" },
+                { key: "footer.product_4", slug: "pixelcraft" },
+                { key: "footer.product_5", slug: "novamind" },
+              ].map((item) => (
+                <li key={item.key}>
+                  <button
+                    onClick={() =>
+                      navigate({ page: "project", slug: item.slug })
+                    }
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {t(item.key)}
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Company column */}
+          {/* ── Company column ─────────────────────────────────────────────── */}
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4">
               {t("footer.company")}
@@ -111,7 +115,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal column */}
+          {/* ── Legal column ───────────────────────────────────────────────── */}
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4">
               {t("footer.legal")}
@@ -134,14 +138,15 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar */}
+        {/* ── Bottom bar ──────────────────────────────────────────────────── */}
         <Separator className="my-8 opacity-50" />
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} NexusLabs. {t("footer.copyright")}
+            &copy; {new Date().getFullYear()} {t("footer.brand")}.{" "}
+            {t("footer.copyright")}
           </p>
           <p className="text-xs text-muted-foreground">
-            Built with ❤️ for developers
+            {t("footer.built_with")}
           </p>
         </div>
       </div>

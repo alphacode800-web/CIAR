@@ -1,41 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { z } from 'zod'
+import { getTranslations, upsertTranslation } from '@/services/translation.service'
+
+// ── Validation Schemas ───────────────────────────────────────────────────────
+
+const localeEnum = z.enum(['en', 'ar', 'fr', 'es', 'de'])
+
+const upsertTranslationSchema = z.object({
+  key: z.string().min(1),
+  locale: localeEnum,
+  value: z.string(),
+})
+
+// ── Route Handlers ───────────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const locale = searchParams.get('locale') || 'en'
-    const keys = searchParams.get('keys')
+    const keysParam = searchParams.get('keys')
+    const keys = keysParam
+      ? keysParam.split(',').map((k) => k.trim()).filter(Boolean)
+      : undefined
 
-    const where: Record<string, unknown> = { locale }
-    if (keys) {
-      const keyArr = keys.split(',')
-      where.key = { in: keyArr }
-    }
-
-    const translations = await db.translation.findMany({ where })
-    const map: Record<string, string> = {}
-    for (const t of translations) map[t.key] = t.value
-    return NextResponse.json(map)
+    const translations = await getTranslations(locale, keys)
+    return NextResponse.json(translations)
   } catch (error) {
     console.error('GET /api/translations error:', error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { key, locale, value } = body
+    const parsed = upsertTranslationSchema.safeParse(body)
 
-    const t = await db.translation.upsert({
-      where: { key_locale: { key, locale } },
-      update: { value },
-      create: { key, locale, value },
-    })
-    return NextResponse.json(t)
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation error',
+          details: parsed.error.flatten(),
+        },
+        { status: 400 },
+      )
+    }
+
+    await upsertTranslation(parsed.data.key, parsed.data.locale, parsed.data.value)
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error('PUT /api/translations error:', error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }

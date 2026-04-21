@@ -1,18 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { z } from 'zod'
+import { submitContact } from '@/services/contact.service'
+
+// ── Validation Schemas ───────────────────────────────────────────────────────
+
+const contactSchema = z.object({
+  name: z.string().min(2).max(100),
+  email: z.string().email(),
+  subject: z.string().min(2).max(200),
+  message: z.string().min(10).max(5000),
+  locale: z.string().optional().default('en'),
+})
+
+// ── Route Handlers ───────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, subject, message, locale } = await request.json()
-    if (!name || !email || !subject || !message) {
-      return NextResponse.json({ error: 'All fields required' }, { status: 400 })
+    const body = await request.json()
+    const parsed = contactSchema.safeParse(body)
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation error',
+          details: parsed.error.flatten(),
+        },
+        { status: 400 },
+      )
     }
-    const submission = await db.contactSubmission.create({
-      data: { name, email, subject, message, locale: locale || 'en' },
-    })
-    return NextResponse.json({ success: true, id: submission.id })
+
+    const result = await submitContact(parsed.data)
+    return NextResponse.json({ success: true, id: result.id })
   } catch (error) {
-    console.error('Contact error:', error)
-    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+    console.error('POST /api/contact error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }

@@ -1,84 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { z } from 'zod'
+import { getProjects, createProject } from '@/services/project.service'
+
+// ── Validation Schemas ───────────────────────────────────────────────────────
+
+const localeEnum = z.enum(['en', 'ar', 'fr', 'es', 'de'])
+
+const createProjectSchema = z.object({
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
+  imageUrl: z.string().optional(),
+  category: z.string().max(100).optional(),
+  externalUrl: z.string().url().optional().or(z.literal('')),
+  tags: z.string().optional(),
+  featured: z.boolean().optional(),
+  published: z.boolean().optional(),
+  order: z.number().int().optional(),
+  translations: z
+    .array(
+      z.object({
+        locale: localeEnum,
+        name: z.string().min(1),
+        tagline: z.string().optional(),
+        description: z.string().optional(),
+      }),
+    )
+    .optional(),
+})
+
+// ── Route Handlers ───────────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const locale = searchParams.get('locale') || 'en'
-    const search = searchParams.get('search') || ''
-    const category = searchParams.get('category') || ''
-    const featured = searchParams.get('featured') === 'true'
+    const search = searchParams.get('search') || undefined
+    const category = searchParams.get('category') || undefined
+    const featuredParam = searchParams.get('featured')
+    const publishedParam = searchParams.get('published')
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = parseInt(searchParams.get('limit') || '12', 10)
 
-    const where: Record<string, unknown> = { published: true }
-
-    if (search) {
-      where.OR = [
-        { translations: { some: { locale, name: { contains: search } } } },
-        { translations: { some: { locale, tagline: { contains: search } } } },
-        { category: { contains: search } },
-      ]
-    }
-    if (category) where.category = category
-    if (featured) where.featured = true
-
-    const projects = await db.project.findMany({
-      where,
-      orderBy: { order: 'asc' },
-      include: {
-        translations: { where: { locale } },
-      },
+    const result = await getProjects({
+      locale,
+      search: search || undefined,
+      category: category || undefined,
+      featured: featuredParam ? featuredParam === 'true' : undefined,
+      published: publishedParam ? publishedParam === 'true' : undefined,
+      page,
+      limit,
     })
 
-    const categories = await db.project.findMany({
-      where: { published: true },
-      distinct: ['category'],
-      select: { category: true },
-      orderBy: { category: 'asc' },
-    })
-
-    const stats = await db.project.aggregate({
-      _sum: { views: true },
-      _count: true,
-    })
-
-    return NextResponse.json({
-      projects,
-      categories: categories.map((c) => c.category),
-      stats: { totalViews: stats._sum.views || 0, totalProjects: stats._count },
-    })
+    return NextResponse.json(result)
   } catch (error) {
     console.error('GET /api/projects error:', error)
-    return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { slug, order, featured, published, imageUrl, category, externalUrl, tags, translations } = body
+    const parsed = createProjectSchema.safeParse(body)
 
-    if (!slug) return NextResponse.json({ error: 'Slug required' }, { status: 400 })
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation error',
+          details: parsed.error.flatten(),
+        },
+        { status: 400 },
+      )
+    }
 
-    const project = await db.project.create({
-      data: {
-        slug, order: order || 0, featured: featured || false, published: published !== false,
-        imageUrl: imageUrl || '', category: category || '', externalUrl: externalUrl || '',
-        tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
-        translations: translations ? {
-          create: translations.map((t: { locale: string; name: string; tagline: string; description: string }) => ({
-            locale: t.locale,
-            name: t.name || '',
-            tagline: t.tagline || '',
-            description: t.description || '',
-          })),
-        } : undefined,
-      },
-      include: { translations: true },
-    })
-
+    const project = await createProject(parsed.data)
     return NextResponse.json(project, { status: 201 })
   } catch (error) {
     console.error('POST /api/projects error:', error)
-    return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }
