@@ -75,50 +75,91 @@ function AnimatedSection({
   )
 }
 
+// ── Spotlight card (mouse-following glow) ───────────────────────────────────
+function SpotlightCard({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = cardRef.current
+    if (!card) return
+    const rect = card.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    card.style.setProperty("--mouse-x", `${x}%`)
+    card.style.setProperty("--mouse-y", `${y}%`)
+  }
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      className={cn("card-spotlight", className)}
+    >
+      <div className="relative z-10">{children}</div>
+    </div>
+  )
+}
+
 // ── About page component ────────────────────────────────────────────────────
 export function AboutPage() {
   const { t, dir } = useI18n()
 
   return (
     <div dir={dir} className="relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 grid-pattern" />
-      <div
-        className={cn(
-          "absolute top-20 -end-40 h-[500px] w-[500px] rounded-full blur-3xl",
-          "bg-gradient-to-br from-emerald-500/15 to-teal-500/10"
-        )}
-      />
-      <div
-        className={cn(
-          "absolute bottom-40 -start-40 h-[400px] w-[400px] rounded-full blur-3xl",
-          "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5"
-        )}
-      />
+      {/* ── Hero Header ───────────────────────────────────────────────────── */}
+      <section className="relative py-24 sm:py-32">
+        {/* Gradient mesh background */}
+        <div className="absolute inset-0 mesh-gradient" />
+        {/* Dot pattern overlay */}
+        <div className="absolute inset-0 dot-pattern" />
+        {/* Noise overlay wrapper */}
+        <div className="noise-overlay absolute inset-0" />
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24">
-        {/* ── Header ──────────────────────────────────────────────────────── */}
-        <AnimatedSection className="text-center mb-16">
-          <Badge
-            variant="secondary"
-            className="px-4 py-1.5 text-sm mb-4 border border-border/50"
-          >
-            {t("about.badge")}
-          </Badge>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            {t("about.title_1")}{" "}
-            <span className="gradient-text">{t("about.title_2")}</span>
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t("about.subtitle")}
-          </p>
-        </AnimatedSection>
+        {/* Floating gradient orbs */}
+        <div
+          className={cn(
+            "absolute top-10 -end-32 h-[400px] w-[400px] rounded-full blur-3xl animate-float",
+            "bg-gradient-to-br from-emerald-500/15 to-teal-500/10"
+          )}
+        />
+        <div
+          className={cn(
+            "absolute bottom-10 -start-32 h-[350px] w-[350px] rounded-full blur-3xl animate-float-delayed",
+            "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5"
+          )}
+        />
 
-        {/* ── Mission & Vision cards ──────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection className="text-center">
+            <Badge
+              variant="secondary"
+              className="px-4 py-1.5 text-sm mb-6 glass-subtle border border-border/50"
+            >
+              {t("about.badge")}
+            </Badge>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+              {t("about.title_1")}{" "}
+              <span className="gradient-text">{t("about.title_2")}</span>
+            </h1>
+            <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              {t("about.subtitle")}
+            </p>
+          </AnimatedSection>
+        </div>
+      </section>
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-24">
+        {/* ── Mission & Vision ─────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <AnimatedSection delay={0.1}>
-            <div className="rounded-2xl border border-border/50 bg-card p-8 hover:border-border hover:shadow-lg transition-all h-full">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center mb-5">
+            <SpotlightCard className="rounded-2xl border border-border/50 glass-subtle p-8 sm:p-10 h-full transition-all duration-300 hover:border-emerald-500/30 hover:shadow-[0_0_30px_oklch(0.75_0.15_160/8%)]">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center mb-6">
                 <Target className="h-6 w-6 text-emerald-400" />
               </div>
               <h2 className="text-xl font-semibold mb-3">
@@ -127,12 +168,12 @@ export function AboutPage() {
               <p className="text-muted-foreground leading-relaxed">
                 {t("about.mission_text")}
               </p>
-            </div>
+            </SpotlightCard>
           </AnimatedSection>
 
           <AnimatedSection delay={0.2}>
-            <div className="rounded-2xl border border-border/50 bg-card p-8 hover:border-border hover:shadow-lg transition-all h-full">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 flex items-center justify-center mb-5">
+            <SpotlightCard className="rounded-2xl border border-border/50 glass-subtle p-8 sm:p-10 h-full transition-all duration-300 hover:border-violet-500/30 hover:shadow-[0_0_30px_oklch(0.7_0.18_280/8%)]">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 flex items-center justify-center mb-6">
                 <Lightbulb className="h-6 w-6 text-violet-400" />
               </div>
               <h2 className="text-xl font-semibold mb-3">
@@ -141,44 +182,56 @@ export function AboutPage() {
               <p className="text-muted-foreground leading-relaxed">
                 {t("about.vision_text")}
               </p>
-            </div>
+            </SpotlightCard>
           </AnimatedSection>
         </div>
 
-        {/* ── Values heading ──────────────────────────────────────────────── */}
-        <AnimatedSection className="text-center mb-12" delay={0.1}>
+        {/* ── Glow line divider ────────────────────────────────────────────── */}
+        <div className="glow-line my-16 sm:my-20" />
+
+        {/* ── Values heading ───────────────────────────────────────────────── */}
+        <AnimatedSection className="text-center mb-12" delay={0.05}>
           <h2 className="text-2xl sm:text-3xl font-bold">
             {t("about.values_title")}
           </h2>
+          <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
+            {t("about.subtitle")}
+          </p>
         </AnimatedSection>
 
-        {/* ── Values grid (6 items) ───────────────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+        {/* ── Values grid (3 × 2) ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {VALUES.map((value, i) => (
-            <AnimatedSection key={value.titleKey} delay={0.1 + i * 0.08}>
-              <div className="rounded-2xl border border-border/50 bg-card p-6 hover:border-border hover:shadow-lg transition-all h-full">
-                <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center mb-4">
+            <AnimatedSection key={value.titleKey} delay={i * 0.08}>
+              <SpotlightCard className="rounded-2xl border border-border/50 glass-subtle p-6 h-full transition-all duration-300 hover:border-border hover:shadow-[0_0_20px_oklch(0.75_0.15_160/5%)]">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center mb-4">
                   <value.icon className="h-5 w-5 text-emerald-400" />
                 </div>
                 <h3 className="font-semibold mb-2">{t(value.titleKey)}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {t(value.descKey)}
                 </p>
-              </div>
+              </SpotlightCard>
             </AnimatedSection>
           ))}
         </div>
 
-        {/* ── Stats bar ───────────────────────────────────────────────────── */}
-        <AnimatedSection delay={0.2}>
-          <div className="rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* ── Section divider ──────────────────────────────────────────────── */}
+        <div className="section-divider my-16 sm:my-20" />
+
+        {/* ── Stats bar ────────────────────────────────────────────────────── */}
+        <AnimatedSection delay={0.15}>
+          <div className="relative rounded-2xl border border-border/50 glass-strong p-8 sm:p-10 overflow-hidden">
+            {/* Glow line at top */}
+            <div className="absolute top-0 inset-x-0 glow-line" />
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
               {STATS.map((stat) => (
                 <div key={stat.labelKey} className="text-center">
                   <div className="text-3xl sm:text-4xl font-bold gradient-text">
                     {t(stat.valueKey)}
                   </div>
-                  <div className="text-sm text-muted-foreground mt-1">
+                  <div className="text-sm text-muted-foreground mt-2">
                     {t(stat.labelKey)}
                   </div>
                 </div>

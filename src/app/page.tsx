@@ -93,7 +93,7 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <HomePage stats={stats} />
+                <HomePage stats={stats} featuredProjects={projects.filter((p) => p.featured && p.published).slice(0, 3)} />
               </Suspense>
             </motion.div>
           )}

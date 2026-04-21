@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ArrowLeft, ExternalLink, Eye, Calendar, Star, Tag, BookOpen } from "lucide-react"
+import { ArrowLeft, ExternalLink, Eye, Calendar, Star, BookOpen, Cpu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -10,6 +10,15 @@ import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
 import type { Project } from "./projects-page"
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  }),
+} as const
 
 export function ProjectDetailsPage({ slug }: { slug: string }) {
   const { t, locale } = useI18n()
@@ -22,9 +31,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
       try {
         const res = await fetch(`/api/projects?locale=${locale}`)
         const data = await res.json()
-        const found = data.projects.find(
-          (p: Project) => p.slug === slug
-        )
+        const found = data.projects.find((p: Project) => p.slug === slug)
         setProject(found || null)
       } catch {
         setProject(null)
@@ -54,13 +61,11 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
   if (!project) {
     return (
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-24 text-center">
-        <p className="text-lg text-muted-foreground">
-          {t("projects.no_results")}
-        </p>
+        <p className="text-lg text-muted-foreground">{t("projects.no_results")}</p>
         <Button
           variant="outline"
           onClick={() => navigate({ page: "projects" })}
-          className="mt-4 rounded-xl"
+          className="mt-4 rounded-xl border-border/30"
         >
           {t("common.back")}
         </Button>
@@ -102,160 +107,206 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
 
   // ── Page render ───────────────────────────────────────────────────────────
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-24">
-      {/* Back button */}
-      <motion.div
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-      >
-        <Button
-          variant="ghost"
-          onClick={() => navigate({ page: "projects" })}
-          className="gap-2 text-muted-foreground hover:text-foreground mb-8 rounded-xl"
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-24 relative">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" aria-hidden="true" />
+      <div
+        className="absolute -top-20 -start-20 w-72 h-72 rounded-full bg-emerald-500/10 blur-[100px] pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute top-1/3 -end-32 w-80 h-80 rounded-full bg-violet-500/8 blur-[120px] pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute bottom-0 start-1/4 w-64 h-64 rounded-full bg-teal-500/6 blur-[100px] pointer-events-none"
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10">
+        {/* ── Back Button ─────────────────────────────────────────────── */}
+        <motion.div initial="hidden" animate="visible" custom={0} variants={fadeUp}>
+          <Button
+            variant="ghost"
+            onClick={() => navigate({ page: "projects" })}
+            className={cn(
+              "gap-2 text-muted-foreground hover:text-foreground mb-8 rounded-xl",
+              "hover:bg-white/5 transition-colors duration-200"
+            )}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("project.back")}
+          </Button>
+        </motion.div>
+
+        {/* ── Hero Image ──────────────────────────────────────────────── */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          custom={1}
+          variants={fadeUp}
+          className="relative rounded-2xl overflow-hidden mb-8 border border-border/30 shadow-2xl shadow-black/20"
         >
-          <ArrowLeft className="h-4 w-4" />
-          {t("project.back")}
-        </Button>
-      </motion.div>
+          <div className="aspect-video bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-cyan-500/5 flex items-center justify-center">
+            {project.imageUrl ? (
+              <img
+                src={project.imageUrl}
+                alt={tr.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-9xl font-bold gradient-text/30">
+                {tr.name[0]}
+              </span>
+            )}
+          </div>
 
-      {/* Hero image with featured + category badges */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="relative rounded-2xl overflow-hidden mb-8 border border-border/50"
-      >
-        <div className="aspect-video bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center">
-          {project.imageUrl ? (
-            <img
-              src={project.imageUrl}
-              alt={tr.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-8xl font-bold gradient-text opacity-40">
-              {tr.name[0]}
-            </span>
-          )}
-        </div>
+          {/* Dark gradient overlay from bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        {/* Floating badges over image */}
-        {(project.featured || project.category) && (
+          {/* Floating badges over bottom-left of image */}
           <div className="absolute bottom-4 start-4 flex gap-2">
-            <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm border border-border/50">
+            <Badge variant="secondary" className="glass text-xs font-medium border border-white/10">
               {project.category}
             </Badge>
             {project.featured && (
-              <Badge className="bg-amber-500/90 text-white border-0">
+              <Badge className="bg-amber-400/90 text-black border-0 text-xs font-medium">
                 <Star className="h-3 w-3 me-1" />
                 {t("project.featured")}
               </Badge>
             )}
           </div>
-        )}
-      </motion.div>
+        </motion.div>
 
-      {/* Title + tagline */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mb-8"
-      >
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-          {tr.name}
-        </h1>
-        {tr.tagline && (
-          <p className="mt-2 text-lg text-muted-foreground">{tr.tagline}</p>
-        )}
-      </motion.div>
-
-      {/* About / Description */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="mb-8"
-      >
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-          <BookOpen className="h-4 w-4" />
-          {t("project.about")}
-        </h2>
-        {tr.description ? (
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-            {tr.description}
-          </p>
-        ) : (
-          <p className="text-muted-foreground/60 italic">
-            {t("project.no_description")}
-          </p>
-        )}
-      </motion.div>
-
-      {/* Technologies section */}
-      {tags.length > 0 && (
+        {/* ── Title + Tagline ─────────────────────────────────────────── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="mb-8"
+          initial="hidden"
+          animate="visible"
+          custom={2}
+          variants={fadeUp}
+          className="mb-4"
         >
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-            <Tag className="h-4 w-4" />
-            {t("project.technologies")}
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+            {tr.name}
+          </h1>
+          {tr.tagline && (
+            <p className="mt-3 text-lg sm:text-xl text-muted-foreground">
+              {tr.tagline}
+            </p>
+          )}
+        </motion.div>
+
+        {/* ── Section Divider ─────────────────────────────────────────── */}
+        <div className="section-divider my-8" />
+
+        {/* ── About Section ───────────────────────────────────────────── */}
+        <motion.section
+          initial="hidden"
+          animate="visible"
+          custom={3}
+          variants={fadeUp}
+          className="mb-2"
+        >
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-emerald-500" />
+            {t("project.about")}
           </h2>
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="outline"
-                className="px-3 py-1 border-border/50 hover:border-emerald-500/50 hover:text-emerald-400 transition-colors"
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </motion.div>
-      )}
+          {tr.description ? (
+            <p className="text-muted-foreground leading-relaxed max-w-3xl whitespace-pre-line text-base">
+              {tr.description}
+            </p>
+          ) : (
+            <p className="text-muted-foreground/60 italic">{t("project.no_description")}</p>
+          )}
+        </motion.section>
 
-      {/* Stats: views + date */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="flex flex-wrap items-center gap-6 mb-8 text-sm text-muted-foreground"
-      >
-        <span className="flex items-center gap-1.5">
-          <Eye className="h-4 w-4" />
-          {project.views.toLocaleString()} {t("projects.views")}
-        </span>
-        {project.createdAt && (
-          <span className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4" />
-            {formatDate(project.createdAt)}
-          </span>
-        )}
-      </motion.div>
+        {/* ── Section Divider ─────────────────────────────────────────── */}
+        {tags.length > 0 && <div className="section-divider my-8" />}
 
-      {/* Visit website CTA */}
-      {project.externalUrl && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-        >
-          <Button
-            size="lg"
-            asChild
-            className="gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl px-8"
+        {/* ── Technologies Section ────────────────────────────────────── */}
+        {tags.length > 0 && (
+          <motion.section
+            initial="hidden"
+            animate="visible"
+            custom={4}
+            variants={fadeUp}
+            className="mb-2"
           >
-            <a href={project.externalUrl} target="_blank" rel="noopener noreferrer">
-              {t("project.visit_website")}
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          </Button>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Cpu className="h-4 w-4 text-emerald-500" />
+              {t("project.technologies")}
+            </h2>
+            <div className="glass-subtle rounded-2xl border border-border/20 p-5">
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className={cn(
+                      "px-3 py-1.5 border-border/30 text-sm font-normal",
+                      "hover:border-emerald-500/50 hover:text-emerald-400",
+                      "transition-all duration-300 cursor-default"
+                    )}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* ── Section Divider ─────────────────────────────────────────── */}
+        <div className="section-divider my-8" />
+
+        {/* ── Stats: Views + Date ─────────────────────────────────────── */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          custom={5}
+          variants={fadeUp}
+          className="flex flex-wrap items-center gap-6 mb-10 text-sm text-muted-foreground"
+        >
+          <span className="flex items-center gap-2 glass-subtle px-3 py-1.5 rounded-full border border-border/20">
+            <Eye className="h-4 w-4" />
+            {project.views.toLocaleString()} {t("projects.views")}
+          </span>
+          {project.createdAt && (
+            <span className="flex items-center gap-2 glass-subtle px-3 py-1.5 rounded-full border border-border/20">
+              <Calendar className="h-4 w-4" />
+              {formatDate(project.createdAt)}
+            </span>
+          )}
         </motion.div>
-      )}
+
+        {/* ── Visit Website CTA ───────────────────────────────────────── */}
+        {project.externalUrl && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            custom={6}
+            variants={fadeUp}
+          >
+            <Button
+              size="lg"
+              asChild
+              className={cn(
+                "gap-2 rounded-xl px-8 py-3 text-base font-medium",
+                "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500",
+                "hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600",
+                "text-white shadow-lg shadow-emerald-500/25",
+                "btn-glow",
+                "transition-all duration-300"
+              )}
+            >
+              <a href={project.externalUrl} target="_blank" rel="noopener noreferrer">
+                {t("project.visit_website")}
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
+          </motion.div>
+        )}
+      </div>
     </div>
   )
 }
