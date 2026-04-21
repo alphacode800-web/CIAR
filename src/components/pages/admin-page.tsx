@@ -14,6 +14,8 @@ import {
   Eye,
   EyeOff,
   Star,
+  Menu,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -57,7 +59,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { useI18n, ALL_LOCALES, LOCALE_NAMES } from "@/lib/i18n-context"
 import { useRouter, type PageRoute } from "@/lib/router-context"
 import { toast } from "sonner"
@@ -88,22 +89,24 @@ interface TranslationRow {
 // MAIN ADMIN PAGE
 // ────────────────────────────────────────────
 export function AdminPage() {
-  const { t, locale: currentLocale } = useI18n()
+  const { t, locale: currentLocale, dir } = useI18n()
   const { route, navigate } = useRouter()
   const activeTab = route.tab || "dashboard"
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   const setTab = (tab: string) => {
     navigate({ page: "admin", tab })
+    setMobileSidebarOpen(false)
   }
 
   return (
     <div className="flex min-h-screen pt-16">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 shrink-0 border-e border-border/50 bg-card/50 flex-col">
+      <aside className="hidden lg:flex w-64 shrink-0 border-e border-border/50 bg-card/50 flex-col fixed top-16 bottom-0">
         <div className="p-4 border-b border-border/50">
           <h1 className="text-lg font-bold">{t("admin.title")}</h1>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {SIDEBAR_TABS.map((tab) => (
             <button
               key={tab.id}
@@ -121,21 +124,35 @@ export function AdminPage() {
         </nav>
       </aside>
 
-      {/* Mobile sidebar */}
-      <div className="lg:hidden fixed top-16 start-0 z-40">
-        <Sheet open>
-          <SheetContent side="left" className="w-64 p-0">
-            <SheetTitle className="sr-only">{t("admin.title")}</SheetTitle>
-            <div className="p-4 border-b border-border/50">
+      {/* Mobile sidebar overlay + drawer */}
+      {mobileSidebarOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          {/* Drawer */}
+          <aside
+            dir={dir}
+            className="fixed top-16 start-0 bottom-0 z-50 w-64 bg-card border-e border-border/50 flex flex-col lg:hidden"
+          >
+            <div className="p-4 border-b border-border/50 flex items-center justify-between">
               <h1 className="text-lg font-bold">{t("admin.title")}</h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setMobileSidebarOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <nav className="p-3 space-y-1">
+            <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
               {SIDEBAR_TABS.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => {
-                    setTab(tab.id)
-                  }}
+                  onClick={() => setTab(tab.id)}
                   className={`flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     activeTab === tab.id
                       ? "bg-secondary text-foreground"
@@ -147,23 +164,27 @@ export function AdminPage() {
                 </button>
               ))}
             </nav>
-          </SheetContent>
-        </Sheet>
-      </div>
+          </aside>
+        </>
+      )}
 
       {/* Main content */}
-      <main className="flex-1 min-w-0">
+      <main className="flex-1 min-w-0 lg:ms-64">
+        {/* Mobile header bar with hamburger */}
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border/50 bg-card/80 sticky top-16 z-30">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => setMobileSidebarOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg font-bold">{t("admin.title")}</h1>
+        </div>
+
         <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
           <Tabs value={activeTab} onValueChange={setTab}>
-            <TabsList className="lg:hidden mb-6">
-              {SIDEBAR_TABS.map((tab) => (
-                <TabsTrigger key={tab.id} value={tab.id} className="gap-1.5 text-xs">
-                  <tab.icon className="h-3.5 w-3.5" />
-                  {t(tab.labelKey)}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
             <TabsContent value="dashboard">
               <DashboardTab />
             </TabsContent>
