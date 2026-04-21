@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0a07"/>
+      <stop offset="100%" stop-color="#1a1008"/>
+    </linearGradient>
+    <linearGradient id="coral1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#ef4444"/>
+    </linearGradient>
+    <linearGradient id="coral2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="coral3" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="warm4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="40%" cy="45%" r="45%">
+      <stop offset="0%" stop-color="#f97316" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="65%" cy="55%" r="35%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur1">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="50"/>
+    </filter>
+    <filter id="blur2">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  
+  <!-- Ambient glow -->
+  <ellipse cx="480" cy="280" rx="450" ry="280" fill="url(#glow1)" filter="url(#blur1)"/>
+  <ellipse cx="750" cy="400" rx="350" ry="220" fill="url(#glow2)" filter="url(#blur1)"/>
+  
+  <!-- Grid pattern -->
+  <g opacity="0.04" stroke="#fb923c" stroke-width="0.5">
+    <line x1="150" y1="100" x2="150" y2="530"/>
+    <line x1="300" y1="100" x2="300" y2="530"/>
+    <line x1="450" y1="100" x2="450" y2="530"/>
+    <line x1="600" y1="100" x2="600" y2="530"/>
+    <line x1="750" y1="100" x2="750" y2="530"/>
+    <line x1="900" y1="100" x2="900" y2="530"/>
+    <line x1="1050" y1="100" x2="1050" y2="530"/>
+    <line x1="100" y1="150" x2="1100" y2="150"/>
+    <line x1="100" y1="250" x2="1100" y2="250"/>
+    <line x1="100" y1="350" x2="1100" y2="350"/>
+    <line x1="100" y1="450" x2="1100" y2="450"/>
+  </g>
+  
+  <!-- Flow connectors (Kanban-style lines) -->
+  <g stroke-width="1.5" fill="none" opacity="0.2">
+    <!-- Horizontal flows -->
+    <path d="M 200,250 C 280,250 280,250 360,250" stroke="url(#coral1)"/>
+    <path d="M 440,250 C 520,250 520,250 600,250" stroke="url(#coral2)"/>
+    <path d="M 680,250 C 760,250 760,250 840,250" stroke="url(#coral1)"/>
+    
+    <!-- Cross connections -->
+    <path d="M 300,300 C 340,340 440,340 480,300" stroke="url(#coral2)" stroke-dasharray="4,4"/>
+    <path d="M 520,300 C 560,340 660,340 700,300" stroke="url(#coral1)" stroke-dasharray="4,4"/>
+    
+    <!-- Vertical flows -->
+    <path d="M 400,200 L 400,150" stroke="url(#coral2)" opacity="0.15"/>
+    <path d="M 800,300 L 800,380" stroke="url(#coral1)" opacity="0.15"/>
+  </g>
+  
+  <!-- Flow glow on main connector -->
+  <path d="M 200,250 C 280,250 280,250 360,250" stroke="#f97316" stroke-width="6" fill="none" filter="url(#blur2)" opacity="0.15"/>
+  <path d="M 440,250 C 520,250 520,250 600,250" stroke="#f97316" stroke-width="6" fill="none" filter="url(#blur2)" opacity="0.15"/>
+  
+  <!-- Task cards -->
+  <!-- Card 1 - completed -->
+  <g transform="translate(180, 210)">
+    <rect width="120" height="80" rx="10" fill="#1a1008" stroke="#f97316" stroke-width="0.8" stroke-opacity="0.3"/>
+    <rect x="12" y="12" width="50" height="6" rx="3" fill="#f97316" opacity="0.4"/>
+    <rect x="12" y="26" width="90" height="4" rx="2" fill="#fb923c" opacity="0.15"/>
+    <rect x="12" y="36" width="70" height="4" rx="2" fill="#fb923c" opacity="0.1"/>
+    <circle cx="96" cy="15" r="8" fill="#22c55e" opacity="0.3"/>
+    <polyline points="92,15 95,18 101,12" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+    <rect x="12" y="52" width="30" height="14" rx="4" fill="#f97316" opacity="0.12"/>
+    <text x="27" y="63" text-anchor="middle" font-family="system-ui, sans-serif" font-size="7" fill="#fb923c" opacity="0.5">Done</text>
+  </g>
+  
+  <!-- Card 2 - in progress -->
+  <g transform="translate(360, 210)">
+    <rect width="120" height="80" rx="10" fill="#1a1008" stroke="#fb923c" stroke-width="0.8" stroke-opacity="0.4"/>
+    <rect x="12" y="12" width="60" height="6" rx="3" fill="#fb923c" opacity="0.5"/>
+    <rect x="12" y="26" width="90" height="4" rx="2" fill="#fb923c" opacity="0.15"/>
+    <rect x="12" y="36" width="80" height="4" rx="2" fill="#fb923c" opacity="0.1"/>
+    <rect x="12" y="46" width="60" height="4" rx="2" fill="#fb923c" opacity="0.08"/>
+    <rect x="12" y="56" width="30" height="14" rx="4" fill="#f59e0b" opacity="0.15"/>
+    <text x="27" y="67" text-anchor="middle" font-family="system-ui, sans-serif" font-size="7" fill="#f59e0b" opacity="0.5">Active</text>
+  </g>
+  
+  <!-- Card 3 - pending -->
+  <g transform="translate(540, 210)">
+    <rect width="120" height="80" rx="10" fill="#1a1008" stroke="#f97316" stroke-width="0.5" stroke-opacity="0.2"/>
+    <rect x="12" y="12" width="45" height="6" rx="3" fill="#f97316" opacity="0.3"/>
+    <rect x="12" y="26" width="90" height="4" rx="2" fill="#fb923c" opacity="0.1"/>
+    <rect x="12" y="36" width="75" height="4" rx="2" fill="#fb923c" opacity="0.08"/>
+  </g>
+  
+  <!-- Card 4 - review -->
+  <g transform="translate(720, 210)">
+    <rect width="120" height="80" rx="10" fill="#1a1008" stroke="#ef4444" stroke-width="0.5" stroke-opacity="0.3"/>
+    <rect x="12" y="12" width="55" height="6" rx="3" fill="#ef4444" opacity="0.3"/>
+    <rect x="12" y="26" width="90" height="4" rx="2" fill="#ef4444" opacity="0.1"/>
+    <rect x="12" y="36" width="65" height="4" rx="2" fill="#ef4444" opacity="0.08"/>
+    <rect x="12" y="52" width="42" height="14" rx="4" fill="#ef4444" opacity="0.12"/>
+    <text x="33" y="63" text-anchor="middle" font-family="system-ui, sans-serif" font-size="7" fill="#ef4444" opacity="0.5">Review</text>
+  </g>
+  
+  <!-- Second row of cards -->
+  <g transform="translate(270, 340)" opacity="0.7">
+    <rect width="120" height="70" rx="10" fill="#1a1008" stroke="#f97316" stroke-width="0.5" stroke-opacity="0.2"/>
+    <rect x="12" y="12" width="55" height="6" rx="3" fill="#f97316" opacity="0.3"/>
+    <rect x="12" y="26" width="90" height="4" rx="2" fill="#fb923c" opacity="0.1"/>
+  </g>
+  
+  <g transform="translate(510, 340)" opacity="0.7">
+    <rect width="120" height="70" rx="10" fill="#1a1008" stroke="#f97316" stroke-width="0.5" stroke-opacity="0.25"/>
+    <rect x="12" y="12" width="65" height="6" rx="3" fill="#fb923c" opacity="0.35"/>
+    <rect x="12" y="26" width="90" height="4" rx="2" fill="#fb923c" opacity="0.1"/>
+    <rect x="12" y="36" width="50" height="4" rx="2" fill="#fb923c" opacity="0.08"/>
+  </g>
+  
+  <g transform="translate(750, 340)" opacity="0.5">
+    <rect width="120" height="70" rx="10" fill="#1a1008" stroke="#f97316" stroke-width="0.5" stroke-opacity="0.15" stroke-dasharray="4,4"/>
+    <rect x="12" y="12" width="40" height="6" rx="3" fill="#f97316" opacity="0.2"/>
+    <rect x="12" y="26" width="70" height="4" rx="2" fill="#fb923c" opacity="0.06"/>
+  </g>
+  
+  <!-- Progress bar -->
+  <g transform="translate(250, 470)" opacity="0.6">
+    <rect width="700" height="6" rx="3" fill="#1a1008" stroke="#f97316" stroke-width="0.3" stroke-opacity="0.2"/>
+    <rect width="420" height="6" rx="3" fill="url(#coral1)" opacity="0.7"/>
+    <circle cx="420" cy="3" r="6" fill="#f97316" opacity="0.8"/>
+    <circle cx="420" cy="3" r="12" fill="#f97316" opacity="0.15" filter="url(#blur2)"/>
+  </g>
+  
+  <!-- Floating arrows -->
+  <g opacity="0.15">
+    <path d="M 300,180 L 330,170 L 320,185 Z" fill="#f97316"/>
+    <path d="M 470,180 L 500,170 L 490,185 Z" fill="#fb923c"/>
+    <path d="M 650,180 L 680,170 L 670,185 Z" fill="#f97316"/>
+    <path d="M 830,180 L 860,170 L 850,185 Z" fill="#fb923c"/>
+  </g>
+  
+  <!-- Floating particles -->
+  <g opacity="0.4">
+    <circle cx="130" cy="170" r="2.5" fill="#f97316"/>
+    <circle cx="1070" cy="200" r="2" fill="#fb923c"/>
+    <circle cx="180" cy="450" r="2" fill="#ef4444"/>
+    <circle cx="1020" cy="400" r="2.5" fill="#f97316"/>
+    <circle cx="600" cy="150" r="2" fill="#f59e0b"/>
+    <circle cx="400" cy="500" r="1.5" fill="#fb923c"/>
+    <circle cx="800" cy="480" r="1.5" fill="#ef4444"/>
+  </g>
+  
+  <!-- Brand text -->
+  <g transform="translate(600, 560)">
+    <text x="0" y="0" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#fb923c" letter-spacing="6" opacity="0.7">TASKFLOW</text>
+  </g>
+  
+  <!-- Top left accent -->
+  <g transform="translate(60, 50)">
+    <rect width="4" height="32" rx="2" fill="#f97316" opacity="0.6"/>
+    <rect x="10" width="4" height="20" rx="2" fill="#ef4444" opacity="0.4"/>
+  </g>
+  
+  <!-- Version tag -->
+  <g transform="translate(1050, 575)">
+    <rect x="0" y="-14" width="90" height="22" rx="11" fill="#f97316" opacity="0.15"/>
+    <text x="45" y="2" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#fb923c" opacity="0.6">v3.4.1</text>
+  </g>
+</svg>

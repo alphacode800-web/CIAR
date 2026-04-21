@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#09090b"/>
+      <stop offset="100%" stop-color="#111113"/>
+    </linearGradient>
+    <linearGradient id="rainbow1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="25%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#10b981"/>
+      <stop offset="75%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="rainbow2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="33%" stop-color="#f97316"/>
+      <stop offset="66%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="warm1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="cool1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="purple1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="30%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="70%" cy="60%" r="40%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow3" cx="50%" cy="30%" r="35%">
+      <stop offset="0%" stop-color="#ec4899" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#ec4899" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur1">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="40"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  
+  <!-- Ambient glows -->
+  <ellipse cx="350" cy="250" rx="400" ry="250" fill="url(#glow1)" filter="url(#blur1)"/>
+  <ellipse cx="850" cy="400" rx="350" ry="250" fill="url(#glow2)" filter="url(#blur1)"/>
+  <ellipse cx="600" cy="180" rx="300" ry="200" fill="url(#glow3)" filter="url(#blur1)"/>
+  
+  <!-- Large geometric composition -->
+  <g transform="translate(600, 300)">
+    <!-- Main rotating squares -->
+    <rect x="-140" y="-140" width="280" height="280" rx="24" fill="none" stroke="url(#rainbow1)" stroke-width="2" opacity="0.4" transform="rotate(0)"/>
+    <rect x="-110" y="-110" width="220" height="220" rx="20" fill="none" stroke="url(#rainbow2)" stroke-width="1.5" opacity="0.35" transform="rotate(15)"/>
+    <rect x="-80" y="-80" width="160" height="160" rx="16" fill="none" stroke="url(#rainbow1)" stroke-width="1.5" opacity="0.3" transform="rotate(30)"/>
+    <rect x="-50" y="-50" width="100" height="100" rx="12" fill="none" stroke="url(#rainbow2)" stroke-width="1.5" opacity="0.3" transform="rotate(45)"/>
+    
+    <!-- Center diamond -->
+    <rect x="-25" y="-25" width="50" height="50" rx="6" fill="url(#rainbow1)" opacity="0.8" transform="rotate(45)"/>
+  </g>
+  
+  <!-- Floating geometric shapes -->
+  <!-- Top left cluster -->
+  <g opacity="0.7">
+    <rect x="120" y="100" width="80" height="80" rx="16" fill="url(#warm1)" opacity="0.3" transform="rotate(-8, 160, 140)"/>
+    <rect x="100" y="190" width="60" height="60" rx="12" fill="url(#cool1)" opacity="0.25" transform="rotate(12, 130, 220)"/>
+    <circle cx="220" cy="170" r="25" fill="url(#purple1)" opacity="0.2"/>
+  </g>
+  
+  <!-- Top right cluster -->
+  <g opacity="0.7">
+    <rect x="950" y="80" width="70" height="70" rx="14" fill="url(#cool1)" opacity="0.3" transform="rotate(15, 985, 115)"/>
+    <rect x="1020" y="150" width="90" height="90" rx="18" fill="url(#warm1)" opacity="0.2" transform="rotate(-5, 1065, 195)"/>
+    <circle cx="960" cy="200" r="20" fill="url(#purple1)" opacity="0.25"/>
+  </g>
+  
+  <!-- Bottom left cluster -->
+  <g opacity="0.6">
+    <rect x="80" y="400" width="100" height="100" rx="20" fill="url(#purple1)" opacity="0.2" transform="rotate(10, 130, 450)"/>
+    <rect x="170" y="450" width="60" height="60" rx="12" fill="url(#warm1)" opacity="0.25" transform="rotate(-15, 200, 480)"/>
+  </g>
+  
+  <!-- Bottom right cluster -->
+  <g opacity="0.6">
+    <rect x="1000" y="400" width="80" height="80" rx="16" fill="url(#rainbow1)" opacity="0.2" transform="rotate(20, 1040, 440)"/>
+    <rect x="1060" y="350" width="50" height="50" rx="10" fill="url(#cool1)" opacity="0.25"/>
+  </g>
+  
+  <!-- Pixel grid (subtle) -->
+  <g opacity="0.06">
+    <pattern id="pixelGrid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="none" stroke="#fff" stroke-width="0.5"/>
+    </pattern>
+    <rect width="1200" height="630" fill="url(#pixelGrid)"/>
+  </g>
+  
+  <!-- Scattered colorful dots -->
+  <g opacity="0.5">
+    <circle cx="250" cy="300" r="4" fill="#ef4444"/>
+    <circle cx="350" cy="150" r="3" fill="#f59e0b"/>
+    <circle cx="450" cy="450" r="3.5" fill="#10b981"/>
+    <circle cx="750" cy="150" r="3" fill="#3b82f6"/>
+    <circle cx="850" cy="450" r="4" fill="#8b5cf6"/>
+    <circle cx="950" cy="300" r="3" fill="#ec4899"/>
+    <circle cx="180" cy="500" r="2.5" fill="#06b6d4"/>
+    <circle cx="1050" cy="250" r="2.5" fill="#f97316"/>
+    <circle cx="600" cy="500" r="3" fill="#a855f7"/>
+    <circle cx="400" cy="100" r="2" fill="#22c55e"/>
+  </g>
+  
+  <!-- Triangular accents -->
+  <g opacity="0.2">
+    <polygon points="300,500 330,450 360,500" fill="none" stroke="url(#rainbow1)" stroke-width="1.5"/>
+    <polygon points="800,100 830,50 860,100" fill="none" stroke="url(#rainbow2)" stroke-width="1.5"/>
+  </g>
+  
+  <!-- Brand text -->
+  <g transform="translate(600, 560)">
+    <text x="0" y="0" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="url(#rainbow1)" letter-spacing="6" opacity="0.7">PIXELCRAFT</text>
+  </g>
+  
+  <!-- Top left accent -->
+  <g transform="translate(60, 50)">
+    <rect width="4" height="32" rx="2" fill="#f59e0b" opacity="0.6"/>
+    <rect x="10" width="4" height="20" rx="2" fill="#ec4899" opacity="0.4"/>
+    <rect x="20" width="4" height="26" rx="2" fill="#3b82f6" opacity="0.3"/>
+  </g>
+  
+  <!-- Version tag -->
+  <g transform="translate(1050, 575)">
+    <rect x="0" y="-14" width="90" height="22" rx="11" fill="#f59e0b" opacity="0.15"/>
+    <text x="45" y="2" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#fbbf24" opacity="0.6">v2.5.1</text>
+  </g>
+</svg>

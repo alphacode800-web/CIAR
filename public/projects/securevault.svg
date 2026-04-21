@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#030a06"/>
+      <stop offset="100%" stop-color="#071a10"/>
+    </linearGradient>
+    <linearGradient id="emerald1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="emerald2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#6ee7b7"/>
+    </linearGradient>
+    <linearGradient id="emerald3" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="darkEmerald" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="50%" cy="40%" r="45%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="50%" cy="60%" r="40%">
+      <stop offset="0%" stop-color="#059669" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#059669" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur1">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="50"/>
+    </filter>
+    <filter id="blur2">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="25"/>
+    </filter>
+    <filter id="blur3">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  
+  <!-- Ambient glow -->
+  <ellipse cx="600" cy="280" rx="450" ry="300" fill="url(#glow1)" filter="url(#blur1)"/>
+  <ellipse cx="500" cy="400" rx="350" ry="200" fill="url(#glow2)" filter="url(#blur1)"/>
+  
+  <!-- Shield shape - main -->
+  <g transform="translate(600, 290)">
+    <!-- Shield glow -->
+    <path d="M 0,-150 C -130,-130 -160,-80 -160,-20 C -160,80 -80,160 0,200 C 80,160 160,80 160,-20 C 160,-80 130,-130 0,-150 Z"
+      fill="#10b981" opacity="0.1" filter="url(#blur2)"/>
+    
+    <!-- Shield outline -->
+    <path d="M 0,-150 C -130,-130 -160,-80 -160,-20 C -160,80 -80,160 0,200 C 80,160 160,80 160,-20 C 160,-80 130,-130 0,-150 Z"
+      fill="none" stroke="url(#emerald1)" stroke-width="2.5" opacity="0.6"/>
+    
+    <!-- Shield inner -->
+    <path d="M 0,-120 C -105,-105 -130,-65 -130,-15 C -130,65 -65,130 0,162 C 65,130 130,65 130,-15 C 130,-65 105,-105 0,-120 Z"
+      fill="url(#darkEmerald)" opacity="0.5"/>
+    
+    <!-- Shield inner outline -->
+    <path d="M 0,-120 C -105,-105 -130,-65 -130,-15 C -130,65 -65,130 0,162 C 65,130 130,65 130,-15 C 130,-65 105,-105 0,-120 Z"
+      fill="none" stroke="url(#emerald2)" stroke-width="1" opacity="0.3"/>
+    
+    <!-- Lock icon inside shield -->
+    <g transform="translate(0, 10)">
+      <!-- Lock body -->
+      <rect x="-30" y="-10" width="60" height="45" rx="8" fill="url(#emerald1)" opacity="0.7"/>
+      <!-- Lock shackle -->
+      <path d="M -18,-10 L -18,-30 C -18,-55 18,-55 18,-30 L 18,-10" fill="none" stroke="url(#emerald2)" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+      <!-- Keyhole -->
+      <circle cx="0" cy="12" r="8" fill="#030a06" opacity="0.8"/>
+      <rect x="-3" y="12" width="6" height="14" rx="2" fill="#030a06" opacity="0.8"/>
+    </g>
+  </g>
+  
+  <!-- Hexagonal pattern background -->
+  <g opacity="0.04" stroke="#34d399" stroke-width="0.5" fill="none">
+    <path d="M 100,100 L 140,77 L 180,100 L 180,146 L 140,169 L 100,146 Z"/>
+    <path d="M 180,100 L 220,77 L 260,100 L 260,146 L 220,169 L 180,146 Z"/>
+    <path d="M 140,169 L 180,146 L 220,169 L 220,215 L 180,238 L 140,215 Z"/>
+    <path d="M 900,400 L 940,377 L 980,400 L 980,446 L 940,469 L 900,446 Z"/>
+    <path d="M 980,400 L 1020,377 L 1060,400 L 1060,446 L 1020,469 L 980,446 Z"/>
+    <path d="M 940,469 L 980,446 L 1020,469 L 1020,515 L 980,538 L 940,515 Z"/>
+    <path d="M 940,331 L 980,308 L 1020,331 L 1020,377 L 980,400 L 940,377 Z"/>
+  </g>
+  
+  <!-- Security scan lines -->
+  <g opacity="0.08" stroke="#34d399" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="500" y1="0" x2="500" y2="630"/>
+    <line x1="700" y1="0" x2="700" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+  </g>
+  
+  <!-- Floating lock particles -->
+  <g opacity="0.15">
+    <!-- Small shield shapes -->
+    <path d="M 150,180 L 135,175 L 135,195 C 135,205 142,212 150,216 C 158,212 165,205 165,195 L 165,175 Z"
+      fill="#34d399" transform="scale(0.7)"/>
+    <path d="M 1050,350 L 1035,345 L 1035,365 C 1035,375 1042,382 1050,386 C 1058,382 1065,375 1065,365 L 1065,345 Z"
+      fill="#34d399" transform="scale(0.6)"/>
+  </g>
+  
+  <!-- Encrypted data particles -->
+  <g opacity="0.4" font-family="'SF Mono', monospace" font-size="9" fill="#34d399">
+    <text x="80" y="250" opacity="0.2">0xA3F2</text>
+    <text x="1000" y="150" opacity="0.15">0x7B1E</text>
+    <text x="150" y="480" opacity="0.15">0xC9D4</text>
+    <text x="1050" y="500" opacity="0.2">0xE5A8</text>
+    <text x="50" y="400" opacity="0.1">SHA-256</text>
+    <text x="1080" y="280" opacity="0.1">AES-256</text>
+  </g>
+  
+  <!-- Connection lines from shield -->
+  <g opacity="0.12" stroke="#34d399" stroke-width="1" stroke-dasharray="4,6">
+    <line x1="440" y1="290" x2="200" y2="200"/>
+    <line x1="760" y1="290" x2="1000" y2="350"/>
+    <line x1="600" y1="490" x2="600" y2="550"/>
+    <line x1="500" y1="150" x2="300" y2="100"/>
+    <line x1="700" y1="150" x2="900" y2="100"/>
+  </g>
+  
+  <!-- Floating dots -->
+  <g opacity="0.5">
+    <circle cx="200" cy="200" r="3" fill="#34d399"/>
+    <circle cx="1000" cy="350" r="3" fill="#6ee7b7"/>
+    <circle cx="300" cy="100" r="2.5" fill="#10b981"/>
+    <circle cx="900" cy="100" r="2.5" fill="#34d399"/>
+    <circle cx="600" cy="550" r="3" fill="#6ee7b7"/>
+    <circle cx="150" cy="450" r="2" fill="#10b981"/>
+    <circle cx="1050" cy="200" r="2" fill="#34d399"/>
+  </g>
+  
+  <!-- Brand text -->
+  <g transform="translate(600, 560)">
+    <text x="0" y="0" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#34d399" letter-spacing="6" opacity="0.7">SECUREVAULT</text>
+  </g>
+  
+  <!-- Top left accent -->
+  <g transform="translate(60, 50)">
+    <rect width="4" height="32" rx="2" fill="#059669" opacity="0.6"/>
+    <rect x="10" width="4" height="20" rx="2" fill="#10b981" opacity="0.4"/>
+  </g>
+  
+  <!-- Security badge -->
+  <g transform="translate(1050, 575)">
+    <rect x="0" y="-14" width="90" height="22" rx="11" fill="#059669" opacity="0.15"/>
+    <text x="45" y="2" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#34d399" opacity="0.6">v5.0.3</text>
+  </g>
+</svg>

@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0c0a09"/>
+      <stop offset="100%" stop-color="#1a1208"/>
+    </linearGradient>
+    <linearGradient id="amber1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="amber2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+    <linearGradient id="amber3" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#92400e"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur1">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="50"/>
+    </filter>
+    <filter id="blur2">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15"/>
+    </filter>
+    <pattern id="scanlines" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="2" fill="transparent"/>
+      <rect y="2" width="4" height="2" fill="#000" opacity="0.03"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  <rect width="1200" height="630" fill="url(#scanlines)"/>
+  
+  <!-- Ambient glow -->
+  <ellipse cx="600" cy="300" rx="500" ry="300" fill="url(#glow1)" filter="url(#blur1)"/>
+  
+  <!-- Terminal window -->
+  <g transform="translate(300, 80)">
+    <!-- Terminal body -->
+    <rect width="600" height="420" rx="16" fill="#1a1208" stroke="#f59e0b" stroke-width="0.5" stroke-opacity="0.2"/>
+    <rect width="600" height="420" rx="16" fill="none" stroke="#f59e0b" stroke-width="0.3" stroke-opacity="0.1" stroke-dasharray="4,4"/>
+    
+    <!-- Title bar -->
+    <rect width="600" height="48" rx="16" fill="#0c0a09"/>
+    <rect y="16" width="600" height="32" fill="#0c0a09"/>
+    <line x1="0" y1="48" x2="600" y2="48" stroke="#f59e0b" stroke-width="0.3" stroke-opacity="0.2"/>
+    
+    <!-- Window dots -->
+    <circle cx="24" cy="24" r="6" fill="#ef4444" opacity="0.7"/>
+    <circle cx="44" cy="24" r="6" fill="#f59e0b" opacity="0.7"/>
+    <circle cx="64" cy="24" r="6" fill="#22c55e" opacity="0.7"/>
+    
+    <!-- Title -->
+    <text x="300" y="29" text-anchor="middle" font-family="'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="13" fill="#f59e0b" opacity="0.5">codeforge — ~/projects</text>
+    
+    <!-- Code lines -->
+    <g font-family="'SF Mono', 'Fira Code', 'Cascadia Code', monospace" font-size="14">
+      <!-- Line 1 -->
+      <text x="24" y="80" fill="#6b7280" opacity="0.4">1</text>
+      <text x="52" y="80" fill="#f59e0b" opacity="0.7">const</text>
+      <text x="108" y="80" fill="#fbbf24" opacity="0.8"> forge</text>
+      <text x="170" y="80" fill="#6b7280" opacity="0.4">=</text>
+      <text x="190" y="80" fill="#f59e0b" opacity="0.6">async</text>
+      <text x="250" y="80" fill="#fb923c" opacity="0.7">(</text>
+      <text x="258" y="80" fill="#fbbf24" opacity="0.8">config</text>
+      <text x="328" y="80" fill="#fb923c" opacity="0.7">)</text>
+      <text x="340" y="80" fill="#fb923c" opacity="0.6"> =&gt; {</text>
+      
+      <!-- Line 2 -->
+      <text x="24" y="108" fill="#6b7280" opacity="0.4">2</text>
+      <text x="52" y="108" fill="#6b7280" opacity="0.3">  // Initialize the build pipeline</text>
+      
+      <!-- Line 3 -->
+      <text x="24" y="136" fill="#6b7280" opacity="0.4">3</text>
+      <text x="52" y="136" fill="#6b7280" opacity="0.3">  </text>
+      <text x="68" y="136" fill="#f59e0b" opacity="0.6">const</text>
+      <text x="124" y="136" fill="#fbbf24" opacity="0.8"> pipeline</text>
+      <text x="208" y="136" fill="#6b7280" opacity="0.4">=</text>
+      <text x="228" y="136" fill="#fb923c" opacity="0.6">new</text>
+      <text x="262" y="136" fill="#fbbf24" opacity="0.7"> Pipeline</text>
+      <text x="340" y="136" fill="#fb923c" opacity="0.6">({</text>
+      
+      <!-- Line 4 -->
+      <text x="24" y="164" fill="#6b7280" opacity="0.4">4</text>
+      <text x="52" y="164" fill="#6b7280" opacity="0.3">    </text>
+      <text x="68" y="164" fill="#fbbf24" opacity="0.6">optimize</text>
+      <text x="140" y="164" fill="#fb923c" opacity="0.5">:</text>
+      <text x="152" y="164" fill="#22c55e" opacity="0.7">true</text>
+      <text x="182" y="164" fill="#fb923c" opacity="0.5">,</text>
+      
+      <!-- Line 5 -->
+      <text x="24" y="192" fill="#6b7280" opacity="0.4">5</text>
+      <text x="52" y="192" fill="#6b7280" opacity="0.3">    </text>
+      <text x="68" y="192" fill="#fbbf24" opacity="0.6">parallel</text>
+      <text x="148" y="192" fill="#fb923c" opacity="0.5">:</text>
+      <text x="160" y="192" fill="#22c55e" opacity="0.7">true</text>
+      <text x="190" y="192" fill="#fb923c" opacity="0.5">,</text>
+      
+      <!-- Line 6 -->
+      <text x="24" y="220" fill="#6b7280" opacity="0.4">6</text>
+      <text x="52" y="220" fill="#6b7280" opacity="0.3">  });</text>
+      
+      <!-- Line 7 -->
+      <text x="24" y="248" fill="#6b7280" opacity="0.4">7</text>
+      
+      <!-- Line 8 -->
+      <text x="24" y="276" fill="#6b7280" opacity="0.4">8</text>
+      <text x="52" y="276" fill="#6b7280" opacity="0.3">  </text>
+      <text x="68" y="276" fill="#f59e0b" opacity="0.6">const</text>
+      <text x="124" y="276" fill="#fbbf24" opacity="0.8"> result</text>
+      <text x="196" y="276" fill="#6b7280" opacity="0.4">=</text>
+      <text x="216" y="276" fill="#fb923c" opacity="0.6">await</text>
+      <text x="272" y="276" fill="#fbbf24" opacity="0.7"> pipeline</text>
+      <text x="350" y="276" fill="#fb923c" opacity="0.5">.</text>
+      <text x="360" y="276" fill="#fbbf24" opacity="0.7">build</text>
+      <text x="404" y="276" fill="#fb923c" opacity="0.6">();</text>
+      
+      <!-- Line 9 -->
+      <text x="24" y="304" fill="#6b7280" opacity="0.4">9</text>
+      <text x="52" y="304" fill="#6b7280" opacity="0.3">  </text>
+      <text x="68" y="304" fill="#f59e0b" opacity="0.5">return</text>
+      <text x="130" y="304" fill="#fbbf24" opacity="0.8"> result</text>
+      <text x="202" y="304" fill="#fb923c" opacity="0.5">.</text>
+      <text x="212" y="304" fill="#fbbf24" opacity="0.7">bundle</text>
+      <text x="270" y="304" fill="#fb923c" opacity="0.5">;</text>
+      
+      <!-- Line 10 -->
+      <text x="24" y="332" fill="#6b7280" opacity="0.4">10</text>
+      <text x="52" y="332" fill="#fb923c" opacity="0.6">};</text>
+    </g>
+    
+    <!-- Cursor blink -->
+    <rect x="310" y="270" width="8" height="18" fill="#f59e0b" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;0;0.8" dur="1.2s" repeatCount="indefinite"/>
+    </rect>
+    
+    <!-- Bottom status bar -->
+    <rect y="392" width="600" height="28" rx="0" fill="#0c0a09" opacity="0.8"/>
+    <rect y="404" width="600" height="16" rx="16" fill="#0c0a09"/>
+    <text x="24" y="410" font-family="'SF Mono', monospace" font-size="10" fill="#f59e0b" opacity="0.4">TypeScript</text>
+    <text x="576" y="410" text-anchor="end" font-family="'SF Mono', monospace" font-size="10" fill="#22c55e" opacity="0.5">✓ 0 errors</text>
+  </g>
+  
+  <!-- Decorative code brackets floating -->
+  <g opacity="0.08" fill="#f59e0b" font-family="'SF Mono', monospace" font-size="200" font-weight="200">
+    <text x="50" y="400">&lt;/&gt;</text>
+  </g>
+  
+  <!-- Floating particles -->
+  <g opacity="0.4">
+    <circle cx="150" cy="150" r="2" fill="#f59e0b"/>
+    <circle cx="1050" cy="200" r="2.5" fill="#fbbf24"/>
+    <circle cx="980" cy="450" r="2" fill="#f59e0b"/>
+    <circle cx="200" cy="500" r="1.5" fill="#fb923c"/>
+    <circle cx="1100" cy="350" r="2" fill="#fbbf24"/>
+    <circle cx="120" cy="300" r="1.5" fill="#f59e0b"/>
+  </g>
+  
+  <!-- Brand text -->
+  <g transform="translate(600, 560)">
+    <text x="0" y="0" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="22" font-weight="600" fill="#f59e0b" letter-spacing="6" opacity="0.7">CODEFORGE</text>
+  </g>
+  
+  <!-- Top left accent -->
+  <g transform="translate(60, 50)">
+    <rect width="4" height="32" rx="2" fill="#f59e0b" opacity="0.6"/>
+    <rect x="10" width="4" height="20" rx="2" fill="#fb923c" opacity="0.4"/>
+  </g>
+  
+  <!-- Version tag -->
+  <g transform="translate(1050, 575)">
+    <rect x="0" y="-14" width="90" height="22" rx="11" fill="#f59e0b" opacity="0.15"/>
+    <text x="45" y="2" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#f59e0b" opacity="0.6">v4.0.0</text>
+  </g>
+</svg>
