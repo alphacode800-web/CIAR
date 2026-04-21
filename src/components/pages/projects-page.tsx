@@ -102,13 +102,19 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
       {/* Background decorative elements */}
       <div className="absolute inset-0 dot-pattern opacity-40 pointer-events-none" aria-hidden="true" />
       <div
-        className="absolute -top-40 -start-40 w-80 h-80 rounded-full bg-emerald-500/10 blur-[100px] pointer-events-none"
+        className="absolute -top-40 -start-40 w-80 h-80 rounded-full bg-[oklch(0.78_0.14_82/10%)] blur-[100px] pointer-events-none"
         aria-hidden="true"
       />
       <div
         className="absolute top-1/2 -end-40 w-96 h-96 rounded-full bg-violet-500/8 blur-[120px] pointer-events-none"
         aria-hidden="true"
       />
+
+      {/* Hero-style background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <img src="/images/hero-bg.png" alt="" className="w-full h-64 object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.10_0.025_265/80%)] to-transparent" />
+      </div>
 
       <div className="relative z-10">
         {/* ── Section Header ────────────────────────────────────────────── */}
@@ -122,7 +128,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
             variant="secondary"
             className="glass px-4 py-1.5 text-sm mb-4 border border-border/30"
           >
-            <Sparkles className="h-3.5 w-3.5 me-1.5 text-emerald-500" />
+            <Sparkles className="h-3.5 w-3.5 me-1.5 text-[oklch(0.78_0.14_82)]" />
             {t("projects.featured")}
           </Badge>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
@@ -151,7 +157,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                 "h-12 ps-12 pe-4 text-base rounded-2xl",
                 "glass-subtle border-border/30",
                 "bg-transparent",
-                "focus-visible:border-emerald-500/50 focus-visible:ring-emerald-500/20",
+                "focus-visible:border-[oklch(0.78_0.14_82/40%)] focus-visible:ring-[oklch(0.78_0.14_82/20%)]",
                 "transition-all duration-300"
               )}
             />
@@ -172,7 +178,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
               className={cn(
                 "shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border",
                 activeCategory === ""
-                  ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                  ? "bg-[oklch(0.78_0.14_82)]/15 text-[oklch(0.78_0.14_82)] border-[oklch(0.78_0.14_82/25%)]"
                   : "glass-subtle text-muted-foreground border-border/20 hover:text-foreground hover:border-border/40"
               )}
             >
@@ -186,7 +192,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                 className={cn(
                   "shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border",
                   activeCategory === cat
-                    ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                    ? "bg-[oklch(0.78_0.14_82)]/15 text-[oklch(0.78_0.14_82)] border-[oklch(0.78_0.14_82/25%)]"
                     : "glass-subtle text-muted-foreground border-border/20 hover:text-foreground hover:border-border/40"
                 )}
               >
@@ -254,7 +260,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                       className={cn(
                         "group relative w-full rounded-2xl overflow-hidden",
                         "border border-border/30 bg-card/50",
-                        "hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/5",
+                        "hover:border-[oklch(0.78_0.14_82/25%)] hover:shadow-xl hover:shadow-[oklch(0.78_0.14_82/5%)]",
                         "transition-all duration-500 text-start card-spotlight"
                       )}
                     >
@@ -267,8 +273,8 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-cyan-500/5 flex items-center justify-center">
-                            <span className="text-6xl font-bold gradient-text/30">
+                          <div className="w-full h-full bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] via-[oklch(0.72_0.12_75/10%)] to-[oklch(0.78_0.14_82/5%)] flex items-center justify-center">
+                            <span className="text-6xl font-bold gradient-text/20">
                               {tr.name[0]}
                             </span>
                           </div>
@@ -304,7 +310,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
 
                       {/* ── Content Area ─────────────────────────────────── */}
                       <div className="p-5 relative z-10">
-                        <h3 className="font-semibold text-lg group-hover:text-emerald-400 transition-colors duration-300">
+                        <h3 className="font-semibold text-lg group-hover:text-[oklch(0.78_0.14_82)] transition-colors duration-300">
                           {tr.name}
                         </h3>
                         <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
@@ -340,8 +346,8 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                             <Eye className="h-3.5 w-3.5" />
                             {p.views.toLocaleString()}
                           </span>
-                          <span className="text-xs text-emerald-500/70 group-hover:text-emerald-400 transition-colors flex items-center gap-1">
-                            View Details
+                          <span className="text-xs text-[oklch(0.78_0.14_82)]/70 group-hover:text-[oklch(0.78_0.14_82)] transition-colors flex items-center gap-1">
+                            {t("projects.view_details")}
                             <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                           </span>
                         </div>

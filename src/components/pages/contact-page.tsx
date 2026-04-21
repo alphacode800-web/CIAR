@@ -75,13 +75,13 @@ function InfoCard({
     <div
       className={cn(
         "rounded-2xl border border-border/50 glass-subtle p-5 transition-all duration-300",
-        "hover:border-emerald-500/20 hover:shadow-[0_0_24px_oklch(0.75_0.15_160/6%)]",
+        "hover:border-[oklch(0.78_0.14_82/20%)] hover:shadow-[0_0_24px_oklch(0.78_0.14_82/6%)]",
         className
       )}
     >
       <div className="flex items-start gap-4">
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center shrink-0">
-          <Icon className="h-5 w-5 text-emerald-400" />
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.12_75/10%)] flex items-center justify-center shrink-0">
+          <Icon className="h-5 w-5 text-[oklch(0.82_0.145_85)]" />
         </div>
         <div className="min-w-0">
           <p className="text-sm font-medium text-foreground">{label}</p>
@@ -156,7 +156,7 @@ export function ContactPage() {
   const inputClasses = (field: keyof FieldErrors) =>
     cn(
       "rounded-xl border-border/50 glass-subtle bg-background/60",
-      "focus:ring-emerald-500/30 focus:border-emerald-500/50",
+      "focus:ring-[oklch(0.78_0.14_82/30%)] focus:border-[oklch(0.78_0.14_82/40%)]",
       "placeholder:text-muted-foreground/60",
       "transition-all duration-200",
       errors[field] && "border-destructive focus:ring-destructive/30 focus:border-destructive/50"
@@ -177,13 +177,13 @@ export function ContactPage() {
         <div
           className={cn(
             "absolute top-20 -start-32 h-[350px] w-[350px] rounded-full blur-3xl animate-float",
-            "bg-gradient-to-br from-emerald-500/15 to-teal-500/10"
+            "bg-gradient-to-br from-[oklch(0.78_0.14_82/15%)] to-[oklch(0.72_0.12_75/10%)]"
           )}
         />
         <div
           className={cn(
             "absolute bottom-10 -end-32 h-[300px] w-[300px] rounded-full blur-3xl animate-float-delayed",
-            "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5"
+            "bg-gradient-to-br from-[oklch(0.55_0.15_280/10%)] to-[oklch(0.65_0.2_330/5%)]"
           )}
         />
 
@@ -213,7 +213,7 @@ export function ContactPage() {
         <div
           className={cn(
             "absolute top-0 start-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full blur-3xl pointer-events-none",
-            "bg-gradient-to-br from-emerald-500/8 to-teal-500/5"
+            "bg-gradient-to-br from-[oklch(0.78_0.14_82/8%)] to-[oklch(0.72_0.12_75/5%)]"
           )}
         />
 
@@ -241,13 +241,13 @@ export function ContactPage() {
                 label={t("contact.response_title")}
                 value={t("contact.response_text")}
               >
-                {/* Pulsing green dot indicator */}
+                {/* Pulsing gold dot indicator */}
                 <div className="flex items-center gap-2 mt-2">
                   <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[oklch(0.82_0.145_85)] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[oklch(0.78_0.14_82)]" />
                   </span>
-                  <span className="text-xs text-emerald-500 font-medium">
+                  <span className="text-xs text-[oklch(0.78_0.14_82)] font-medium">
                     {t("contact.response_active")}
                   </span>
                 </div>
@@ -338,8 +338,8 @@ export function ContactPage() {
                   type="submit"
                   disabled={sending}
                   className={cn(
-                    "w-full gap-2 bg-gradient-to-r from-emerald-500 to-teal-600",
-                    "hover:from-emerald-600 hover:to-teal-700",
+                    "w-full gap-2 bg-gradient-to-r from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)]",
+                    "hover:from-[oklch(0.72_0.13_75)] hover:to-[oklch(0.65_0.12_75)]",
                     "text-white rounded-xl py-5 text-sm font-medium",
                     "transition-all duration-300 btn-glow"
                   )}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, ChevronDown, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -35,18 +35,16 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    const observer = () => {
-      if (prevRouteRef.current !== route.page) {
-        prevRouteRef.current = route.page
-        setMobileOpen(false)
-      }
+  // Close mobile menu when route changes
+  const [prevRouteState, setPrevRouteState] = useState(route.page)
+  if (prevRouteState !== route.page) {
+    setPrevRouteState(route.page)
+    if (mobileOpen) {
+      // Use a micro-task to avoid synchronous setState during render
+      queueMicrotask(() => setMobileOpen(false))
     }
-    observer()
-  }, [route.page])
+  }
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden"
@@ -68,50 +66,39 @@ export function Navbar() {
       className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-out",
         scrolled
-          ? "glass-strong border-b border-border/50 shadow-lg shadow-black/[0.03]"
+          ? "glass-strong border-b border-[oklch(0.78_0.14_82/15%)] shadow-lg shadow-black/10"
           : "bg-transparent"
       )}
     >
-      {/* Subtle bottom border gradient when not scrolled */}
       {!scrolled && (
-        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[oklch(0.78_0.14_82/30%)] to-transparent" />
       )}
 
       <nav
         dir={dir}
         className="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 h-18"
       >
-        {/* Logo with geometric hexagon icon */}
+        {/* Logo */}
         <button
           onClick={() => navigate({ page: "home" })}
-          className="flex items-center gap-2.5 group"
+          className="flex items-center gap-3 group"
         >
-          {/* Hexagon logo mark */}
-          <svg
-            viewBox="0 0 32 36"
-            className="h-7 w-7 transition-transform duration-500 group-hover:scale-110"
-            fill="none"
-          >
-            <defs>
-              <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="oklch(0.75 0.15 160)" />
-                <stop offset="50%" stopColor="oklch(0.7 0.18 200)" />
-                <stop offset="100%" stopColor="oklch(0.7 0.18 280)" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M16 0L30 9V27L16 36L2 27V9L16 0Z"
-              fill="url(#logo-grad)"
-              opacity="0.9"
-            />
-            <path
-              d="M16 6L24 11V21L16 26L8 21V11L16 6Z"
-              fill="currentColor"
-              className="text-background"
-              opacity="0.9"
-            />
-          </svg>
-          <span className="font-bold text-xl gradient-text tracking-tight">NexusLabs</span>
+          {/* CIAR logo mark — geometric diamond */}
+          <div className="relative h-9 w-9 flex items-center justify-center">
+            <svg viewBox="0 0 36 36" className="h-8 w-8 transition-transform duration-500 group-hover:scale-110" fill="none">
+              <defs>
+                <linearGradient id="ciar-logo" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="oklch(0.82 0.145 85)" />
+                  <stop offset="50%" stopColor="oklch(0.78 0.14 82)" />
+                  <stop offset="100%" stopColor="oklch(0.70 0.13 72)" />
+                </linearGradient>
+              </defs>
+              <path d="M18 2L33 10V26L18 34L3 26V10L18 2Z" fill="url(#ciar-logo)" opacity="0.15" />
+              <path d="M18 6L29 12V24L18 30L7 24V12L18 6Z" fill="url(#ciar-logo)" opacity="0.9" />
+              <text x="18" y="20.5" textAnchor="middle" fontSize="10" fontWeight="700" fill="oklch(0.12 0.03 265)" fontFamily="var(--font-geist-sans)">C</text>
+            </svg>
+          </div>
+          <span className="font-bold text-xl tracking-wider gradient-text">CIAR</span>
         </button>
 
         {/* Desktop nav */}
@@ -132,7 +119,10 @@ export function Navbar() {
                 {isActive && (
                   <motion.span
                     layoutId="nav-indicator"
-                    className="absolute bottom-0 left-1 right-1 h-0.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 rounded-full"
+                    className="absolute bottom-0 left-1 right-1 h-0.5 rounded-full"
+                    style={{
+                      background: "linear-gradient(90deg, oklch(0.82 0.145 85), oklch(0.78 0.14 82), oklch(0.70 0.13 72))",
+                    }}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
@@ -144,7 +134,6 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-          {/* Language switcher with ring glow */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -153,8 +142,8 @@ export function Navbar() {
                 className={cn(
                   "gap-1.5 text-muted-foreground hover:text-foreground",
                   "transition-all duration-300",
-                  "hover:ring-2 hover:ring-emerald-500/20 hover:bg-emerald-500/5",
-                  "focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                  "hover:ring-2 hover:ring-[oklch(0.78_0.14_82/20%)] hover:bg-[oklch(0.78_0.14_82/5%)]",
+                  "focus-visible:ring-2 focus-visible:ring-[oklch(0.78_0.14_82/30%)]"
                 )}
               >
                 <Globe className="h-4 w-4" />
@@ -162,7 +151,7 @@ export function Navbar() {
                 <ChevronDown className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44 glass-strong border-border/30">
+            <DropdownMenuContent align="end" className="w-44 glass-strong border-[oklch(0.78_0.14_82/20%)]">
               {ALL_LOCALES.map((loc) => (
                 <DropdownMenuItem
                   key={loc}
@@ -170,21 +159,20 @@ export function Navbar() {
                   className={cn(
                     "cursor-pointer transition-colors duration-200",
                     locale === loc
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium"
+                      ? "bg-[oklch(0.78_0.14_82/10%)] text-[oklch(0.78_0.14_82)] font-medium"
                       : ""
                   )}
                 >
                   <span className="font-mono text-xs uppercase w-8">{loc}</span>
                   <span className="ms-2">{LOCALE_NAMES[loc]}</span>
                   {locale === loc && (
-                    <span className="ms-auto h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <span className="ms-auto h-1.5 w-1.5 rounded-full bg-[oklch(0.78_0.14_82)]" />
                   )}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Mobile menu button */}
           <Button
             variant="ghost"
             size="icon"
@@ -219,11 +207,10 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu with glass-strong backdrop */}
+      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -232,14 +219,13 @@ export function Navbar() {
               className="fixed inset-0 top-18 bg-background/60 backdrop-blur-sm md:hidden"
               onClick={() => setMobileOpen(false)}
             />
-            {/* Menu panel */}
             <motion.div
               dir={dir}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="md:hidden glass-strong border-b border-border/30 overflow-hidden"
+              className="md:hidden glass-strong border-b border-[oklch(0.78_0.14_82/20%)] overflow-hidden"
             >
               <div className="px-6 py-5 space-y-1">
                 {NAV_ITEMS.map((item, index) => {
@@ -258,13 +244,10 @@ export function Navbar() {
                         "flex w-full items-center rounded-xl px-4 py-3.5 text-sm font-medium",
                         "transition-all duration-300",
                         isActive
-                          ? "bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                          ? "bg-gradient-to-r from-[oklch(0.78_0.14_82/10%)] to-[oklch(0.72_0.13_75/10%)] text-[oklch(0.78_0.14_82)] border border-[oklch(0.78_0.14_82/20%)]"
                           : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground border border-transparent"
                       )}
                     >
-                      {isActive && (
-                        <span className="absolute start-2 h-6 w-0.5 rounded-full bg-gradient-to-b from-emerald-500 to-teal-500" />
-                      )}
                       <span className="relative z-10">{t(item.key)}</span>
                     </motion.button>
                   )

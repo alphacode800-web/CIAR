@@ -125,13 +125,13 @@ export function AboutPage() {
         <div
           className={cn(
             "absolute top-10 -end-32 h-[400px] w-[400px] rounded-full blur-3xl animate-float",
-            "bg-gradient-to-br from-emerald-500/15 to-teal-500/10"
+            "bg-gradient-to-br from-[oklch(0.78_0.14_82/15%)] to-[oklch(0.72_0.12_75/10%)]"
           )}
         />
         <div
           className={cn(
             "absolute bottom-10 -start-32 h-[350px] w-[350px] rounded-full blur-3xl animate-float-delayed",
-            "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5"
+            "bg-gradient-to-br from-[oklch(0.55_0.15_280)]/10 to-[oklch(0.65_0.2_330)]/5"
           )}
         />
 
@@ -158,9 +158,9 @@ export function AboutPage() {
         {/* ── Mission & Vision ─────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <AnimatedSection delay={0.1}>
-            <SpotlightCard className="rounded-2xl border border-border/50 glass-subtle p-8 sm:p-10 h-full transition-all duration-300 hover:border-emerald-500/30 hover:shadow-[0_0_30px_oklch(0.75_0.15_160/8%)]">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center mb-6">
-                <Target className="h-6 w-6 text-emerald-400" />
+            <SpotlightCard className="rounded-2xl border border-border/50 glass-subtle p-8 sm:p-10 h-full transition-all duration-300 hover:border-[oklch(0.78_0.14_82/25%)] hover:shadow-[0_0_30px_oklch(0.78_0.14_82/8%)]">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.12_75/10%)] flex items-center justify-center mb-6">
+                <Target className="h-6 w-6 text-[oklch(0.82_0.145_85)]" />
               </div>
               <h2 className="text-xl font-semibold mb-3">
                 {t("about.mission_title")}
@@ -172,9 +172,9 @@ export function AboutPage() {
           </AnimatedSection>
 
           <AnimatedSection delay={0.2}>
-            <SpotlightCard className="rounded-2xl border border-border/50 glass-subtle p-8 sm:p-10 h-full transition-all duration-300 hover:border-violet-500/30 hover:shadow-[0_0_30px_oklch(0.7_0.18_280/8%)]">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 flex items-center justify-center mb-6">
-                <Lightbulb className="h-6 w-6 text-violet-400" />
+            <SpotlightCard className="rounded-2xl border border-border/50 glass-subtle p-8 sm:p-10 h-full transition-all duration-300 hover:border-[oklch(0.55_0.15_280/25%)] hover:shadow-[0_0_30px_oklch(0.55_0.15_280/8%)]">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[oklch(0.55_0.15_280)]/20 to-[oklch(0.65_0.2_330)]/10 flex items-center justify-center mb-6">
+                <Lightbulb className="h-6 w-6 text-[oklch(0.70_0.15_280)]" />
               </div>
               <h2 className="text-xl font-semibold mb-3">
                 {t("about.vision_title")}
@@ -203,9 +203,9 @@ export function AboutPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {VALUES.map((value, i) => (
             <AnimatedSection key={value.titleKey} delay={i * 0.08}>
-              <SpotlightCard className="rounded-2xl border border-border/50 glass-subtle p-6 h-full transition-all duration-300 hover:border-border hover:shadow-[0_0_20px_oklch(0.75_0.15_160/5%)]">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center mb-4">
-                  <value.icon className="h-5 w-5 text-emerald-400" />
+              <SpotlightCard className="rounded-2xl border border-border/50 glass-subtle p-6 h-full transition-all duration-300 hover:border-border hover:shadow-[0_0_20px_oklch(0.78_0.14_82/5%)]">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.12_75/10%)] flex items-center justify-center mb-4">
+                  <value.icon className="h-5 w-5 text-[oklch(0.82_0.145_85)]" />
                 </div>
                 <h3 className="font-semibold mb-2">{t(value.titleKey)}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">

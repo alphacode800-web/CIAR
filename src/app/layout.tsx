@@ -17,23 +17,24 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "NexusLabs — Building the Future of Digital Products",
+  title: "CIAR — Building Digital Platforms That Serve Millions",
   description:
-    "NexusLabs is a technology company building world-class digital products across infrastructure, analytics, AI, design tools, and developer platforms.",
+    "CIAR is a leading services company that builds and manages a diverse portfolio of digital platforms — from real estate and car rental to e-commerce, tourism, and beyond.",
   keywords: [
-    "NexusLabs",
-    "tech company",
-    "digital products",
-    "SaaS",
-    "cloud",
-    "AI",
-    "developer tools",
+    "CIAR",
+    "services company",
+    "digital platforms",
+    "real estate",
+    "car rental",
+    "e-commerce",
+    "tourism",
+    "food delivery",
   ],
-  authors: [{ name: "NexusLabs" }],
+  authors: [{ name: "CIAR" }],
   openGraph: {
-    title: "NexusLabs — Building the Future of Digital Products",
+    title: "CIAR — Building Digital Platforms That Serve Millions",
     description:
-      "A technology company building world-class digital products.",
+      "A leading services company building innovative digital platforms across diverse industries.",
     type: "website",
   },
 }

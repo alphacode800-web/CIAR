@@ -111,7 +111,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
       {/* Background decorative elements */}
       <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" aria-hidden="true" />
       <div
-        className="absolute -top-20 -start-20 w-72 h-72 rounded-full bg-emerald-500/10 blur-[100px] pointer-events-none"
+        className="absolute -top-20 -start-20 w-72 h-72 rounded-full bg-[oklch(0.78_0.14_82/10%)] blur-[100px] pointer-events-none"
         aria-hidden="true"
       />
       <div
@@ -119,7 +119,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
         aria-hidden="true"
       />
       <div
-        className="absolute bottom-0 start-1/4 w-64 h-64 rounded-full bg-teal-500/6 blur-[100px] pointer-events-none"
+        className="absolute bottom-0 start-1/4 w-64 h-64 rounded-full bg-[oklch(0.72_0.12_75/6%)] blur-[100px] pointer-events-none"
         aria-hidden="true"
       />
 
@@ -147,7 +147,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
           variants={fadeUp}
           className="relative rounded-2xl overflow-hidden mb-8 border border-border/30 shadow-2xl shadow-black/20"
         >
-          <div className="aspect-video bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-cyan-500/5 flex items-center justify-center">
+          <div className="aspect-video bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] via-[oklch(0.72_0.12_75/10%)] to-[oklch(0.78_0.14_82/5%)] flex items-center justify-center">
             {project.imageUrl ? (
               <img
                 src={project.imageUrl}
@@ -155,7 +155,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-9xl font-bold gradient-text/30">
+              <span className="text-9xl font-bold gradient-text/20">
                 {tr.name[0]}
               </span>
             )}
@@ -208,7 +208,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
           className="mb-2"
         >
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-emerald-500" />
+            <BookOpen className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
             {t("project.about")}
           </h2>
           {tr.description ? (
@@ -233,7 +233,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
             className="mb-2"
           >
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Cpu className="h-4 w-4 text-emerald-500" />
+              <Cpu className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
               {t("project.technologies")}
             </h2>
             <div className="glass-subtle rounded-2xl border border-border/20 p-5">
@@ -244,7 +244,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
                     variant="outline"
                     className={cn(
                       "px-3 py-1.5 border-border/30 text-sm font-normal",
-                      "hover:border-emerald-500/50 hover:text-emerald-400",
+                      "hover:border-[oklch(0.78_0.14_82/40%)] hover:text-[oklch(0.78_0.14_82)]",
                       "transition-all duration-300 cursor-default"
                     )}
                   >
@@ -292,9 +292,9 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
               asChild
               className={cn(
                 "gap-2 rounded-xl px-8 py-3 text-base font-medium",
-                "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500",
-                "hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600",
-                "text-white shadow-lg shadow-emerald-500/25",
+                "bg-gradient-to-r from-[oklch(0.78_0.14_82)] via-[oklch(0.72_0.12_75)] to-[oklch(0.78_0.14_82)]",
+                "hover:from-[oklch(0.72_0.13_75)] hover:via-[oklch(0.65_0.12_75)] hover:to-[oklch(0.72_0.13_75)]",
+                "text-white shadow-lg shadow-[oklch(0.78_0.14_82/25%)]",
                 "btn-glow",
                 "transition-all duration-300"
               )}
