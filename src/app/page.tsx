@@ -1,159 +1,175 @@
 "use client"
 
-import { useEffect, useState, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, lazy, Suspense } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { Hero } from "@/components/sections/hero"
-import { FeaturedProjects } from "@/components/sections/featured-projects"
-import { ProjectsGrid } from "@/components/sections/projects-grid"
-import { ProjectDetail } from "@/components/sections/project-detail"
-import { AboutSection } from "@/components/sections/about-section"
-import { ContactSection } from "@/components/sections/contact-section"
-import { Separator } from "@/components/ui/separator"
-import type { Project } from "@/components/sections/featured-projects"
+import { useI18n } from "@/lib/i18n-context"
+import { useRouter } from "@/lib/router-context"
+import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
+import { Skeleton } from "@/components/ui/skeleton"
 
-interface Stats {
-  totalViews: number
-  totalProjects: number
+const HomePage = lazy(() => import("@/components/pages/home-page").then(m => ({ default: m.HomePage })))
+const ProjectsPage = lazy(() => import("@/components/pages/projects-page").then(m => ({ default: m.ProjectsPage })))
+const ProjectDetailsPage = lazy(() => import("@/components/pages/project-details-page").then(m => ({ default: m.ProjectDetailsPage })))
+const AboutPage = lazy(() => import("@/components/pages/about-page").then(m => ({ default: m.AboutPage })))
+const ContactPage = lazy(() => import("@/components/pages/contact-page").then(m => ({ default: m.ContactPage })))
+const AdminPage = lazy(() => import("@/components/pages/admin-page").then(m => ({ default: m.AdminPage })))
+
+interface Project {
+  id: string
+  slug: string
+  imageUrl: string
+  category: string
+  featured: boolean
+  published: boolean
+  externalUrl: string
+  tags: string
+  views: number
+  translations: { locale: string; name: string; tagline: string; description: string }[]
 }
 
-export default function Home() {
+const PageSkeleton = () => (
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 space-y-6">
+    <Skeleton className="h-12 w-64 mx-auto" />
+    <Skeleton className="h-6 w-96 mx-auto" />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Skeleton key={i} className="h-80 rounded-2xl" />
+      ))}
+    </div>
+  </div>
+)
+
+export default function Page() {
+  const { locale, dir } = useI18n()
+  const { route } = useRouter()
+  const [stats, setStats] = useState({ totalProjects: 0, totalViews: 0 })
   const [projects, setProjects] = useState<Project[]>([])
   const [categories, setCategories] = useState<string[]>([])
-  const [stats, setStats] = useState<Stats>({ totalViews: 0, totalProjects: 0 })
-  const [activeSection, setActiveSection] = useState("home")
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
-  const [detailOpen, setDetailOpen] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  // Fetch all data
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/projects")
-        const data = await res.json()
-        setProjects(data.projects)
-        setCategories(data.categories)
-        setStats(data.stats)
-      } catch (err) {
-        console.error("Failed to fetch projects:", err)
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/projects?locale=${locale}`)
+      const data = await res.json()
+      setProjects(data.projects || [])
+      setCategories(data.categories || [])
+      setStats(data.stats || { totalProjects: 0, totalViews: 0 })
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false)
     }
+  }, [locale])
+
+  useEffect(() => {
     fetchData()
-  }, [])
+  }, [fetchData])
 
-  // Intersection observer for active section
   useEffect(() => {
-    const sections = ["home", "projects", "about", "contact"]
-    const observers: IntersectionObserver[] = []
+    document.documentElement.dir = dir
+    document.documentElement.lang = locale
+  }, [dir, locale])
 
-    sections.forEach((id) => {
-      const el = document.getElementById(id)
-      if (!el) return
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setActiveSection(id)
-          }
-        },
-        { rootMargin: "-40% 0px -50% 0px" }
-      )
-
-      observer.observe(el)
-      observers.push(observer)
-    })
-
-    return () => observers.forEach((o) => o.disconnect())
-  }, [])
-
-  // Navigation handler
-  const handleNavigate = useCallback((section: string) => {
-    const el = document.getElementById(section)
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [])
-
-  // Project detail handler
-  const handleSelectProject = useCallback((slug: string) => {
-    setSelectedSlug(slug)
-    setDetailOpen(true)
-  }, [])
-
-  const handleCloseDetail = useCallback(() => {
-    setDetailOpen(false)
-    setTimeout(() => setSelectedSlug(null), 300)
-  }, [])
-
-  const selectedProject = projects.find((p) => p.slug === selectedSlug) || null
+  const isAdmin = route.page === "admin"
 
   return (
-    <div className="min-h-screen">
-      <Navbar activeSection={activeSection} onNavigate={handleNavigate} />
+    <div className="min-h-screen flex flex-col" dir={dir}>
+      {!isAdmin && <Navbar />}
 
-      {/* Main content */}
-      <main>
-        {/* Hero */}
-        <Hero
-          onExplore={() => handleNavigate("projects")}
-          stats={stats}
-        />
+      <main className="flex-1">
+        <AnimatePresence mode="wait">
+          {route.page === "home" && (
+            <motion.div
+              key="home"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <HomePage stats={stats} />
+              </Suspense>
+            </motion.div>
+          )}
 
-        {/* Divider */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Separator className="opacity-50" />
-        </div>
+          {route.page === "projects" && (
+            <motion.div
+              key="projects"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <ProjectsPage
+                  projects={projects}
+                  categories={categories}
+                  onRefresh={fetchData}
+                />
+              </Suspense>
+            </motion.div>
+          )}
 
-        {/* Projects section */}
-        <section id="projects" className="py-24 sm:py-32">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-20">
-            {/* Featured */}
-            <FeaturedProjects
-              projects={projects}
-              onSelect={handleSelectProject}
-            />
+          {route.page === "project" && (
+            <motion.div
+              key={`project-${route.slug}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <ProjectDetailsPage slug={route.slug} />
+              </Suspense>
+            </motion.div>
+          )}
 
-            <Separator className="opacity-50" />
+          {route.page === "about" && (
+            <motion.div
+              key="about"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <AboutPage />
+              </Suspense>
+            </motion.div>
+          )}
 
-            {/* All Projects */}
-            <ProjectsGrid
-              projects={projects}
-              categories={categories}
-              onSelect={handleSelectProject}
-            />
-          </div>
-        </section>
+          {route.page === "contact" && (
+            <motion.div
+              key="contact"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <ContactPage />
+              </Suspense>
+            </motion.div>
+          )}
 
-        {/* Divider */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Separator className="opacity-50" />
-        </div>
-
-        {/* About */}
-        <AboutSection />
-
-        {/* Divider */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Separator className="opacity-50" />
-        </div>
-
-        {/* Contact */}
-        <ContactSection />
+          {route.page === "admin" && (
+            <motion.div
+              key="admin"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <AdminPage />
+              </Suspense>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
-      {/* Footer */}
-      <Footer />
-
-      {/* Project Detail Sheet */}
-      <ProjectDetail
-        project={selectedProject}
-        open={detailOpen}
-        onClose={handleCloseDetail}
-      />
+      {!isAdmin && <Footer />}
     </div>
   )
 }
