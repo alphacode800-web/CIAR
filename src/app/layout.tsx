@@ -5,6 +5,10 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { I18nProvider } from "@/lib/i18n-context"
 import { RouterProvider } from "@/lib/router-context"
+import { AuthProvider } from "@/lib/auth-context"
+import { CurrencyProvider } from "@/lib/currency-context"
+import { AuthModalProvider } from "@/lib/auth-modal-context"
+import { AuthModalWrapper } from "@/components/layout/auth-modal-wrapper"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,12 +59,19 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <I18nProvider>
-            <RouterProvider>
-              {children}
-              <Toaster position="bottom-right" richColors />
-            </RouterProvider>
-          </I18nProvider>
+          <AuthProvider>
+            <CurrencyProvider>
+              <I18nProvider>
+                <RouterProvider>
+                  <AuthModalProvider>
+                    <AuthModalWrapper />
+                    {children}
+                    <Toaster position="bottom-right" richColors />
+                  </AuthModalProvider>
+                </RouterProvider>
+              </I18nProvider>
+            </CurrencyProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

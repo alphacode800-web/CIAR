@@ -71,6 +71,23 @@ model Setting {
 }
 
 // =============================================================================
+// Users
+// =============================================================================
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  avatar    String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+// =============================================================================
 // Contact
 // =============================================================================
 
