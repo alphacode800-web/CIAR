@@ -107,82 +107,88 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
 
   // ── Page render ───────────────────────────────────────────────────────────
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-24 relative">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" aria-hidden="true" />
-      <div
-        className="absolute -top-20 -start-20 w-72 h-72 rounded-full bg-[oklch(0.78_0.14_82/10%)] blur-[100px] pointer-events-none"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute top-1/3 -end-32 w-80 h-80 rounded-full bg-violet-500/8 blur-[120px] pointer-events-none"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute bottom-0 start-1/4 w-64 h-64 rounded-full bg-[oklch(0.72_0.12_75/6%)] blur-[100px] pointer-events-none"
-        aria-hidden="true"
-      />
+    <div className="relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 dot-pattern opacity-20 pointer-events-none" aria-hidden="true" />
 
-      <div className="relative z-10">
-        {/* ── Back Button ─────────────────────────────────────────────── */}
-        <motion.div initial="hidden" animate="visible" custom={0} variants={fadeUp}>
+      {/* ── Full-width Hero Banner ──────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="relative h-[50vh] sm:h-[60vh] overflow-hidden"
+      >
+        {project.imageUrl ? (
+          <img
+            src={project.imageUrl}
+            alt={tr.name}
+            className="w-full h-full object-cover transition-transform duration-[20s] ease-linear scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] via-[oklch(0.72_0.12_75/10%)] to-[oklch(0.78_0.14_82/5%)] flex items-center justify-center">
+            <span className="text-9xl font-bold gradient-text/20">
+              {tr.name[0]}
+            </span>
+          </div>
+        )}
+
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/40 to-transparent h-1/3" />
+
+        {/* Navigation dots decoration */}
+        <div className="absolute top-6 start-6 z-10">
           <Button
             variant="ghost"
             onClick={() => navigate({ page: "projects" })}
             className={cn(
-              "gap-2 text-muted-foreground hover:text-foreground mb-8 rounded-xl",
-              "hover:bg-white/5 transition-colors duration-200"
+              "gap-2 text-white/70 hover:text-white rounded-xl",
+              "bg-black/20 backdrop-blur-sm border border-white/10",
+              "transition-all duration-200"
             )}
           >
             <ArrowLeft className="h-4 w-4" />
             {t("project.back")}
           </Button>
-        </motion.div>
+        </div>
 
-        {/* ── Hero Image ──────────────────────────────────────────────── */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          custom={1}
-          variants={fadeUp}
-          className="relative rounded-2xl overflow-hidden mb-8 border border-border/30 shadow-2xl shadow-black/20"
-        >
-          <div className="aspect-video bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] via-[oklch(0.72_0.12_75/10%)] to-[oklch(0.78_0.14_82/5%)] flex items-center justify-center">
-            {project.imageUrl ? (
-              <img
-                src={project.imageUrl}
-                alt={tr.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-9xl font-bold gradient-text/20">
-                {tr.name[0]}
-              </span>
-            )}
-          </div>
-
-          {/* Dark gradient overlay from bottom */}
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-
-          {/* Floating badges over bottom-left of image */}
-          <div className="absolute bottom-4 start-4 flex gap-2">
-            <Badge variant="secondary" className="glass text-xs font-medium border border-white/10">
+        {/* Floating badges over bottom */}
+        <div className="absolute bottom-6 start-6 sm:bottom-10 sm:start-10 z-10">
+          <div className="flex gap-2">
+            <Badge variant="secondary" className="glass text-xs font-medium border border-white/10 bg-black/20 text-white backdrop-blur-sm">
               {project.category}
             </Badge>
             {project.featured && (
-              <Badge className="bg-amber-400/90 text-black border-0 text-xs font-medium">
+              <Badge className="bg-[oklch(0.78_0.14_82)] text-[oklch(0.12_0.03_265)] border-0 text-xs font-semibold">
                 <Star className="h-3 w-3 me-1" />
                 {t("project.featured")}
               </Badge>
             )}
           </div>
-        </motion.div>
+        </div>
+      </motion.div>
 
+      {/* ── Content Section ──────────────────────────────────────────────── */}
+      <div className="relative -mt-20 z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pb-24">
+        <div
+          className="absolute -top-20 -start-20 w-72 h-72 rounded-full bg-[oklch(0.78_0.14_82/10%)] blur-[100px] pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute top-1/3 -end-32 w-80 h-80 rounded-full bg-violet-500/8 blur-[120px] pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute bottom-0 start-1/4 w-64 h-64 rounded-full bg-[oklch(0.72_0.12_75/6%)] blur-[100px] pointer-events-none"
+          aria-hidden="true"
+        />
+
+        <div className="relative z-10">
         {/* ── Title + Tagline ─────────────────────────────────────────── */}
         <motion.div
           initial="hidden"
           animate="visible"
-          custom={2}
+          custom={0}
           variants={fadeUp}
           className="mb-4"
         >
@@ -203,7 +209,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
         <motion.section
           initial="hidden"
           animate="visible"
-          custom={3}
+          custom={1}
           variants={fadeUp}
           className="mb-2"
         >
@@ -228,7 +234,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
           <motion.section
             initial="hidden"
             animate="visible"
-            custom={4}
+            custom={2}
             variants={fadeUp}
             className="mb-2"
           >
@@ -263,7 +269,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
         <motion.div
           initial="hidden"
           animate="visible"
-          custom={5}
+          custom={3}
           variants={fadeUp}
           className="flex flex-wrap items-center gap-6 mb-10 text-sm text-muted-foreground"
         >
@@ -284,7 +290,7 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
           <motion.div
             initial="hidden"
             animate="visible"
-            custom={6}
+            custom={4}
             variants={fadeUp}
           >
             <Button
@@ -306,7 +312,8 @@ export function ProjectDetailsPage({ slug }: { slug: string }) {
             </Button>
           </motion.div>
         )}
-      </div>
+        </div>
+        </div>
     </div>
   )
 }

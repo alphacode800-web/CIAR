@@ -131,7 +131,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
       <section className="relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 pointer-events-none">
-          <img src="/images/hero-bg.png" alt="" className="w-full h-full object-cover opacity-15 scale-105" />
+          <img src="/images/headers/projects-header.png" alt="" className="w-full h-full object-cover opacity-20 scale-105" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/95 to-background" />
         </div>
         <div className="absolute inset-0 mesh-gradient opacity-30 pointer-events-none" />

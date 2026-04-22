@@ -21,6 +21,19 @@ import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
 
+const HERO_IMAGES = [
+  "/images/headers/hero-1.png",
+  "/images/headers/hero-2.png",
+  "/images/headers/hero-3.png",
+  "/images/headers/hero-4.png",
+  "/images/headers/hero-5.png",
+  "/images/headers/hero-6.png",
+  "/images/headers/hero-7.png",
+  "/images/headers/hero-8.png",
+  "/images/headers/hero-9.png",
+  "/images/headers/hero-10.png",
+]
+
 interface HomeStats {
   totalProjects: number
   totalViews: number
@@ -176,6 +189,9 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
   const ctaInView = useInView(ctaRef, { once: true, margin: "-100px" })
 
   const [animatedStats, setAnimatedStats] = useState({ projects: 0, views: 0, categories: 0 })
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [nextSlide, setNextSlide] = useState(1)
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const statsRef = useRef<HTMLDivElement>(null)
   const statsInView = useInView(statsRef, { once: true, margin: "-50px" })
 
@@ -199,6 +215,19 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
     return () => clearInterval(timer)
   }, [statsInView, stats.totalProjects, stats.totalViews, stats.totalCategories])
 
+  // Slideshow auto-rotation with crossfade
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsTransitioning(true)
+      setTimeout(() => {
+        setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length)
+        setNextSlide((prev) => (prev + 1) % HERO_IMAGES.length)
+        setIsTransitioning(false)
+      }, 800)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
   const formatNumber = (num: number) => {
     try {
       return num.toLocaleString(
@@ -219,14 +248,51 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
     <div ref={heroRef} className="relative overflow-hidden">
       {/* ═══ HERO SECTION ═══ */}
       <section className="relative min-h-screen flex items-center justify-center">
-        {/* Background image with overlay */}
+        {/* Background slideshow with crossfade */}
         <div className="absolute inset-0">
+          {/* Current image */}
           <img
-            src="/images/hero-bg.png"
+            src={HERO_IMAGES[currentSlide]}
             alt=""
-            className="w-full h-full object-cover"
+            className={cn(
+              "absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out",
+              isTransitioning ? "opacity-0 scale-105" : "opacity-100 scale-100"
+            )}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.10_0.025_265/70%)] via-[oklch(0.10_0.025_265/85%)] to-[oklch(0.10_0.025_265)]" />
+          {/* Next image */}
+          <img
+            src={HERO_IMAGES[nextSlide]}
+            alt=""
+            className={cn(
+              "absolute inset-0 w-full h-full object-cover transition-all duration-[1200ms] ease-in-out",
+              isTransitioning ? "opacity-100 scale-100" : "opacity-0 scale-105"
+            )}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.10_0.025_265/75%)] via-[oklch(0.10_0.025_265/85%)] to-[oklch(0.10_0.025_265/95%)]" />
+        </div>
+
+        {/* Slide indicator dots */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {HERO_IMAGES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setIsTransitioning(true)
+                setTimeout(() => {
+                  setCurrentSlide(i)
+                  setNextSlide((i + 1) % HERO_IMAGES.length)
+                  setIsTransitioning(false)
+                }, 400)
+              }}
+              className={cn(
+                "h-1.5 rounded-full transition-all duration-500",
+                i === currentSlide
+                  ? "w-8 bg-[oklch(0.78_0.14_82)] shadow-[0_0_8px_oklch(0.78_0.14_82/50%)]"
+                  : "w-1.5 bg-white/20 hover:bg-white/40"
+              )}
+              aria-label={`Slide ${i + 1}`}
+            />
+          ))}
         </div>
 
         {/* Dot pattern overlay */}
@@ -351,23 +417,6 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-2 z-10"
-        >
-          <span className="text-xs text-muted-foreground/50 font-medium tracking-wider uppercase">
-            Scroll
-          </span>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          >
-            <ChevronDown className="h-5 w-5 text-[oklch(0.78_0.14_82/40%)]" />
-          </motion.div>
-        </motion.div>
       </section>
 
       <div className="glow-line-gold" />

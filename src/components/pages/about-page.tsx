@@ -113,7 +113,12 @@ export function AboutPage() {
   return (
     <div dir={dir} className="relative overflow-hidden">
       {/* ── Hero Header ───────────────────────────────────────────────────── */}
-      <section className="relative py-24 sm:py-32">
+      <section className="relative py-24 sm:py-32 overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img src="/images/headers/about-header.png" alt="" className="w-full h-full object-cover opacity-15 scale-105" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/90 to-background" />
+        </div>
         {/* Gradient mesh background */}
         <div className="absolute inset-0 mesh-gradient" />
         {/* Dot pattern overlay */}
