@@ -109,3 +109,22 @@ Stage Summary:
 - All components use consistent gold/navy luxury theme
 - ESLint: 0 errors
 - Database seeded with all new data
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Replace SVG logos with real CIAR company logo image
+
+Work Log:
+- Copied uploaded logo.png to /public/logo.png
+- Updated Navbar: replaced inline SVG hexagon logo with <img src="/logo.png"> (h-9 w-9, object-contain, hover:scale-110)
+- Updated Footer: replaced inline SVG hexagon logo with <img src="/logo.png"> (h-8 w-8, object-contain)
+- Updated Auth Modal: added CIAR logo image next to login/register heading for better branding
+- Updated layout.tsx metadata: added favicon icons (32x32, 192x192), apple-touch-icon, and OG/Twitter image meta tags all pointing to /logo.png
+- Fixed pre-existing lint error in currency-context.tsx: replaced useEffect+setState with lazy initializer for useState, wrapped setCurrency in useCallback
+
+Stage Summary:
+- Real CIAR logo (red "R" + "CiAR" text + blue accent line) now used across all components
+- Logo appears in: Navbar, Footer, Auth Modal (login/register), browser favicon, OG/Twitter social shares
+- ESLint: 0 errors, 0 warnings
+- Production build successful, page renders correctly with all logo references

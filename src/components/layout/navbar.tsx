@@ -83,18 +83,11 @@ export function Navbar() {
           className="flex items-center gap-3 group"
         >
           <div className="relative h-9 w-9 flex items-center justify-center">
-            <svg viewBox="0 0 36 36" className="h-8 w-8 transition-transform duration-500 group-hover:scale-110" fill="none">
-              <defs>
-                <linearGradient id="ciar-logo" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="oklch(0.82 0.145 85)" />
-                  <stop offset="50%" stopColor="oklch(0.78 0.14 82)" />
-                  <stop offset="100%" stopColor="oklch(0.70 0.13 72)" />
-                </linearGradient>
-              </defs>
-              <path d="M18 2L33 10V26L18 34L3 26V10L18 2Z" fill="url(#ciar-logo)" opacity="0.15" />
-              <path d="M18 6L29 12V24L18 30L7 24V12L18 6Z" fill="url(#ciar-logo)" opacity="0.9" />
-              <text x="18" y="20.5" textAnchor="middle" fontSize="10" fontWeight="700" fill="oklch(0.12 0.03 265)">C</text>
-            </svg>
+            <img
+              src="/logo.png"
+              alt="CIAR"
+              className="h-9 w-9 object-contain transition-transform duration-500 group-hover:scale-110"
+            />
           </div>
           <span className="font-bold text-xl tracking-wider gradient-text">CIAR</span>
         </button>

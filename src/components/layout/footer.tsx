@@ -20,16 +20,11 @@ export function Footer() {
             {/* Brand */}
             <div className="sm:col-span-2 lg:col-span-1">
               <div className="flex items-center gap-3 mb-3">
-                <svg viewBox="0 0 36 36" className="h-8 w-8" fill="none">
-                  <defs>
-                    <linearGradient id="footer-logo" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="oklch(0.82 0.145 85)" />
-                      <stop offset="100%" stopColor="oklch(0.70 0.13 72)" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M18 6L29 12V24L18 30L7 24V12L18 6Z" fill="url(#footer-logo)" opacity="0.9" />
-                  <text x="18" y="20.5" textAnchor="middle" fontSize="10" fontWeight="700" fill="oklch(0.12 0.03 265)" fontFamily="var(--font-geist-sans)">C</text>
-                </svg>
+                <img
+                  src="/logo.png"
+                  alt="CIAR"
+                  className="h-8 w-8 object-contain"
+                />
                 <span className="gradient-text text-xl font-bold tracking-wider">
                   {t("footer.brand")}
                 </span>

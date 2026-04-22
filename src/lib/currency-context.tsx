@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext, useState, useCallback } from "react"
 
 interface Currency {
   code: string
@@ -34,24 +34,27 @@ const CurrencyContext = createContext<CurrencyContextType>({
   formatPrice: (n: number) => n.toString(),
 })
 
-export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrencyState] = useState<Currency>(CURRENCIES[0])
-
-  useEffect(() => {
+function getSavedCurrency(): Currency {
+  if (typeof window !== "undefined") {
     const saved = localStorage.getItem("ciar_currency")
     if (saved) {
       const found = CURRENCIES.find((c) => c.code === saved)
-      if (found) setCurrencyState(found)
+      if (found) return found
     }
-  }, [])
+  }
+  return CURRENCIES[0]
+}
 
-  const setCurrency = (code: string) => {
+export function CurrencyProvider({ children }: { children: React.ReactNode }) {
+  const [currency, setCurrencyState] = useState<Currency>(() => getSavedCurrency())
+
+  const setCurrency = useCallback((code: string) => {
     const found = CURRENCIES.find((c) => c.code === code)
     if (found) {
       setCurrencyState(found)
       localStorage.setItem("ciar_currency", code)
     }
-  }
+  }, [])
 
   const formatPrice = (amount: number) => {
     try {

@@ -73,10 +73,15 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
             <X className="h-5 w-5" />
           </button>
 
-          <h2 className="text-xl font-bold mb-1">{isLogin ? (t("auth.login") || "Login") : (t("auth.register") || "Register")}</h2>
-          <p className="text-sm text-muted-foreground mb-6">
-            {isLogin ? (t("auth.login_desc") || "Welcome back to CIAR") : (t("auth.register_desc") || "Create your account")}
-          </p>
+          <div className="flex items-center gap-3 mb-4">
+            <img src="/logo.png" alt="CIAR" className="h-10 w-10 object-contain" />
+            <div>
+              <h2 className="text-xl font-bold">{isLogin ? (t("auth.login") || "Login") : (t("auth.register") || "Register")}</h2>
+              <p className="text-sm text-muted-foreground">
+                {isLogin ? (t("auth.login_desc") || "Welcome back to CIAR") : (t("auth.register_desc") || "Create your account")}
+              </p>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (

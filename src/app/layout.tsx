@@ -35,11 +35,19 @@ export const metadata: Metadata = {
     "food delivery",
   ],
   authors: [{ name: "CIAR" }],
+  icons: {
+    icon: [
+      { url: "/logo.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/logo.png" }],
+  },
   openGraph: {
     title: "CIAR — Building Digital Platforms That Serve Millions",
     description:
       "A leading services company building innovative digital platforms across diverse industries.",
     type: "website",
+    images: [{ url: "/logo.png", width: 512, height: 512, alt: "CIAR Logo" }],
   },
 }
 
