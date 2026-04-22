@@ -436,8 +436,8 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {featuredProjects.slice(0, 6).map((project, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+              {featuredProjects.map((project, i) => (
                 <button
                   key={project.id}
                   onClick={() => navigate({ page: "project", slug: project.slug })}
@@ -453,19 +453,6 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
               ))}
             </div>
 
-            <motion.div {...fadeUp(0.3)} className="mt-12 text-center">
-              <button
-                onClick={() => navigate({ page: "projects" })}
-                className={cn(
-                  "inline-flex items-center gap-2 text-sm font-medium",
-                  "text-muted-foreground hover:text-[oklch(0.78_0.14_82)]",
-                  "transition-colors duration-300 group"
-                )}
-              >
-                {t("home.view_all") || "View All Platforms"}
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </button>
-            </motion.div>
           </div>
         </section>
       )}
