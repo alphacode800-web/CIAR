@@ -183,3 +183,25 @@ Stage Summary:
 - Project Details: dramatic full-width hero banner replacing old card-style image
 - ESLint: 0 errors, 0 warnings
 - Server running on port 3000
+
+---
+Task ID: 8
+Agent: Main Agent
+Task: Fix missing translations showing raw keys on home page
+
+Work Log:
+- Analyzed uploaded screenshot showing raw translation keys (e.g., "home.services_title", "home.service_real_estate_name") displaying as text
+- Diagnosed root cause: new home section components (ServicesGrid, AboutBrief, HowItWorks, etc.) use translation keys that don't exist in the database
+- The `t()` function in i18n-context.tsx was returning the key string itself when not found in translations
+- Since a non-empty key string is truthy, the `|| "fallback"` pattern in components never activated
+- Fixed by changing `t()` to return empty string `""` instead of the raw key when translation is missing
+- Verified all existing hero/about/contact/project keys exist in database (confirmed 140+ keys)
+- Verified all new home components have proper `|| "fallback"` patterns
+- Confirmed no `t()` calls without fallbacks in new components
+
+Stage Summary:
+- Fixed i18n-context.tsx: `t()` now returns `""` for missing keys instead of the raw key
+- All 15 new home section components now correctly display their English fallback text
+- Existing translations (hero, about, contact, projects, footer, navbar) unaffected
+- ESLint: 0 errors
+- Server running on port 3000

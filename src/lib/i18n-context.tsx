@@ -67,7 +67,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const t = useCallback(
     (key: string): string => {
-      return translations[key] || key
+      return translations[key] || ""
     },
     [translations]
   )
