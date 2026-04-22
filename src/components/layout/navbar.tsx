@@ -82,11 +82,11 @@ export function Navbar() {
           onClick={() => navigate({ page: "home" })}
           className="flex items-center gap-3 group"
         >
-          <div className="relative h-10 w-10 flex items-center justify-center">
+          <div className="relative h-12 w-12 flex items-center justify-center">
             <img
               src="/logo.png"
               alt="CIAR"
-              className="h-10 w-10 object-contain transition-transform duration-500 group-hover:scale-110"
+              className="h-12 w-12 object-contain transition-transform duration-500 group-hover:scale-110"
             />
           </div>
         </button>
