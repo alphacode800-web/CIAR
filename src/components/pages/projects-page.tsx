@@ -328,6 +328,7 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                       tags={tags}
                       onClick={() => navigate({ page: "project", slug: p.slug })}
                       formatViews={formatViews}
+                      t={t}
                     />
                   </motion.div>
                 )
@@ -348,12 +349,14 @@ function ProjectCard({
   tags,
   onClick,
   formatViews,
+  t,
 }: {
   project: Project
   translation: { name: string; tagline: string; description: string }
   tags: string[]
   onClick: () => void
   formatViews: (v: number) => string
+  t: (key: string) => string
 }) {
   const [hovered, setHovered] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
