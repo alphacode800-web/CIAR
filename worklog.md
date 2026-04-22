@@ -128,3 +128,23 @@ Stage Summary:
 - Logo appears in: Navbar, Footer, Auth Modal (login/register), browser favicon, OG/Twitter social shares
 - ESLint: 0 errors, 0 warnings
 - Production build successful, page renders correctly with all logo references
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Add Changa Google Font for Arabic (RTL) text
+
+Work Log:
+- Analyzed uploaded font sample image using VLM - identified as "Changa" Google Font
+- Added Changa font via next/font/google in layout.tsx with all 7 weights (200-800), arabic + latin subsets
+- Added --font-changa CSS variable in globals.css @theme inline
+- Added RTL font rule: [dir="rtl"] body, [dir="rtl"] { font-family: var(--font-changa), var(--font-geist-sans), system-ui, sans-serif }
+- Added changa variable class to body element
+- Verified: Changa @font-face rules compiled correctly with Arabic unicode ranges, RTL CSS rule present in build output
+
+Stage Summary:
+- Changa font loaded for Arabic (RTL) content with 7 weights (200-800)
+- Latin text continues to use Geist Sans font
+- RTL switch automatically applies Changa when Arabic language is selected
+- ESLint: 0 errors, 0 warnings
+- Build successful
