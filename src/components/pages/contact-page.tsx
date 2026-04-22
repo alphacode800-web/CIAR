@@ -168,8 +168,8 @@ export function ContactPage() {
       <section className="relative py-24 sm:py-32 overflow-hidden">
         {/* Background image */}
         <div className="absolute inset-0 pointer-events-none">
-          <img src="/images/headers/contact-header.png" alt="" className="w-full h-full object-cover opacity-15 scale-105" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/90 to-background" />
+          <img src="/images/headers/contact-header.png" alt="" className="w-full h-full object-cover opacity-40 scale-105" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
         </div>
         {/* Gradient mesh background */}
         <div className="absolute inset-0 mesh-gradient" />
