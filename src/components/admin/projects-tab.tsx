@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   Plus,
   Pencil,
@@ -9,11 +10,20 @@ import {
   Eye,
   EyeOff,
   Star,
+  LayoutList,
+  LayoutGrid,
+  FolderOpen,
+  Globe,
+  Shield,
+  Sparkles,
+  ImageIcon,
+  FileStack,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
 import {
   Table,
   TableBody,
@@ -39,9 +49,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useI18n } from "@/lib/i18n-context"
 import { toast } from "sonner"
 import { ProjectDialog } from "./project-dialog"
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface Project {
   id: string
@@ -63,8 +81,35 @@ export interface Project {
   }[]
 }
 
+type ViewMode = "table" | "card"
+
+// ─── Animation variants ──────────────────────────────────────────────────────
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.04, duration: 0.35, ease: "easeOut" },
+  }),
+  exit: { opacity: 0, y: 8, transition: { duration: 0.2 } },
+}
+
+const cardHover = {
+  rest: { scale: 1, y: 0 },
+  hover: {
+    scale: 1.02,
+    y: -4,
+    transition: { type: "spring", stiffness: 300, damping: 20 },
+  },
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
 export function ProjectsTab() {
   const { t } = useI18n()
+
+  // State
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -74,7 +119,10 @@ export function ProjectsTab() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogKey, setDialogKey] = useState(0)
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>("table")
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
+  // ── Fetch projects ──
   const fetchProjects = useCallback(async () => {
     setLoading(true)
     try {
@@ -93,30 +141,89 @@ export function ProjectsTab() {
     fetchProjects()
   }, [fetchProjects])
 
-  const filteredProjects = projects.filter((p) => {
-    if (filterCategory !== "all" && p.category !== filterCategory) return false
-    if (search) {
-      const q = search.toLowerCase()
-      const name = p.translations[0]?.name?.toLowerCase() || ""
-      const slug = p.slug.toLowerCase()
-      if (!name.includes(q) && !slug.includes(q)) return false
-    }
-    return true
-  })
+  // ── Filtering ──
+  const filteredProjects = useMemo(
+    () =>
+      projects.filter((p) => {
+        if (filterCategory !== "all" && p.category !== filterCategory) return false
+        if (search) {
+          const q = search.toLowerCase()
+          const name = p.translations[0]?.name?.toLowerCase() || ""
+          const slug = p.slug.toLowerCase()
+          if (!name.includes(q) && !slug.includes(q)) return false
+        }
+        return true
+      }),
+    [projects, filterCategory, search]
+  )
 
+  // ── Stats ──
+  const stats = useMemo(
+    () => ({
+      total: projects.length,
+      published: projects.filter((p) => p.published).length,
+      drafts: projects.filter((p) => !p.published).length,
+      featured: projects.filter((p) => p.featured).length,
+    }),
+    [projects]
+  )
+
+  // ── Toggle published ──
+  const togglePublished = async (id: string) => {
+    setTogglingId(id)
+    try {
+      const res = await fetch(`/api/projects/${id}/toggle-published`, { method: "POST" })
+      if (!res.ok) throw new Error()
+      const { published } = await res.json()
+      setProjects((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, published } : p))
+      )
+      toast.success(
+        published
+          ? (t("admin.project_published") || "Project published")
+          : (t("admin.project_unpublished") || "Project unpublished")
+      )
+    } catch {
+      toast.error(t("admin.action_failed") || "Action failed")
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
+  // ── Toggle featured ──
+  const toggleFeatured = async (id: string) => {
+    setTogglingId(id)
+    try {
+      const res = await fetch(`/api/projects/${id}/toggle-featured`, { method: "POST" })
+      if (!res.ok) throw new Error()
+      const { featured } = await res.json()
+      setProjects((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, featured } : p))
+      )
+      toast.success(
+        featured
+          ? (t("admin.project_featured") || "Project featured")
+          : (t("admin.project_unfeatured") || "Project unfeatured")
+      )
+    } catch {
+      toast.error(t("admin.action_failed") || "Action failed")
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
+  // ── CRUD handlers ──
   const handleSave = async (
     projectData: Record<string, unknown>,
     translations: Record<string, { name: string; tagline: string; description: string }>
   ) => {
     try {
       if (editProject) {
-        // Update project
         await fetch(`/api/projects/${editProject.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(projectData),
         })
-        // Update translations
         for (const [loc, tr] of Object.entries(translations)) {
           await fetch(`/api/projects/${editProject.id}/translations`, {
             method: "PUT",
@@ -126,20 +233,16 @@ export function ProjectsTab() {
         }
         toast.success(t("admin.project_updated") || "Project updated")
       } else {
-        // Create project
-        const translationsArr = Object.entries(translations).map(
-          ([locale, tr]) => ({
-            locale,
-            ...tr,
-          })
-        )
+        const translationsArr = Object.entries(translations).map(([locale, tr]) => ({
+          locale,
+          ...tr,
+        }))
         const res = await fetch("/api/projects", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...projectData, translations: translationsArr }),
         })
-        if (res.ok)
-          toast.success(t("admin.project_created") || "Project created")
+        if (res.ok) toast.success(t("admin.project_created") || "Project created")
         else toast.error(t("admin.project_create_failed") || "Failed to create project")
       }
       setDialogOpen(false)
@@ -174,203 +277,569 @@ export function ProjectsTab() {
     setDialogOpen(true)
   }
 
-  return (
-    <div>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-bold">{t("admin.projects")}</h2>
-        <Button
-          onClick={openCreate}
-          className="gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
-        >
-          <Plus className="h-4 w-4" />
-          {t("admin.add_project")}
-        </Button>
-      </div>
+  // ─── Sub-components ──────────────────────────────────────────────────────
 
-      {/* Search & Filter */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-        <div className="relative flex-1 w-full sm:max-w-sm">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("common.search") || "Search projects..."}
-            className="ps-9 rounded-xl"
-          />
-        </div>
-        <Select value={filterCategory} onValueChange={setFilterCategory}>
-          <SelectTrigger className="w-48 rounded-xl">
-            <SelectValue placeholder={t("admin.all_categories") || "All Categories"} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">
-              {t("admin.all_categories") || "All Categories"}
-            </SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Table */}
-      {loading ? (
-        <Skeleton className="h-96 rounded-xl" />
+  /** Inline thumbnail with gradient fallback */
+  const Thumbnail = ({ src, name }: { src: string; name: string }) => (
+    <div className="relative h-9 w-9 rounded-lg overflow-hidden flex-shrink-0 shadow-sm ring-1 ring-white/10">
+      {src ? (
+        <img
+          src={src}
+          alt={name}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
       ) : (
-        <div className="rounded-xl border border-border/50 overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead>{t("admin.project_name") || "Name"}</TableHead>
-                  <TableHead>{t("admin.project_category") || "Category"}</TableHead>
-                  <TableHead className="text-center">
-                    {t("admin.project_featured") || "Featured"}
-                  </TableHead>
-                  <TableHead className="text-center">
-                    {t("admin.project_published") || "Published"}
-                  </TableHead>
-                  <TableHead className="text-end">
-                    {t("admin.project_views") || "Views"}
-                  </TableHead>
-                  <TableHead className="text-end">
-                    {t("admin.actions") || "Actions"}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProjects.map((p) => {
-                  const tr = p.translations[0]
-                  return (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">
-                        {tr?.name || p.slug}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {p.category}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {p.featured ? (
-                          <Badge className="bg-amber-500/90 text-white border-0 text-xs">
-                            <Star className="h-3 w-3 me-1" />
-                            {t("admin.project_featured")}
-                          </Badge>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge
-                          variant={p.published ? "default" : "secondary"}
-                          className={`text-xs ${
-                            p.published
-                              ? "bg-emerald-500/90 text-white border-0"
-                              : ""
-                          }`}
-                        >
-                          {p.published ? (
-                            <>
-                              <Eye className="h-3 w-3 me-1" />
-                              {t("admin.project_published")}
-                            </>
-                          ) : (
-                            <>
-                              <EyeOff className="h-3 w-3 me-1" />
-                              {t("admin.project_draft") || "Draft"}
-                            </>
-                          )}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-end text-muted-foreground">
-                        {p.views.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-end">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => openEdit(p)}
-                            className="h-8 w-8"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => setDeleteTarget(p)}
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-                {filteredProjects.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center py-12 text-muted-foreground"
-                    >
-                      {projects.length === 0
-                        ? t("admin.no_projects") || "No projects yet"
-                        : t("admin.no_matching_projects") || "No matching projects"}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+        <div className="h-full w-full bg-gradient-to-br from-[oklch(0.55_0.12_82)] to-[oklch(0.40_0.10_260)] flex items-center justify-center">
+          <ImageIcon className="h-3.5 w-3.5 text-white/70" />
         </div>
       )}
-
-      {/* Create/Edit Dialog */}
-      <ProjectDialog
-        key={dialogKey}
-        project={editProject}
-        open={dialogOpen}
-        onClose={() => {
-          setDialogOpen(false)
-          setEditProject(null)
-        }}
-        onSave={handleSave}
-      />
-
-      {/* Delete Confirmation */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("admin.delete_project") || "Delete Project"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("admin.delete_project_confirm", {
-                name:
-                  deleteTarget?.translations[0]?.name || deleteTarget?.slug || "",
-              }) ||
-                `Are you sure you want to delete "${deleteTarget?.translations[0]?.name || deleteTarget?.slug}"? This action cannot be undone.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t("common.delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
+  )
+
+  /** Stats pill / badge */
+  const StatPill = ({
+    icon: Icon,
+    label,
+    value,
+    color,
+  }: {
+    icon: React.ElementType
+    label: string
+    value: number
+    color: string
+  }) => (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm px-3 py-1.5 text-xs"
+    >
+      <Icon className={`h-3.5 w-3.5 ${color}`} />
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold text-foreground">{value}</span>
+    </motion.div>
+  )
+
+  // ─── Render: Card View ─────────────────────────────────────────────────
+
+  const renderCards = () => (
+    <motion.div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+      initial="hidden"
+      animate="visible"
+    >
+      <AnimatePresence mode="popLayout">
+        {filteredProjects.map((p, i) => {
+          const tr = p.translations[0]
+          return (
+            <motion.div
+              key={p.id}
+              custom={i}
+              variants={{
+                hidden: fadeUp.hidden,
+                visible: (idx: number) => fadeUp.visible(idx),
+                exit: fadeUp.exit,
+                rest: cardHover.rest,
+                hover: cardHover.hover,
+              }}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              layout
+              whileHover="hover"
+              className="group relative rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl overflow-hidden cursor-default"
+            >
+              {/* Image area */}
+              <div className="relative aspect-[4/3] overflow-hidden">
+                {p.imageUrl ? (
+                  <img
+                    src={p.imageUrl}
+                    alt={tr?.name || p.slug}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-br from-[oklch(0.45_0.10_82)] to-[oklch(0.25_0.08_260)] flex items-center justify-center">
+                    <ImageIcon className="h-10 w-10 text-white/30" />
+                  </div>
+                )}
+                {/* Gradient overlay at bottom */}
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+
+                {/* Top-right badges */}
+                <div className="absolute top-2.5 end-2.5 flex items-center gap-1.5">
+                  {p.featured && (
+                    <Badge className="bg-[oklch(0.78_0.14_82)] text-black border-0 text-[10px] gap-1 px-2 py-0.5 font-semibold">
+                      <Star className="h-3 w-3" />
+                      Featured
+                    </Badge>
+                  )}
+                  <Badge
+                    className={`text-[10px] gap-1 px-2 py-0.5 border-0 font-medium ${
+                      p.published
+                        ? "bg-emerald-500/90 text-white"
+                        : "bg-white/20 text-white backdrop-blur-sm"
+                    }`}
+                  >
+                    {p.published ? (
+                      <Eye className="h-3 w-3" />
+                    ) : (
+                      <EyeOff className="h-3 w-3" />
+                    )}
+                    {p.published
+                      ? (t("admin.project_published") || "Published")
+                      : (t("admin.project_draft") || "Draft")}
+                  </Badge>
+                </div>
+
+                {/* Hover actions overlay */}
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    onClick={(e) => { e.stopPropagation(); openEdit(p) }}
+                    className="h-9 w-9 rounded-full bg-white/20 text-white hover:bg-white/30 border-0 backdrop-blur-sm"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(p) }}
+                    className="h-9 w-9 rounded-full bg-red-500/30 text-red-200 hover:bg-red-500/50 border-0 backdrop-blur-sm"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* View count */}
+                <div className="absolute bottom-2.5 start-2.5 flex items-center gap-1 text-[11px] text-white/80">
+                  <Eye className="h-3 w-3" />
+                  {p.views.toLocaleString()}
+                </div>
+              </div>
+
+              {/* Card body */}
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h3 className="font-semibold text-sm leading-tight line-clamp-1 text-foreground">
+                    {tr?.name || p.slug}
+                  </h3>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] border-[oklch(0.78_0.14_82)]/30 text-[oklch(0.78_0.14_82)] bg-[oklch(0.78_0.14_82)]/5"
+                >
+                  {p.category}
+                </Badge>
+              </div>
+            </motion.div>
+          )
+        })}
+      </AnimatePresence>
+
+      {filteredProjects.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="col-span-full flex flex-col items-center justify-center py-16 text-muted-foreground"
+        >
+          <FolderOpen className="h-16 w-16 mb-4 opacity-20" />
+          <p className="text-sm font-medium">
+            {projects.length === 0
+              ? (t("admin.no_projects") || "No projects yet")
+              : (t("admin.no_matching_projects") || "No matching projects")}
+          </p>
+        </motion.div>
+      )}
+    </motion.div>
+  )
+
+  // ─── Render: Table View ────────────────────────────────────────────────
+
+  const renderTable = () => (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl overflow-hidden">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-b border-white/10">
+              <TableHead className="text-xs text-muted-foreground">
+                {t("admin.project_name") || "Name"}
+              </TableHead>
+              <TableHead className="text-xs text-muted-foreground">
+                {t("admin.project_category") || "Category"}
+              </TableHead>
+              <TableHead className="text-center text-xs text-muted-foreground">
+                {t("admin.project_featured") || "Featured"}
+              </TableHead>
+              <TableHead className="text-center text-xs text-muted-foreground">
+                {t("admin.project_published") || "Published"}
+              </TableHead>
+              <TableHead className="text-end text-xs text-muted-foreground">
+                {t("admin.project_views") || "Views"}
+              </TableHead>
+              <TableHead className="text-end text-xs text-muted-foreground">
+                {t("admin.actions") || "Actions"}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredProjects.map((p, i) => {
+              const tr = p.translations[0]
+              const isToggling = togglingId === p.id
+              return (
+                <motion.tr
+                  key={p.id}
+                  custom={i}
+                  variants={fadeUp}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  layout
+                  className="group border-b border-white/5 transition-colors hover:bg-white/[0.04] [&>td]:py-3"
+                >
+                  {/* Thumbnail + Name */}
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Thumbnail src={p.imageUrl} name={tr?.name || p.slug} />
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate max-w-[180px]">
+                          {tr?.name || p.slug}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground font-mono truncate max-w-[180px]">
+                          {p.slug}
+                        </p>
+                      </div>
+                    </div>
+                  </TableCell>
+
+                  {/* Category */}
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] border-[oklch(0.78_0.14_82)]/30 text-[oklch(0.78_0.14_82)] bg-[oklch(0.78_0.14_82)]/5"
+                    >
+                      {p.category}
+                    </Badge>
+                  </TableCell>
+
+                  {/* Featured toggle */}
+                  <TableCell className="text-center">
+                    <TooltipProvider delayDuration={300}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            disabled={isToggling}
+                            onClick={() => toggleFeatured(p.id)}
+                            className="inline-flex items-center justify-center transition-transform hover:scale-125 disabled:opacity-50"
+                          >
+                            <Star
+                              className={`h-4.5 w-4.5 transition-colors ${
+                                p.featured
+                                  ? "fill-[oklch(0.78_0.14_82)] text-[oklch(0.78_0.14_82)]"
+                                  : "text-muted-foreground/40 hover:text-muted-foreground"
+                              }`}
+                            />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                          {p.featured ? "Unfeature" : "Set as featured"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
+
+                  {/* Published toggle */}
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center">
+                      <Switch
+                        checked={p.published}
+                        disabled={isToggling}
+                        onCheckedChange={() => togglePublished(p.id)}
+                        className="data-[state=checked]:bg-emerald-500"
+                      />
+                    </div>
+                  </TableCell>
+
+                  {/* Views */}
+                  <TableCell className="text-end">
+                    <div className="flex items-center justify-end gap-1.5 text-muted-foreground text-sm">
+                      <Eye className="h-3.5 w-3.5 opacity-50" />
+                      {p.views.toLocaleString()}
+                    </div>
+                  </TableCell>
+
+                  {/* Actions */}
+                  <TableCell className="text-end">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => openEdit(p)}
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setDeleteTarget(p)}
+                        className="h-8 w-8 text-destructive/70 hover:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </motion.tr>
+              )
+            })}
+
+            {filteredProjects.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="h-48"
+                >
+                  <div className="flex flex-col items-center justify-center text-muted-foreground">
+                    <FolderOpen className="h-16 w-16 mb-4 opacity-20" />
+                    <p className="text-sm font-medium">
+                      {projects.length === 0
+                        ? (t("admin.no_projects") || "No projects yet")
+                        : (t("admin.no_matching_projects") || "No matching projects")}
+                    </p>
+                    {projects.length === 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={openCreate}
+                        className="mt-4 rounded-full gap-2 border-[oklch(0.78_0.14_82)]/30 text-[oklch(0.78_0.14_82)] hover:bg-[oklch(0.78_0.14_82)]/10"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        {t("admin.add_project") || "Add Project"}
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
+
+  // ─── Render: Main ──────────────────────────────────────────────────────
+
+  return (
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* ── Header ── */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-3"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-[oklch(0.88_0.14_82)] via-[oklch(0.78_0.14_82)] to-[oklch(0.65_0.16_82)] bg-clip-text text-transparent">
+                  {t("admin.projects") || "Projects"}
+                </h2>
+                <Badge
+                  variant="secondary"
+                  className="bg-[oklch(0.78_0.14_82)]/10 text-[oklch(0.78_0.14_82)] border-[oklch(0.78_0.14_82)]/20 text-xs font-semibold tabular-nums"
+                >
+                  {stats.total}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t("admin.projects_description") || "Manage your platforms and services"}
+              </p>
+            </div>
+            <Button
+              onClick={openCreate}
+              className="gap-2 rounded-full bg-gradient-to-r from-[oklch(0.75_0.14_82)] to-[oklch(0.65_0.16_82)] text-black font-semibold hover:shadow-lg hover:shadow-[oklch(0.78_0.14_82)]/20 transition-shadow"
+            >
+              <Plus className="h-4 w-4" />
+              {t("admin.add_project") || "Add Project"}
+            </Button>
+          </div>
+
+          {/* Gold glow divider */}
+          <div className="h-px bg-gradient-to-r from-transparent via-[oklch(0.78_0.14_82)]/40 to-transparent" />
+        </motion.div>
+
+        {/* ── Stats Summary Row ── */}
+        {!loading && projects.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex flex-wrap items-center gap-2"
+          >
+            <StatPill
+              icon={FileStack}
+              label={t("admin.total") || "Total"}
+              value={stats.total}
+              color="text-foreground"
+            />
+            <StatPill
+              icon={Globe}
+              label={t("admin.project_published") || "Published"}
+              value={stats.published}
+              color="text-emerald-400"
+            />
+            <StatPill
+              icon={EyeOff}
+              label={t("admin.project_draft") || "Drafts"}
+              value={stats.drafts}
+              color="text-amber-400"
+            />
+            <StatPill
+              icon={Star}
+              label={t("admin.project_featured") || "Featured"}
+              value={stats.featured}
+              color="text-[oklch(0.78_0.14_82)]"
+            />
+          </motion.div>
+        )}
+
+        {/* ── Search, Filter & View Toggle ── */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="relative flex-1 w-full sm:max-w-sm">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("common.search") || "Search projects..."}
+              className="ps-9 rounded-xl bg-white/[0.04] border-white/10 backdrop-blur-sm focus-visible:border-[oklch(0.78_0.14_82)]/50 focus-visible:ring-[oklch(0.78_0.14_82)]/20"
+            />
+          </div>
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="w-48 rounded-xl bg-white/[0.04] border-white/10 backdrop-blur-sm">
+              <SelectValue placeholder={t("admin.all_categories") || "All Categories"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                {t("admin.all_categories") || "All Categories"}
+              </SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* View Toggle */}
+          <div className="flex items-center rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-sm p-0.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setViewMode("table")}
+                  className={`h-8 w-8 rounded-lg transition-colors ${
+                    viewMode === "table"
+                      ? "bg-[oklch(0.78_0.14_82)]/15 text-[oklch(0.78_0.14_82)]"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <LayoutList className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                {t("admin.table_view") || "Table View"}
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setViewMode("card")}
+                  className={`h-8 w-8 rounded-lg transition-colors ${
+                    viewMode === "card"
+                      ? "bg-[oklch(0.78_0.14_82)]/15 text-[oklch(0.78_0.14_82)]"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                {t("admin.card_view") || "Card View"}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+
+        {/* ── Content: Loading / Table / Cards ── */}
+        {loading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={viewMode === "card" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" : ""}
+          >
+            {viewMode === "card"
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.04] overflow-hidden">
+                    <Skeleton className="aspect-[4/3] rounded-none" />
+                    <div className="p-4 space-y-2">
+                      <Skeleton className="h-4 w-3/4 rounded" />
+                      <Skeleton className="h-5 w-20 rounded-full" />
+                    </div>
+                  </div>
+                ))
+              : Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-14 rounded-none last:rounded-b-2xl" />
+                ))}
+          </motion.div>
+        ) : viewMode === "card" ? (
+          renderCards()
+        ) : (
+          renderTable()
+        )}
+
+        {/* ── Create/Edit Dialog ── */}
+        <ProjectDialog
+          key={dialogKey}
+          project={editProject}
+          open={dialogOpen}
+          onClose={() => {
+            setDialogOpen(false)
+            setEditProject(null)
+          }}
+          onSave={handleSave}
+        />
+
+        {/* ── Delete Confirmation ── */}
+        <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+          <AlertDialogContent className="rounded-2xl border-white/10 bg-white/[0.04] backdrop-blur-xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-destructive" />
+                {t("admin.delete_project") || "Delete Project"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("admin.delete_project_confirm", {
+                  name: deleteTarget?.translations[0]?.name || deleteTarget?.slug || "",
+                }) ||
+                  `Are you sure you want to delete "${deleteTarget?.translations[0]?.name || deleteTarget?.slug}"? This action cannot be undone.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("common.cancel") || "Cancel"}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
+              >
+                {t("common.delete") || "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </TooltipProvider>
   )
 }

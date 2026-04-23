@@ -53,7 +53,7 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
       if (hash === "/contact") return { page: "contact" }
       if (hash.startsWith("/admin")) {
         const parts = hash.split("/")
-        return { page: "admin", tab: parts[2] || "dashboard" }
+        return { page: "admin", tab: parts[2] || "overview" }
       }
       return { page: "home" }
     }
@@ -86,7 +86,7 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
       case "project": hash = `/project/${route.slug}`; break
       case "about": hash = "/about"; break
       case "contact": hash = "/contact"; break
-      case "admin": hash = `/admin/${route.tab || "dashboard"}`; break
+      case "admin": hash = `/admin/${route.tab || "overview"}`; break
     }
     if (window.location.hash !== hash) {
       window.history.replaceState(null, "", `#${hash}`)
