@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 40" role="img" aria-label="tamara">
+  <rect width="128" height="40" rx="8" fill="#fff"/>
+  <path d="M39 9c3.7 0 6.7 3 6.7 6.7v8.6c0 3.7-3 6.7-6.7 6.7s-6.7-3-6.7-6.7v-8.6C32.3 12 35.3 9 39 9zm0 5.2c-.8 0-1.5.7-1.5 1.5v8.6c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5v-8.6c0-.8-.7-1.5-1.5-1.5z" fill="#38C6C6"/>
+  <text x="80" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#38C6C6">tamara</text>
+</svg>

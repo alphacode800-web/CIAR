@@ -13,6 +13,23 @@ import {
   Loader2,
   RotateCcw,
   Layers,
+  Clapperboard,
+  Megaphone,
+  Building2,
+  ShieldCheck,
+  Zap,
+  ListChecks,
+  BarChart3,
+  Globe,
+  Monitor,
+  Wrench,
+  MessageSquare,
+  Users,
+  Trophy,
+  Newspaper,
+  CircleHelp,
+  Mail,
+  Package,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
@@ -55,24 +72,24 @@ const DEFAULT_SECTIONS: HomeSection[] = [
 
 /* ─── Section icon map ──────────────────────────────────────────────────── */
 
-const SECTION_ICONS: Record<string, string> = {
-  "hero-slideshow": "🎬",
-  "marquee-banner": "📢",
-  "about-brief": "🏢",
-  "trust-badges": "🛡️",
-  "services-grid": "⚡",
-  "how-it-works": "📋",
-  "stats-section": "📊",
-  "platforms-grid": "🌐",
-  "platform-showcase": "🖥️",
-  "tech-stack": "🔧",
-  testimonials: "💬",
-  "global-presence": "🌍",
-  "team-highlight": "👥",
-  "awards-banner": "🏆",
-  "news-updates": "📰",
-  "faq-section": "❓",
-  "newsletter-cta": "✉️",
+const SECTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  "hero-slideshow": Clapperboard,
+  "marquee-banner": Megaphone,
+  "about-brief": Building2,
+  "trust-badges": ShieldCheck,
+  "services-grid": Zap,
+  "how-it-works": ListChecks,
+  "stats-section": BarChart3,
+  "platforms-grid": Globe,
+  "platform-showcase": Monitor,
+  "tech-stack": Wrench,
+  testimonials: MessageSquare,
+  "global-presence": Globe,
+  "team-highlight": Users,
+  "awards-banner": Trophy,
+  "news-updates": Newspaper,
+  "faq-section": CircleHelp,
+  "newsletter-cta": Mail,
 }
 
 /* ─── Main Component ────────────────────────────────────────────────────── */
@@ -267,7 +284,10 @@ export function HomeSectionsTab() {
 
                 {/* Section emoji */}
                 <span className="text-lg shrink-0">
-                  {SECTION_ICONS[section.id] || "📦"}
+                  {(() => {
+                    const Icon = SECTION_ICONS[section.id] || Package
+                    return <Icon className="h-4 w-4" />
+                  })()}
                 </span>
 
                 {/* Section info */}

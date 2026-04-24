@@ -36,6 +36,7 @@ import { TeamHighlight } from "@/components/home/TeamHighlight"
 import { NewsUpdates } from "@/components/home/NewsUpdates"
 import { FAQSection } from "@/components/home/FAQSection"
 import { NewsletterCTA } from "@/components/home/NewsletterCTA"
+import { PaymentMethods } from "@/components/home/PaymentMethods"
 
 const HERO_IMAGES = [
   "/images/headers/hero-1.png",
@@ -295,17 +296,18 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
         <div className={cn("absolute bottom-20 start-1/3 h-[350px] w-[350px] rounded-full blur-[100px] pointer-events-none", "bg-[oklch(0.72_0.12_75/10%)]", "animate-float")} style={{ animationDelay: "1.5s" }} />
 
         <motion.div style={{ y, opacity, scale }} className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-36 pb-24 sm:pt-40 sm:pb-32 flex flex-col items-center text-center">
-          <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}>
-            <Badge className="glass-strong border border-[oklch(0.78_0.14_82/20%)] rounded-full px-5 py-2 text-sm font-medium gap-2 shadow-lg">
-              <Sparkles className="h-3.5 w-3.5 text-[oklch(0.78_0.14_82)]" />
-              {t("hero.badge")}
-            </Badge>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-8"
+          >
+            <img
+              src="/logo.png"
+              alt="CIAR"
+              className="h-24 sm:h-32 lg:h-40 w-auto object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+            />
           </motion.div>
-
-          <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }} className="mt-8 text-5xl sm:text-6xl lg:text-8xl font-bold tracking-tight leading-[1.05] max-w-5xl">
-            {t("hero.title_1")}{" "}
-            <span className="gradient-text">{t("hero.title_2")}</span>
-          </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }} className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             {t("hero.subtitle")}
@@ -339,35 +341,7 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
 
       <div className="glow-line-gold" />
 
-      {/* ═══ 2. Marquee Banner ═══ */}
-      <MarqueeBanner />
-
-      {/* ═══ 3. About Brief ═══ */}
-      <AboutBrief />
-
-      <div className="section-divider-gold mx-auto max-w-7xl" />
-
-      {/* ═══ 4. Trust Badges ═══ */}
-      <TrustBadges />
-
-      <div className="glow-line-gold" />
-
-      {/* ═══ 5. Services Grid ═══ */}
-      <ServicesGrid />
-
-      <div className="section-divider-gold mx-auto max-w-7xl" />
-
-      {/* ═══ 6. How It Works ═══ */}
-      <HowItWorks />
-
-      <div className="glow-line-gold" />
-
-      {/* ═══ 7. Stats Section ═══ */}
-      <StatsSection />
-
-      <div className="section-divider-gold mx-auto max-w-7xl" />
-
-      {/* ═══ 8. All Platforms Grid ═══ */}
+      {/* ═══ 2. All Platforms Grid (directly after hero) ═══ */}
       {featuredProjects.length > 0 && (
         <section className="relative py-24 sm:py-32">
           <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" />
@@ -394,37 +368,70 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
 
       <div className="glow-line-gold" />
 
-      {/* ═══ 9. Platform Showcase Carousel ═══ */}
+      {/* ═══ 3. Payment Methods ═══ */}
+      <PaymentMethods />
+
+      <div className="section-divider-gold mx-auto max-w-7xl" />
+
+      {/* ═══ 4. Marquee Banner ═══ */}
+      <MarqueeBanner />
+
+      {/* ═══ 5. About Brief ═══ */}
+      <AboutBrief />
+
+      <div className="section-divider-gold mx-auto max-w-7xl" />
+
+      {/* ═══ 6. Trust Badges ═══ */}
+      <TrustBadges />
+
+      <div className="glow-line-gold" />
+
+      {/* ═══ 7. Services Grid ═══ */}
+      <ServicesGrid />
+
+      <div className="section-divider-gold mx-auto max-w-7xl" />
+
+      {/* ═══ 8. How It Works ═══ */}
+      <HowItWorks />
+
+      <div className="glow-line-gold" />
+
+      {/* ═══ 9. Stats Section ═══ */}
+      <StatsSection />
+
+      <div className="section-divider-gold mx-auto max-w-7xl" />
+
+      {/* ═══ 10. Platform Showcase Carousel ═══ */}
       <PlatformShowcase />
 
       <div className="section-divider-gold mx-auto max-w-7xl" />
 
-      {/* ═══ 10. Tech Stack ═══ */}
+      {/* ═══ 11. Tech Stack ═══ */}
       <TechStack />
 
       <div className="glow-line-gold" />
 
-      {/* ═══ 11. Testimonials ═══ */}
+      {/* ═══ 12. Testimonials ═══ */}
       <Testimonials />
 
       <div className="section-divider-gold mx-auto max-w-7xl" />
 
-      {/* ═══ 12. Global Presence ═══ */}
+      {/* ═══ 13. Global Presence ═══ */}
       <GlobalPresence />
 
       <div className="glow-line-gold" />
 
-      {/* ═══ 13. Team Highlight ═══ */}
+      {/* ═══ 14. Team Highlight ═══ */}
       <TeamHighlight />
 
       <div className="section-divider-gold mx-auto max-w-7xl" />
 
-      {/* ═══ 14. Awards Banner ═══ */}
+      {/* ═══ 15. Awards Banner ═══ */}
       <AwardsBanner />
 
       <div className="glow-line-gold" />
 
-      {/* ═══ 15. News Updates ═══ */}
+      {/* ═══ 16. News Updates ═══ */}
       <NewsUpdates />
 
       <div className="section-divider-gold mx-auto max-w-7xl" />

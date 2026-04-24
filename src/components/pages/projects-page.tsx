@@ -13,7 +13,14 @@ import {
   Layers,
   Filter,
   Grid3X3,
-  List,
+  Building2,
+  Car,
+  ShoppingCart,
+  Plane,
+  UtensilsCrossed,
+  GraduationCap,
+  HeartPulse,
+  Truck,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -56,15 +63,15 @@ const fadeCard = {
 }
 
 /* ── Category icon map ───────────────────────────────────────── */
-const catIcons: Record<string, string> = {
-  "Real Estate": "🏗️",
-  "Car Rental": "🚗",
-  "E-Commerce": "🛒",
-  "Tourism": "✈️",
-  "Food Delivery": "🍽️",
-  "Education": "🎓",
-  "Healthcare": "🏥",
-  "Logistics": "🚛",
+const catIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "Real Estate": Building2,
+  "Car Rental": Car,
+  "E-Commerce": ShoppingCart,
+  "Tourism": Plane,
+  "Food Delivery": UtensilsCrossed,
+  "Education": GraduationCap,
+  "Healthcare": HeartPulse,
+  "Logistics": Truck,
 }
 
 /* ══════════════════════════════════════════════════════════════ */
@@ -261,9 +268,9 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
             {t("projects.all")}
           </button>
 
-          {categories.map((cat) => (
+          {categories.filter((cat) => cat.trim().length > 0).map((cat, idx) => (
             <button
-              key={cat}
+              key={`cat-${cat}-${idx}`}
               onClick={() => handleCategoryToggle(cat)}
               className={cn(
                 "shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all duration-300 border",
@@ -272,7 +279,10 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
                   : "bg-card/30 text-muted-foreground border-border/20 hover:text-foreground hover:border-border/40 hover:bg-card/50"
               )}
             >
-              <span className="text-sm">{catIcons[cat] || "📁"}</span>
+              {(() => {
+                const Icon = catIcons[cat] || FolderOpen
+                return <Icon className="h-3.5 w-3.5" />
+              })()}
               {cat}
             </button>
           ))}

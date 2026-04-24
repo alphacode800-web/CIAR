@@ -723,11 +723,13 @@ export function ProjectsTab() {
               <SelectItem value="all">
                 {t("admin.all_categories") || "All Categories"}
               </SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
+              {categories
+                .filter((cat) => cat.trim().length > 0)
+                .map((cat, idx) => (
+                  <SelectItem key={`cat-${cat}-${idx}`} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
 

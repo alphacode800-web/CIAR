@@ -9,6 +9,10 @@ interface ProjectTranslationItem {
   description: string
 }
 
+function normalizeBrandText(value: string): string {
+  return value.replace(/سيار/g, 'CIAR')
+}
+
 export interface ProjectWithTranslations {
   id: string
   slug: string
@@ -104,7 +108,12 @@ function mapProject(row: {
     order: row.order,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    translations: row.translations,
+    translations: row.translations.map((tr) => ({
+      ...tr,
+      name: normalizeBrandText(tr.name),
+      tagline: normalizeBrandText(tr.tagline),
+      description: normalizeBrandText(tr.description),
+    })),
   }
 }
 

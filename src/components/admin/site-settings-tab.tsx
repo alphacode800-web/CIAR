@@ -502,7 +502,7 @@ export function SiteSettingsTab() {
                 <Input
                   value={settings.announcement_text || ""}
                   onChange={(e) => update("announcement_text", e.target.value)}
-                  placeholder="🎉 Special offer — 20% off all services this month!"
+                  placeholder="Special offer — 20% off all services this month!"
                   className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
                 />
               </motion.div>

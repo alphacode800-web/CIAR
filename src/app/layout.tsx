@@ -27,7 +27,10 @@ const changa = Changa({
   display: "swap",
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "CIAR — Building Digital Platforms That Serve Millions",
   description:
     "CIAR is a leading services company that builds and manages a diverse portfolio of digital platforms — from real estate and car rental to e-commerce, tourism, and beyond.",
