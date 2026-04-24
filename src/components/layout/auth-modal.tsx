@@ -94,10 +94,10 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
               </div>
             )}
             <div className="space-y-2">
-              <Label>{t("auth.email") || "Email"}</Label>
+              <Label>{t("auth.email") || "Username / Email"}</Label>
               <div className="relative">
                 <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="ps-10 rounded-xl" required />
+                <Input type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="CIAR-800 or you@example.com" className="ps-10 rounded-xl" required />
               </div>
             </div>
             <div className="space-y-2">

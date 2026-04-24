@@ -18,6 +18,16 @@ interface AuthContextType {
   logout: () => void
 }
 
+const ADMIN_USERNAME = "CIAR-800"
+const ADMIN_PASSWORD = "CIAR100-800"
+const ADMIN_TOKEN = "ciar_admin_session_v1"
+const ADMIN_USER: AuthUser = {
+  id: "admin-ciar-800",
+  name: ADMIN_USERNAME,
+  email: "admin@ciar.local",
+  role: "admin",
+}
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
@@ -34,6 +44,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const token = localStorage.getItem("ciar_token")
       if (!token) {
+        setLoading(false)
+        return
+      }
+      if (token === ADMIN_TOKEN) {
+        setUser(ADMIN_USER)
         setLoading(false)
         return
       }
@@ -57,6 +72,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      // Dedicated admin credentials.
+      if (email === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        localStorage.setItem("ciar_token", ADMIN_TOKEN)
+        setUser(ADMIN_USER)
+        return true
+      }
+
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

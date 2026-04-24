@@ -4,8 +4,11 @@ import { useState, useEffect, useCallback, lazy, Suspense } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
+import { useAuth } from "@/lib/auth-context"
+import { useAuthModal } from "@/lib/auth-modal-context"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const HomePage = lazy(() => import("@/components/pages/home-page").then(m => ({ default: m.HomePage })))
@@ -43,6 +46,8 @@ const PageSkeleton = () => (
 export default function Page() {
   const { locale, dir } = useI18n()
   const { route } = useRouter()
+  const { user } = useAuth()
+  const { openLogin } = useAuthModal()
   const [stats, setStats] = useState({ totalProjects: 0, totalViews: 0, totalCategories: 0 })
   const [projects, setProjects] = useState<Project[]>([])
   const [categories, setCategories] = useState<string[]>([])
@@ -77,6 +82,7 @@ export default function Page() {
   }, [dir, locale])
 
   const isAdmin = route.page === "admin"
+  const isAdminAuthenticated = user?.role === "admin"
 
   return (
     <div className="min-h-screen flex flex-col" dir={dir}>
@@ -167,7 +173,21 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <AdminPage />
+                {isAdminAuthenticated ? (
+                  <AdminPage />
+                ) : (
+                  <div className="min-h-[70vh] flex items-center justify-center px-4">
+                    <div className="w-full max-w-md rounded-2xl border border-border/40 bg-card/60 p-6 text-center space-y-4">
+                      <h2 className="text-2xl font-bold">Admin Login Required</h2>
+                      <p className="text-sm text-muted-foreground">
+                        You must sign in with an admin account to access the admin dashboard.
+                      </p>
+                      <Button onClick={openLogin} className="w-full">
+                        Login
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </Suspense>
             </motion.div>
           )}
