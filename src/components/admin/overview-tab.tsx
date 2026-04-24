@@ -66,6 +66,12 @@ interface ActivityEntry {
   timestamp: string
 }
 
+function isAnalyticsData(value: unknown): value is AnalyticsData {
+  if (!value || typeof value !== "object") return false
+  const v = value as Partial<AnalyticsData>
+  return !!v.projects && typeof v.projects.total === "number"
+}
+
 /* ─── Activity Type Config ──────────────────────────────────────────────── */
 
 const ACTIVITY_ICONS: Record<string, { icon: React.ElementType; color: string; bgColor: string }> = {
@@ -432,10 +438,15 @@ export function OverviewTab() {
       ])
       const analyticsData = await analyticsRes.json()
       const activityData = await activityRes.json()
-      setAnalytics(analyticsData)
-      setActivities(activityData.activities || [])
+
+      // Netlify may return { error: ... } on failed API calls.
+      // Guard the shape to avoid runtime crashes in the admin overview.
+      setAnalytics(isAnalyticsData(analyticsData) ? analyticsData : null)
+      setActivities(Array.isArray(activityData?.activities) ? activityData.activities : [])
     } catch {
       // silent fail
+      setAnalytics(null)
+      setActivities([])
     } finally {
       setLoading(false)
     }
