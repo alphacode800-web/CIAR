@@ -102,6 +102,8 @@ export default function Page() {
 
   const isAdmin = route.page === "admin"
   const isAdminAuthenticated = user?.role === "admin"
+  const publishedProjects = projects.filter((p) => p.published !== false)
+  const homeProjects = publishedProjects.length > 0 ? publishedProjects : projects
 
   useEffect(() => {
     if (authLoading) return
@@ -128,7 +130,7 @@ export default function Page() {
               <Suspense fallback={<PageSkeleton />}>
                 <HomePage
                   stats={stats}
-                  featuredProjects={projects.filter((p) => p.published)}
+                  featuredProjects={homeProjects}
                   newsTickerItems={newsTickerItems}
                 />
               </Suspense>
