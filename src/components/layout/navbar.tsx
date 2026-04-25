@@ -190,6 +190,38 @@ export function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Mobile language dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "sm:hidden h-9 w-9 text-muted-foreground hover:text-foreground",
+                  "hover:ring-2 hover:ring-[oklch(0.78_0.14_82/20%)]"
+                )}
+                aria-label="Change language"
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44 sm:hidden">
+              {ALL_LOCALES.map((loc) => (
+                <DropdownMenuItem
+                  key={loc}
+                  onClick={() => setLocale(loc)}
+                  className={cn(
+                    "cursor-pointer text-sm",
+                    locale === loc ? "bg-[oklch(0.78_0.14_82/10%)] text-[oklch(0.78_0.14_82)] font-medium" : ""
+                  )}
+                >
+                  <span className="font-mono text-xs uppercase w-7">{loc}</span>
+                  <span className="ms-2">{LOCALE_NAMES[loc]}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {/* Theme switcher */}
           <ThemeSwitcher />
 
