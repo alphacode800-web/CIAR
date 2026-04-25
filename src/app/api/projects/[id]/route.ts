@@ -6,11 +6,28 @@ import {
   deleteProject,
 } from '@/services/project.service'
 
+const imagePathSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) => {
+      if (!value) return false
+      if (value.startsWith('/')) return true
+      try {
+        new URL(value)
+        return true
+      } catch {
+        return false
+      }
+    },
+    { message: 'Image must be an absolute URL or a local path starting with /' },
+  )
+
 // ── Validation Schemas ───────────────────────────────────────────────────────
 
 const updateProjectSchema = z.object({
-  imageUrl: z.string().optional(),
-  imageUrls: z.array(z.string().url()).max(5).optional(),
+  imageUrl: imagePathSchema.optional(),
+  imageUrls: z.array(imagePathSchema).max(5).optional(),
   category: z.string().optional(),
   externalUrl: z.string().url().optional().or(z.literal('')),
   tags: z.string().optional(),

@@ -5,11 +5,27 @@ import { getProjects, createProject } from '@/services/project.service'
 // ── Validation Schemas ───────────────────────────────────────────────────────
 
 const localeEnum = z.enum(['en', 'ar', 'fr', 'es', 'de'])
+const imagePathSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) => {
+      if (!value) return false
+      if (value.startsWith('/')) return true
+      try {
+        new URL(value)
+        return true
+      } catch {
+        return false
+      }
+    },
+    { message: 'Image must be an absolute URL or a local path starting with /' },
+  )
 
 const createProjectSchema = z.object({
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
-  imageUrl: z.string().optional(),
-  imageUrls: z.array(z.string().url()).max(5).optional(),
+  imageUrl: imagePathSchema.optional(),
+  imageUrls: z.array(imagePathSchema).max(5).optional(),
   category: z.string().max(100).optional(),
   externalUrl: z.string().url().optional().or(z.literal('')),
   tags: z.string().optional(),
