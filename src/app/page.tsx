@@ -27,6 +27,7 @@ interface Project {
   externalUrl: string
   tags: string
   views: number
+  createdAt: string
   translations: { locale: string; name: string; tagline: string; description: string }[]
 }
 
@@ -56,12 +57,20 @@ export default function Page() {
     try {
       const res = await fetch(`/api/projects?locale=${locale}`)
       const data = await res.json()
-      const projectData = data.projects || []
-      const categoryData = data.categories || []
+      const projectData = Array.isArray(data) ? data : data.projects || []
+      const categoryData = Array.isArray(data)
+        ? Array.from(new Set(projectData.map((p: Project) => p.category).filter(Boolean)))
+        : data.categories || []
+      const totalViews = projectData.reduce(
+        (sum: number, project: Project) => sum + (Number(project.views) || 0),
+        0
+      )
       setProjects(projectData)
       setCategories(categoryData)
       setStats({
-        ...(data.stats || { totalProjects: 0, totalViews: 0 }),
+        ...(Array.isArray(data)
+          ? { totalProjects: projectData.length, totalViews }
+          : data.stats || { totalProjects: 0, totalViews: 0 }),
         totalCategories: categoryData.length,
       })
     } catch {

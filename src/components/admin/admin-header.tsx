@@ -6,6 +6,7 @@ import {
   Menu,
   Search,
   Bell,
+  Globe,
   ChevronRight,
   LogOut,
   Settings,
@@ -32,7 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useI18n } from "@/lib/i18n-context"
+import { useI18n, ALL_LOCALES, LOCALE_NAMES } from "@/lib/i18n-context"
 import { cn } from "@/lib/utils"
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
@@ -108,7 +109,7 @@ export function AdminHeader({
   setTab,
   onMobileMenuToggle,
 }: AdminHeaderProps) {
-  const { t } = useI18n()
+  const { t, locale, setLocale } = useI18n()
   const [notifOpen, setNotifOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [notifCount, setNotifCount] = useState(3)
@@ -234,6 +235,40 @@ export function AdminHeader({
 
         {/* ── Right Section ── */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Language switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-[oklch(0.78_0.14_82/8%)]"
+                aria-label={t("common.language") || "Change language"}
+              >
+                <Globe className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-44 rounded-xl border-[oklch(0.78_0.14_82/12%)] bg-[oklch(0.12_0.028_265/95%)] backdrop-blur-xl"
+            >
+              {ALL_LOCALES.map((loc) => (
+                <DropdownMenuItem
+                  key={loc}
+                  onClick={() => setLocale(loc)}
+                  className={cn(
+                    "cursor-pointer text-sm",
+                    locale === loc
+                      ? "bg-[oklch(0.78_0.14_82/10%)] text-[oklch(0.78_0.14_82)] font-medium"
+                      : ""
+                  )}
+                >
+                  <span className="font-mono text-xs uppercase w-7">{loc}</span>
+                  <span className="ms-2">{LOCALE_NAMES[loc]}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {/* Live Clock */}
           <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md text-muted-foreground/60">
             <Clock className="h-3 w-3" />
