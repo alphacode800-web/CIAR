@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack -p 3000",
+    "dev": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next dev --webpack -p 3000",
     "build": "next build && node scripts/postbuild-standalone.cjs",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",

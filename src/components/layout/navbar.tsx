@@ -36,7 +36,6 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const currentCurrency = CURRENCIES.find((c) => c.code === currency.code) || CURRENCIES[0]
-  const navItems = user?.role === "admin" ? [...NAV_ITEMS, { key: "nav.admin", route: { page: "admin" } as PageRoute }] : NAV_ITEMS
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -97,7 +96,7 @@ export function Navbar() {
 
         {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const isActive = currentPage === item.route.page
             return (
               <button
@@ -276,7 +275,7 @@ export function Navbar() {
               className="md:hidden glass-strong border-b border-[oklch(0.78_0.14_82/20%)] overflow-hidden"
             >
               <div className="px-6 py-5 space-y-1">
-                {navItems.map((item, index) => {
+                {NAV_ITEMS.map((item, index) => {
                   const isActive = currentPage === item.route.page
                   return (
                     <motion.button

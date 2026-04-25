@@ -46,19 +46,19 @@ interface AdminHeaderProps {
 /* ─── Tab Label Map ──────────────────────────────────────────────────────── */
 
 const TAB_LABELS: Record<string, string> = {
-  overview: "Dashboard",
-  analytics: "Analytics",
-  activity: "Activity Log",
-  projects: "Projects",
-  translations: "Translations",
-  settings: "Settings",
-  appearance: "Appearance",
-  contacts: "Contacts",
-  users: "Users",
-  media: "Media",
-  "home-sections": "Home Sections",
-  seo: "SEO",
-  "data-export": "Export / Import",
+  overview: "admin.dashboard",
+  analytics: "admin.analytics",
+  activity: "admin.activity_log",
+  projects: "admin.projects",
+  translations: "admin.translations",
+  settings: "admin.settings",
+  appearance: "admin.appearance",
+  contacts: "admin.contacts",
+  users: "admin.users",
+  media: "admin.media",
+  "home-sections": "admin.home_sections",
+  seo: "admin.seo",
+  "data-export": "admin.data_export",
 }
 
 /* ─── Tab Description Map ────────────────────────────────────────────────── */
@@ -156,7 +156,7 @@ export function AdminHeader({
   }, [])
 
   const currentTabLabel =
-    TAB_LABELS[activeTab] ||
+    t(TAB_LABELS[activeTab] || "") ||
     t(`admin.${activeTab}`) ||
     activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
 
@@ -186,7 +186,7 @@ export function AdminHeader({
                   onClick={() => setTab("overview")}
                   className="cursor-pointer text-muted-foreground hover:text-[oklch(0.78_0.14_82)] transition-colors"
                 >
-                  Admin
+                  {t("admin.title") || "Admin"}
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator>
@@ -295,13 +295,13 @@ export function AdminHeader({
                 className="h-8 gap-2 px-2 hover:bg-[oklch(0.78_0.14_82/8%)]"
               >
                 <Avatar className="h-7 w-7">
-                  <AvatarImage src="/logo.png" alt="Admin" />
+                  <AvatarImage src="/logo.png" alt={t("admin.title") || "Admin"} />
                   <AvatarFallback className="bg-[oklch(0.78_0.14_82/15%)] text-[oklch(0.78_0.14_82)] text-[11px] font-bold">
                     AD
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden sm:inline text-xs font-medium text-foreground">
-                  Admin
+                  {t("admin.title") || "Admin"}
                 </span>
                 <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block" />
               </Button>
@@ -312,7 +312,7 @@ export function AdminHeader({
             >
               <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground">Admin User</span>
+                  <span className="text-sm font-medium text-foreground">{t("admin.admin_user") || "Admin User"}</span>
                   <span>admin@ciar.com</span>
                 </div>
               </DropdownMenuLabel>

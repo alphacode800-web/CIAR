@@ -69,9 +69,9 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 ]
 
 const GROUP_LABELS: Record<string, string> = {
-  main: "Dashboard",
-  content: "Content",
-  system: "System",
+  main: "admin.group_dashboard",
+  content: "admin.group_content",
+  system: "admin.group_system",
 }
 
 /* ─── Sidebar Nav ────────────────────────────────────────────────────────── */
@@ -97,7 +97,7 @@ function SidebarNav({
   const contentItems = SIDEBAR_ITEMS.filter((i) => i.group === "content")
   const systemItems = SIDEBAR_ITEMS.filter((i) => i.group === "system")
 
-  const renderGroup = (label: string, items: SidebarItem[]) => {
+  const renderGroup = (labelKey: string, items: SidebarItem[]) => {
     if (collapsed) {
       // Collapsed: no group labels, just icons
       return (
@@ -122,7 +122,7 @@ function SidebarNav({
     return (
       <div className="space-y-1">
         <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
-          {label}
+          {t(labelKey) || labelKey}
         </p>
         {items.map((tab) => (
           <SidebarButton
@@ -320,7 +320,7 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
               <div className="flex flex-col gap-1">
                 <span>{stats.projects} {t("admin.projects") || "Projects"}</span>
                 <span>{stats.messages} {t("admin.contacts") || "Messages"}</span>
-                <span>Up: {uptime}</span>
+                <span>{t("admin.up") || "Up"}: {uptime}</span>
               </div>
             </TooltipContent>
           </Tooltip>
@@ -342,7 +342,7 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
               <div className="h-1.5 w-1.5 rounded-full bg-[oklch(0.78_0.14_82)]" />
               <div className="absolute inset-0 rounded-full bg-[oklch(0.78_0.14_82)] animate-ping opacity-30" />
             </div>
-            <span className="text-[9px] font-medium text-[oklch(0.78_0.14_82)]">Live</span>
+            <span className="text-[9px] font-medium text-[oklch(0.78_0.14_82)]">{t("admin.live") || "Live"}</span>
           </div>
         </div>
 
@@ -506,7 +506,7 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
               </div>
               <div className="min-w-0">
                 <h1 className="text-sm font-bold">{t("admin.title") || "Admin Panel"}</h1>
-                <p className="text-[10px] text-muted-foreground">CIAR Management</p>
+                <p className="text-[10px] text-muted-foreground">{t("admin.management") || "CIAR Management"}</p>
               </div>
             </div>
           </motion.div>

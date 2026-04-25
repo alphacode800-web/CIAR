@@ -40,7 +40,8 @@ interface SearchCommandProps {
 
 interface CommandItemConfig {
   id: string
-  label: string
+  labelKey: string
+  fallback: string
   icon: React.ElementType
   shortcut?: string
   group: "pages" | "actions" | "projects"
@@ -51,56 +52,64 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
   // Pages
   {
     id: "overview",
-    label: "Go to Dashboard",
+    labelKey: "admin.cmd_go_dashboard",
+    fallback: "Go to Dashboard",
     icon: LayoutDashboard,
     group: "pages",
     action: (nav) => nav?.("overview"),
   },
   {
     id: "analytics",
-    label: "Go to Analytics",
+    labelKey: "admin.cmd_go_analytics",
+    fallback: "Go to Analytics",
     icon: BarChart3,
     group: "pages",
     action: (nav) => nav?.("analytics"),
   },
   {
     id: "activity",
-    label: "Go to Activity Log",
+    labelKey: "admin.cmd_go_activity",
+    fallback: "Go to Activity Log",
     icon: Activity,
     group: "pages",
     action: (nav) => nav?.("activity"),
   },
   {
     id: "projects",
-    label: "Go to Projects",
+    labelKey: "admin.cmd_go_projects",
+    fallback: "Go to Projects",
     icon: FolderOpen,
     group: "pages",
     action: (nav) => nav?.("projects"),
   },
   {
     id: "translations",
-    label: "Go to Translations",
+    labelKey: "admin.cmd_go_translations",
+    fallback: "Go to Translations",
     icon: Languages,
     group: "pages",
     action: (nav) => nav?.("translations"),
   },
   {
     id: "settings",
-    label: "Go to Settings",
+    labelKey: "admin.cmd_go_settings",
+    fallback: "Go to Settings",
     icon: Settings,
     group: "pages",
     action: (nav) => nav?.("settings"),
   },
   {
     id: "appearance",
-    label: "Go to Appearance",
+    labelKey: "admin.cmd_go_appearance",
+    fallback: "Go to Appearance",
     icon: Palette,
     group: "pages",
     action: (nav) => nav?.("appearance"),
   },
   {
     id: "contacts",
-    label: "Go to Contacts",
+    labelKey: "admin.cmd_go_contacts",
+    fallback: "Go to Contacts",
     icon: Mail,
     group: "pages",
     action: (nav) => nav?.("contacts"),
@@ -108,35 +117,40 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
   // Actions
   {
     id: "new-project",
-    label: "Add New Project",
+    labelKey: "admin.cmd_add_project",
+    fallback: "Add New Project",
     icon: Plus,
     group: "actions",
     action: (nav) => nav?.("projects"),
   },
   {
     id: "view-analytics",
-    label: "View Analytics",
+    labelKey: "admin.cmd_view_analytics",
+    fallback: "View Analytics",
     icon: Eye,
     group: "actions",
     action: (nav) => nav?.("analytics"),
   },
   {
     id: "manage-users",
-    label: "Manage Users",
+    labelKey: "admin.cmd_manage_users",
+    fallback: "Manage Users",
     icon: Users,
     group: "actions",
     action: () => {},
   },
   {
     id: "export-data",
-    label: "Export Data",
+    labelKey: "admin.cmd_export_data",
+    fallback: "Export Data",
     icon: FileText,
     group: "actions",
     action: () => {},
   },
   {
     id: "change-locale",
-    label: "Change Language",
+    labelKey: "admin.cmd_change_language",
+    fallback: "Change Language",
     icon: Globe,
     group: "actions",
     action: () => {},
@@ -144,21 +158,24 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
   // Projects
   {
     id: "project-real-estate",
-    label: "Real Estate Platform",
+    labelKey: "admin.cmd_project_real_estate",
+    fallback: "Real Estate Platform",
     icon: FolderOpen,
     group: "projects",
     action: () => {},
   },
   {
     id: "project-car-rental",
-    label: "Car Rental Platform",
+    labelKey: "admin.cmd_project_car_rental",
+    fallback: "Car Rental Platform",
     icon: FolderOpen,
     group: "projects",
     action: () => {},
   },
   {
     id: "project-ecommerce",
-    label: "E-Commerce Platform",
+    labelKey: "admin.cmd_project_ecommerce",
+    fallback: "E-Commerce Platform",
     icon: FolderOpen,
     group: "projects",
     action: () => {},
@@ -219,7 +236,7 @@ export function SearchCommand({ open, onOpenChange, onNavigate }: SearchCommandP
               className="gap-3 py-2.5 cursor-pointer"
             >
               <item.icon className="h-4 w-4 text-[oklch(0.78_0.14_82)] shrink-0" />
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1">{t(item.labelKey) || item.fallback}</span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -237,7 +254,7 @@ export function SearchCommand({ open, onOpenChange, onNavigate }: SearchCommandP
               className="gap-3 py-2.5 cursor-pointer"
             >
               <item.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1">{t(item.labelKey) || item.fallback}</span>
               <span className="text-[10px] text-muted-foreground/50 bg-muted/50 px-1.5 py-0.5 rounded">
                 {t("admin.action") || "Action"}
               </span>
@@ -258,7 +275,7 @@ export function SearchCommand({ open, onOpenChange, onNavigate }: SearchCommandP
               className="gap-3 py-2.5 cursor-pointer"
             >
               <item.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1">{t(item.labelKey) || item.fallback}</span>
             </CommandItem>
           ))}
         </CommandGroup>
