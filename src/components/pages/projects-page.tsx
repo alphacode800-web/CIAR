@@ -33,6 +33,7 @@ export interface Project {
   id: string
   slug: string
   imageUrl: string
+  imageUrls?: string[]
   category: string
   featured: boolean
   published: boolean

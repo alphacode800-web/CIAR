@@ -9,6 +9,7 @@ const localeEnum = z.enum(['en', 'ar', 'fr', 'es', 'de'])
 const createProjectSchema = z.object({
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
   imageUrl: z.string().optional(),
+  imageUrls: z.array(z.string().url()).max(5).optional(),
   category: z.string().max(100).optional(),
   externalUrl: z.string().url().optional().or(z.literal('')),
   tags: z.string().optional(),

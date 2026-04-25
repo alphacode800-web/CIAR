@@ -10,6 +10,7 @@ import {
 
 const updateProjectSchema = z.object({
   imageUrl: z.string().optional(),
+  imageUrls: z.array(z.string().url()).max(5).optional(),
   category: z.string().optional(),
   externalUrl: z.string().url().optional().or(z.literal('')),
   tags: z.string().optional(),

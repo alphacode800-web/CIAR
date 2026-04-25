@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion } from "framer-motion"
-import { Languages } from "lucide-react"
+import { Languages, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -64,6 +64,9 @@ export function ProjectDialog({
         ? {
             slug: project.slug,
             imageUrl: project.imageUrl,
+            imageUrls: Array.isArray(project.imageUrls) && project.imageUrls.length > 0
+              ? project.imageUrls.slice(0, 5)
+              : (project.imageUrl ? [project.imageUrl] : []),
             category: project.category,
             externalUrl: project.externalUrl,
             tags: project.tags,
@@ -73,6 +76,7 @@ export function ProjectDialog({
         : {
             slug: "",
             imageUrl: "",
+            imageUrls: [""],
             category: "",
             externalUrl: "",
             tags: "[]",
@@ -83,6 +87,36 @@ export function ProjectDialog({
   )
 
   const [form, setForm] = useState(defaultForm)
+  const normalizedImageUrls = useMemo(
+    () => (Array.isArray(form.imageUrls) ? form.imageUrls : []),
+    [form.imageUrls]
+  )
+
+  const updateImageAt = (idx: number, url: string) => {
+    setForm((prev) => {
+      const arr = [...(Array.isArray(prev.imageUrls) ? prev.imageUrls : [])]
+      arr[idx] = url
+      return { ...prev, imageUrls: arr, imageUrl: arr.find((item) => item.trim()) || "" }
+    })
+  }
+
+  const addImageSlot = () => {
+    setForm((prev) => {
+      const arr = [...(Array.isArray(prev.imageUrls) ? prev.imageUrls : [])]
+      if (arr.length >= 5) return prev
+      return { ...prev, imageUrls: [...arr, ""] }
+    })
+  }
+
+  const removeImageSlot = (idx: number) => {
+    setForm((prev) => {
+      const arr = [...(Array.isArray(prev.imageUrls) ? prev.imageUrls : [])]
+      arr.splice(idx, 1)
+      const next = arr.length > 0 ? arr : [""]
+      return { ...prev, imageUrls: next, imageUrl: next.find((item) => item.trim()) || "" }
+    })
+  }
+
 
   const updateForm = (key: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -144,7 +178,8 @@ export function ProjectDialog({
     onSave(
       {
         slug: form.slug,
-        imageUrl: form.imageUrl,
+        imageUrls: normalizedImageUrls.map((item) => item.trim()).filter(Boolean).slice(0, 5),
+        imageUrl: normalizedImageUrls.map((item) => item.trim()).find(Boolean) || "",
         category: form.category,
         externalUrl: form.externalUrl,
         tags: form.tags,
@@ -206,12 +241,50 @@ export function ProjectDialog({
             </div>
           </div>
 
-          {/* ── Image Upload ── */}
-          <ImageUpload
-            value={form.imageUrl}
-            onChange={(url) => updateForm("imageUrl", url)}
-            label={t("admin.project_image") || "Project Image"}
-          />
+          {/* ── Multi Image Upload (up to 5) ── */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>{t("admin.project_image") || "Project Images"}</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addImageSlot}
+                disabled={normalizedImageUrls.length >= 5}
+                className="gap-1.5"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                {(t("common.add") || "Add")} ({normalizedImageUrls.length}/5)
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {normalizedImageUrls.map((img, idx) => (
+                <div key={`image-slot-${idx}`} className="rounded-xl border border-border/40 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {(t("admin.project_image") || "Image")} {idx + 1}
+                    </span>
+                    {normalizedImageUrls.length > 1 && (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => removeImageSlot(idx)}
+                        className="h-7 w-7 text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                  <ImageUpload
+                    value={img}
+                    onChange={(url) => updateImageAt(idx, url)}
+                    showUrlInput
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* ── Toggles ── */}
           <div className="flex items-center gap-6">

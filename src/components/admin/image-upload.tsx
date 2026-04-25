@@ -11,12 +11,13 @@ interface ImageUploadProps {
   value: string
   onChange: (url: string) => void
   label?: string
+  showUrlInput?: boolean
 }
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"]
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
-export function ImageUpload({ value, onChange, label }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, label, showUrlInput = true }: ImageUploadProps) {
   const { t } = useI18n()
   const [dragging, setDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -105,12 +106,27 @@ export function ImageUpload({ value, onChange, label }: ImageUploadProps) {
     setError(null)
   }
 
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value)
+    setError(null)
+  }
+
   return (
     <div className="space-y-2">
       {label && (
         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           {label}
         </label>
+      )}
+
+      {showUrlInput && (
+        <input
+          type="url"
+          value={value}
+          onChange={handleUrlChange}
+          placeholder={t("admin.image_url") || "https://example.com/image.jpg"}
+          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary/50"
+        />
       )}
 
       {value ? (

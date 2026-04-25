@@ -10,16 +10,16 @@ interface Currency {
 }
 
 export const CURRENCIES: Currency[] = [
-  { code: "USD", name: "US Dollar", flag: "🇺🇸", symbol: "$" },
-  { code: "EUR", name: "Euro", flag: "🇪🇺", symbol: "€" },
-  { code: "GBP", name: "British Pound", flag: "🇬🇧", symbol: "£" },
-  { code: "SAR", name: "Saudi Riyal", flag: "🇸🇦", symbol: "ر.س" },
-  { code: "AED", name: "UAE Dirham", flag: "🇦🇪", symbol: "د.إ" },
-  { code: "QAR", name: "Qatari Riyal", flag: "🇶🇦", symbol: "ر.ق" },
-  { code: "EGP", name: "Egyptian Pound", flag: "🇪🇬", symbol: "ج.م" },
-  { code: "SDG", name: "Sudanese Pound", flag: "🇸🇩", symbol: "ج.س" },
-  { code: "TRY", name: "Turkish Lira", flag: "🇹🇷", symbol: "₺" },
-  { code: "CNY", name: "Chinese Yuan", flag: "🇨🇳", symbol: "¥" },
+  { code: "USD", name: "US Dollar", flag: "US", symbol: "$" },
+  { code: "EUR", name: "Euro", flag: "EU", symbol: "€" },
+  { code: "GBP", name: "British Pound", flag: "GB", symbol: "£" },
+  { code: "SAR", name: "Saudi Riyal", flag: "SA", symbol: "ر.س" },
+  { code: "AED", name: "UAE Dirham", flag: "AE", symbol: "د.إ" },
+  { code: "QAR", name: "Qatari Riyal", flag: "QA", symbol: "ر.ق" },
+  { code: "EGP", name: "Egyptian Pound", flag: "EG", symbol: "ج.م" },
+  { code: "SDG", name: "Sudanese Pound", flag: "SD", symbol: "ج.س" },
+  { code: "TRY", name: "Turkish Lira", flag: "TR", symbol: "₺" },
+  { code: "CNY", name: "Chinese Yuan", flag: "CN", symbol: "¥" },
 ]
 
 interface CurrencyContextType {

@@ -248,9 +248,13 @@ export const db: any = {
       return row
     },
     async create(args: AnyRecord) {
+      const normalizedImageUrls = Array.isArray(args.data.imageUrls)
+        ? args.data.imageUrls.map((item: unknown) => String(item ?? '').trim()).filter(Boolean).slice(0, 5)
+        : []
       const data = {
         slug: args.data.slug,
-        imageUrl: args.data.imageUrl ?? '',
+        imageUrl: normalizedImageUrls[0] ?? args.data.imageUrl ?? '',
+        imageUrls: normalizedImageUrls,
         category: args.data.category ?? '',
         externalUrl: args.data.externalUrl ?? '',
         tags: args.data.tags ?? '[]',

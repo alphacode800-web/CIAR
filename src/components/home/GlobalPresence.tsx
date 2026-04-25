@@ -7,18 +7,18 @@ import { cn } from "@/lib/utils"
 import { Globe, MapPin } from "lucide-react"
 
 const regions = [
-  { name: "Saudi Arabia", code: "SA", flag: "🇸🇦", key: "home.region_sa" },
-  { name: "United Arab Emirates", code: "AE", flag: "🇦🇪", key: "home.region_ae" },
-  { name: "Egypt", code: "EG", flag: "🇪🇬", key: "home.region_eg" },
-  { name: "Kuwait", code: "KW", flag: "🇰🇼", key: "home.region_kw" },
-  { name: "Qatar", code: "QA", flag: "🇶🇦", key: "home.region_qa" },
-  { name: "Bahrain", code: "BH", flag: "🇧🇭", key: "home.region_bh" },
-  { name: "Oman", code: "OM", flag: "🇴🇲", key: "home.region_om" },
-  { name: "Jordan", code: "JO", flag: "🇯🇴", key: "home.region_jo" },
-  { name: "Morocco", code: "MA", flag: "🇲🇦", key: "home.region_ma" },
-  { name: "Turkey", code: "TR", flag: "🇹🇷", key: "home.region_tr" },
-  { name: "Germany", code: "DE", flag: "🇩🇪", key: "home.region_de" },
-  { name: "France", code: "FR", flag: "🇫🇷", key: "home.region_fr" },
+  { name: "Saudi Arabia", code: "SA", key: "home.region_sa" },
+  { name: "United Arab Emirates", code: "AE", key: "home.region_ae" },
+  { name: "Egypt", code: "EG", key: "home.region_eg" },
+  { name: "Kuwait", code: "KW", key: "home.region_kw" },
+  { name: "Qatar", code: "QA", key: "home.region_qa" },
+  { name: "Bahrain", code: "BH", key: "home.region_bh" },
+  { name: "Oman", code: "OM", key: "home.region_om" },
+  { name: "Jordan", code: "JO", key: "home.region_jo" },
+  { name: "Morocco", code: "MA", key: "home.region_ma" },
+  { name: "Turkey", code: "TR", key: "home.region_tr" },
+  { name: "Germany", code: "DE", key: "home.region_de" },
+  { name: "France", code: "FR", key: "home.region_fr" },
 ]
 
 const fadeUp = (delay = 0) => ({
@@ -63,7 +63,7 @@ export function GlobalPresence() {
               transition={{ duration: 0.4, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
               className="glass-subtle rounded-xl border border-[oklch(0.78_0.14_82/8%)] p-4 flex flex-col items-center gap-2 text-center hover:border-[oklch(0.78_0.14_82/20%)] hover:bg-[oklch(0.78_0.14_82/3%)] transition-all duration-300 group"
             >
-              <span className="text-2xl">{region.flag}</span>
+              <span className="text-xs font-mono rounded-md border border-border/40 px-2 py-1">{region.code}</span>
               <span className="text-sm font-medium group-hover:text-[oklch(0.78_0.14_82)] transition-colors duration-300">
                 {t(region.key) || region.name}
               </span>

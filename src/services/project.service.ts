@@ -76,6 +76,7 @@ export interface ProjectWithTranslations {
   id: string
   slug: string
   imageUrl: string
+  imageUrls: string[]
   category: string
   featured: boolean
   published: boolean
@@ -91,6 +92,7 @@ export interface ProjectWithTranslations {
 export interface CreateProjectInput {
   slug: string
   imageUrl?: string
+  imageUrls?: string[]
   category?: string
   externalUrl?: string
   tags?: string
@@ -102,6 +104,7 @@ export interface CreateProjectInput {
 
 export interface UpdateProjectInput {
   imageUrl?: string
+  imageUrls?: string[]
   category?: string
   externalUrl?: string
   tags?: string
@@ -143,6 +146,7 @@ function mapProject(row: {
   id: string
   slug: string
   imageUrl: string
+  imageUrls?: string[]
   category: string
   featured: boolean
   published: boolean
@@ -158,6 +162,12 @@ function mapProject(row: {
     id: row.id,
     slug: row.slug,
     imageUrl: row.imageUrl,
+    imageUrls:
+      Array.isArray(row.imageUrls) && row.imageUrls.length > 0
+        ? row.imageUrls
+        : row.imageUrl
+          ? [row.imageUrl]
+          : [],
     category: row.category,
     featured: row.featured,
     published: row.published,
@@ -359,7 +369,15 @@ export async function getProjectById(
 export async function createProject(
   input: CreateProjectInput,
 ): Promise<ProjectWithTranslations> {
-  const { translations = [], ...data } = input
+  const { translations = [], ...rawData } = input
+  const normalizedImageUrls = Array.isArray(rawData.imageUrls)
+    ? rawData.imageUrls.map((item) => item.trim()).filter(Boolean).slice(0, 5)
+    : []
+  const data = {
+    ...rawData,
+    imageUrls: normalizedImageUrls,
+    imageUrl: normalizedImageUrls[0] || rawData.imageUrl || '',
+  }
 
   const project = await db.$transaction(async (tx) => {
     const created = await tx.project.create({
@@ -421,9 +439,21 @@ export async function updateProject(
   id: string,
   input: UpdateProjectInput,
 ): Promise<ProjectWithTranslations> {
+  const normalizedImageUrls = Array.isArray(input.imageUrls)
+    ? input.imageUrls.map((item) => item.trim()).filter(Boolean).slice(0, 5)
+    : undefined
+  const payload = {
+    ...input,
+    ...(normalizedImageUrls
+      ? {
+          imageUrls: normalizedImageUrls,
+          imageUrl: normalizedImageUrls[0] || input.imageUrl || '',
+        }
+      : {}),
+  }
   const project = await db.project.update({
     where: { id },
-    data: input,
+    data: payload,
     include: {
       translations: {
         select: {
