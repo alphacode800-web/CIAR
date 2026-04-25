@@ -61,11 +61,22 @@ export function NewsTickerTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items: cleaned }),
       })
-      if (!res.ok) throw new Error("Save failed")
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}))
+        const message =
+          typeof payload?.error === "string"
+            ? payload.error
+            : t("admin.settings_save_failed") || "Failed to save"
+        throw new Error(message)
+      }
       setItems(cleaned)
       toast.success(t("admin.settings_saved") || "Saved successfully")
-    } catch {
-      toast.error(t("admin.settings_save_failed") || "Failed to save")
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : t("admin.settings_save_failed") || "Failed to save"
+      toast.error(message)
     } finally {
       setSaving(false)
     }
