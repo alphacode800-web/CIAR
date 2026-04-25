@@ -52,6 +52,7 @@ export default function Page() {
   const [projects, setProjects] = useState<Project[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [newsTickerItems, setNewsTickerItems] = useState<string[]>([])
 
   const fetchData = useCallback(async () => {
     try {
@@ -73,6 +74,15 @@ export default function Page() {
           : data.stats || { totalProjects: 0, totalViews: 0 }),
         totalCategories: categoryData.length,
       })
+
+      try {
+        const tickerRes = await fetch("/api/admin/news-ticker")
+        const tickerData = await tickerRes.json()
+        const items = Array.isArray(tickerData.items) ? tickerData.items : []
+        setNewsTickerItems(items)
+      } catch {
+        setNewsTickerItems([])
+      }
     } catch {
       // ignore
     } finally {
@@ -115,7 +125,11 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <HomePage stats={stats} featuredProjects={projects.filter((p) => p.published)} />
+                <HomePage
+                  stats={stats}
+                  featuredProjects={projects.filter((p) => p.published)}
+                  newsTickerItems={newsTickerItems}
+                />
               </Suspense>
             </motion.div>
           )}

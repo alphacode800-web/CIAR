@@ -16,6 +16,7 @@ import {
   Users,
   FileText,
   Globe,
+  Newspaper,
 } from "lucide-react"
 import {
   CommandDialog,
@@ -89,6 +90,14 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
     icon: Languages,
     group: "pages",
     action: (nav) => nav?.("translations"),
+  },
+  {
+    id: "news-ticker",
+    labelKey: "admin.cmd_go_news_ticker",
+    fallback: "Go to News Ticker",
+    icon: Newspaper,
+    group: "pages",
+    action: (nav) => nav?.("news-ticker"),
   },
   {
     id: "settings",

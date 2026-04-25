@@ -15,6 +15,7 @@ const MediaTab = lazy(() => import("@/components/admin/media-tab").then(m => ({ 
 const ContactsTab = lazy(() => import("@/components/admin/contacts-tab").then(m => ({ default: m.ContactsTab })))
 const UsersTab = lazy(() => import("@/components/admin/users-tab").then(m => ({ default: m.UsersTab })))
 const HomeSectionsTab = lazy(() => import("@/components/admin/home-sections-tab").then(m => ({ default: m.HomeSectionsTab })))
+const NewsTickerTab = lazy(() => import("@/components/admin/news-ticker-tab").then(m => ({ default: m.NewsTickerTab })))
 const SeoTab = lazy(() => import("@/components/admin/seo-tab").then(m => ({ default: m.SeoTab })))
 const AppearanceTab = lazy(() => import("@/components/admin/appearance-tab").then(m => ({ default: m.AppearanceTab })))
 const SiteSettingsTab = lazy(() => import("@/components/admin/site-settings-tab").then(m => ({ default: m.SiteSettingsTab })))
@@ -57,6 +58,8 @@ export function AdminPage() {
         return <UsersTab />
       case "home-sections":
         return <HomeSectionsTab />
+      case "news-ticker":
+        return <NewsTickerTab />
       case "seo":
         return <SeoTab />
       case "appearance":

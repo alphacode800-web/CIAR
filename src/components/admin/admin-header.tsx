@@ -58,6 +58,7 @@ const TAB_LABELS: Record<string, string> = {
   users: "admin.users",
   media: "admin.media",
   "home-sections": "admin.home_sections",
+  "news-ticker": "admin.news_ticker",
   seo: "admin.seo",
   "data-export": "admin.data_export",
 }
@@ -74,6 +75,7 @@ const TAB_DESCRIPTIONS: Record<string, { key: string; fallback: string }> = {
   contacts: { key: "admin.tab_desc_contacts", fallback: "Review and respond to submitted messages" },
   users: { key: "admin.tab_desc_users", fallback: "Manage user accounts, roles, and permissions" },
   "home-sections": { key: "admin.tab_desc_home_sections", fallback: "Customize homepage section order and visibility" },
+  "news-ticker": { key: "admin.tab_desc_news_ticker", fallback: "Edit the scrolling news ticker in hero header" },
   seo: { key: "admin.tab_desc_seo", fallback: "Meta tags, social previews, and sitemap" },
   appearance: { key: "admin.tab_desc_appearance", fallback: "Colors, typography, layout, and effects" },
   settings: { key: "admin.tab_desc_settings", fallback: "General configuration and site preferences" },

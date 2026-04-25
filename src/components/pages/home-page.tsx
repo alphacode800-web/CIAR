@@ -69,6 +69,7 @@ interface FeaturedProject {
 interface HomePageProps {
   stats: HomeStats
   featuredProjects?: FeaturedProject[]
+  newsTickerItems?: string[]
 }
 
 const fadeUp = (delay = 0) => ({
@@ -170,7 +171,7 @@ function ProjectCard({
   )
 }
 
-export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
+export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }: HomePageProps) {
   const { t, locale, dir } = useI18n()
   const { navigate } = useRouter()
   const heroRef = useRef<HTMLDivElement>(null)
@@ -239,13 +240,14 @@ export function HomePage({ stats, featuredProjects = [] }: HomePageProps) {
   ]
 
   const luxuryPills = ["Glass UI", "AI Optimized", "Global Standards"]
-  const newsTickerItems = [
+  const defaultNewsTickerItems = [
     "Launching new enterprise platforms this quarter",
     "24/7 technical support now available for all clients",
     "New AI-powered modules added to our ecosystem",
     "International expansion across multiple industries",
   ]
-  const newsTicker = newsTickerItems.join("   \u2022   ")
+  const tickerItems = newsTickerItems.length > 0 ? newsTickerItems : defaultNewsTickerItems
+  const newsTicker = tickerItems.join("   \u2022   ")
 
   return (
     <div ref={heroRef} className="relative overflow-hidden">
