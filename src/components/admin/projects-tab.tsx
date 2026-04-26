@@ -234,17 +234,35 @@ export function ProjectsTab() {
         }
         toast.success(t("admin.project_updated") || "Project updated")
       } else {
-        const translationsArr = Object.entries(translations).map(([locale, tr]) => ({
-          locale,
-          ...tr,
-        }))
+        // Send only meaningful translations; empty names fail API validation.
+        const translationsArr = Object.entries(translations)
+          .map(([locale, tr]) => ({
+            locale,
+            name: tr.name.trim(),
+            tagline: tr.tagline.trim(),
+            description: tr.description.trim(),
+          }))
+          .filter((tr) => tr.name.length > 0)
         const res = await fetch("/api/projects", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...projectData, translations: translationsArr }),
         })
-        if (res.ok) toast.success(t("admin.project_created") || "Project created")
-        else toast.error(t("admin.project_create_failed") || "Failed to create project")
+        if (res.ok) {
+          toast.success(t("admin.project_created") || "Project created")
+        } else {
+          let message = t("admin.project_create_failed") || "Failed to create project"
+          try {
+            const payload = await res.json()
+            if (typeof payload?.error === "string") {
+              message = payload.error
+            }
+          } catch {
+            // ignore parse errors and use fallback message
+          }
+          toast.error(message)
+          return
+        }
       }
       setDialogOpen(false)
       setEditProject(null)
