@@ -24,7 +24,7 @@ const imagePathSchema = z
 
 const createProjectSchema = z.object({
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
-  imageUrl: imagePathSchema.optional(),
+  imageUrl: imagePathSchema.or(z.literal('')).optional(),
   imageUrls: z.array(imagePathSchema).max(5).optional(),
   category: z.string().max(100).optional(),
   externalUrl: z.string().url().optional().or(z.literal('')),
@@ -83,10 +83,16 @@ export async function POST(request: NextRequest) {
     const parsed = createProjectSchema.safeParse(body)
 
     if (!parsed.success) {
+      const flattened = parsed.error.flatten()
+      const fieldErrors = flattened.fieldErrors
+      const firstFieldError = Object.values(fieldErrors)
+        .flat()
+        .find((msg): msg is string => typeof msg === 'string' && msg.length > 0)
+      const firstFormError = flattened.formErrors.find((msg) => msg.length > 0)
       return NextResponse.json(
         {
-          error: 'Validation error',
-          details: parsed.error.flatten(),
+          error: firstFieldError || firstFormError || 'Validation error',
+          details: flattened,
         },
         { status: 400 },
       )
