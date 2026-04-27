@@ -8,8 +8,7 @@ import { Globe, MapPin } from "lucide-react"
 
 const regions = [
   { name: "Saudi Arabia", code: "SA", key: "home.region_sa" },
-  { name: "United Arab Emirates", code: "AE", key: "home.region_ae" },
-  { name: "Egypt", code: "EG", key: "home.region_eg" },
+  { name: "Sudan", code: "SD", key: "home.region_sd" },
   { name: "Kuwait", code: "KW", key: "home.region_kw" },
   { name: "Qatar", code: "QA", key: "home.region_qa" },
   { name: "Bahrain", code: "BH", key: "home.region_bh" },

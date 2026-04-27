@@ -55,7 +55,7 @@ export function Footer() {
               <div className="mt-5 space-y-2.5 text-sm text-muted-foreground">
                 <p className="inline-flex items-center gap-2">
                   <Phone className="h-4 w-4 text-primary" />
-                  +971 50 000 0000
+                  +966 50 000 0000
                 </p>
                 <p className="inline-flex items-center gap-2">
                   <Mail className="h-4 w-4 text-primary" />
@@ -63,7 +63,7 @@ export function Footer() {
                 </p>
                 <p className="inline-flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-primary" />
-                  {isAr ? "دبي، الإمارات العربية المتحدة" : "Dubai, United Arab Emirates"}
+                  {isAr ? "الرياض، المملكة العربية السعودية" : "Riyadh, Saudi Arabia"}
                 </p>
               </div>
 
