@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Geist, Geist_Mono, Changa } from "next/font/google"
+import { Geist, Geist_Mono, Changa, Aref_Ruqaa_Ink } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
@@ -24,6 +24,13 @@ const changa = Changa({
   variable: "--font-changa",
   subsets: ["arabic", "latin"],
   weight: ["200", "300", "400", "500", "600", "700", "800"],
+  display: "swap",
+})
+
+const arefRuqaaInk = Aref_Ruqaa_Ink({
+  variable: "--font-aref-ruqaa-ink",
+  subsets: ["arabic"],
+  weight: ["400", "700"],
   display: "swap",
 })
 
@@ -76,7 +83,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${changa.variable} font-sans antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${changa.variable} ${arefRuqaaInk.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"

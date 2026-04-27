@@ -8,11 +8,6 @@ import {
   Layers,
   Zap,
   Sparkles,
-  ExternalLink,
-  Globe,
-  Building,
-  ShoppingCart,
-  Plane,
   ShieldCheck,
   Rocket,
   Gauge,
@@ -79,97 +74,37 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
 })
 
-const categoryIcons: Record<string, React.ElementType> = {
-  "Real Estate": Building,
-  "Car Rental": Globe,
-  "E-Commerce": ShoppingCart,
-  "Tourism": Plane,
-  "Food Delivery": Sparkles,
+type PlatformBanner = {
+  id: string
+  titleEn: string
+  titleAr: string
+  descriptionEn: string
+  descriptionAr: string
+  ctaTextEn: string
+  ctaTextAr: string
+  ctaHref: string
+  imageUrl1: string
+  imageUrl2: string
+  imageUrl3: string
+  module?: {
+    slug?: string
+  }
 }
 
-function ProjectCard({
-  project,
-  locale,
-  navigate,
-  index,
-}: {
-  project: FeaturedProject
-  locale: string
-  navigate: (route: { page: "project"; slug: string }) => void
-  index: number
-}) {
-  const cardRef = useRef<HTMLDivElement>(null)
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const card = cardRef.current
-    if (!card) return
-    const rect = card.getBoundingClientRect()
-    card.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`)
-    card.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`)
-  }, [])
-
-  const translation = project.translations.find((tr) => tr.locale === locale)
-  const name = translation?.name ?? project.translations[0]?.name ?? ""
-  const tagline = translation?.tagline ?? project.translations[0]?.tagline ?? ""
-  const IconComponent = categoryIcons[project.category] || Layers
-
-  return (
-    <motion.div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      {...fadeUp(index * 0.08)}
-      className="card-spotlight group rounded-2xl border border-[oklch(0.78_0.14_82/12%)] bg-card/50 backdrop-blur-sm overflow-hidden transition-all duration-500 hover:border-[oklch(0.78_0.14_82/25%)] hover:shadow-xl hover:shadow-[oklch(0.78_0.14_82/5%)]"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[oklch(0.14_0.028_265)] to-[oklch(0.10_0.02_265)]">
-        {project.imageUrl ? (
-          <img
-            src={project.imageUrl}
-            alt={name}
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/10%)] flex items-center justify-center">
-              <IconComponent className="h-7 w-7 text-[oklch(0.78_0.14_82/50%)]" />
-            </div>
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.10_0.025_265)] via-transparent to-transparent opacity-60" />
-        <div className="absolute top-3 start-3">
-          <Badge className="glass text-xs font-medium border-[oklch(0.78_0.14_82/20%)]">
-            {project.category}
-          </Badge>
-        </div>
-        {project.externalUrl && (
-          <a
-            href={project.externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className={cn(
-              "absolute top-3 end-3 h-8 w-8 rounded-full glass border border-[oklch(0.78_0.14_82/20%)]",
-              "flex items-center justify-center text-muted-foreground",
-              "opacity-0 translate-y-1 transition-all duration-300",
-              "group-hover:opacity-100 group-hover:translate-y-0",
-              "hover:text-[oklch(0.78_0.14_82)]"
-            )}
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-        )}
-      </div>
-      <div className="p-5">
-        <h3 className="text-lg font-semibold text-foreground group-hover:text-[oklch(0.78_0.14_82)] transition-colors duration-300 line-clamp-1">
-          {name}
-        </h3>
-        <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-          {tagline}
-        </p>
-      </div>
-    </motion.div>
-  )
-}
+const FALLBACK_BANNERS: PlatformBanner[] = [
+  { id: "fashion", titleEn: "CIAR Fashion", titleAr: "CiAr موضة", descriptionEn: "Women's and men's fashion, dresses, shoes, bags, and accessories.", descriptionAr: "موضة نسائية ورجالية: فساتين، احذية، جزادين، اكسسوارات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-1.png", imageUrl2: "/images/headers/hero-2.png", imageUrl3: "/images/headers/hero-3.png" },
+  { id: "global", titleEn: "CIAR Global Products", titleAr: "CiAr للمنتجات الصينية والدولية", descriptionEn: "Chinese and international products across industries.", descriptionAr: "للمنتجات الصينية والدولية بين الشركات العالمية من كافة الصناعات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-2.png", imageUrl2: "/images/headers/hero-3.png", imageUrl3: "/images/headers/hero-4.png" },
+  { id: "vip", titleEn: "CIAR VIP", titleAr: "CiAr VIP", descriptionEn: "Premium experience for VIP customers and luxury brands.", descriptionAr: "لكبار الشخصيات، البسة رجالية ونسائية وماركات عالمية.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-3.png", imageUrl2: "/images/headers/hero-4.png", imageUrl3: "/images/headers/hero-1.png" },
+  { id: "mall", titleEn: "CIAR E-Mall", titleAr: "مول CiAr الالكتروني", descriptionEn: "Daily offers and exclusive features in one giant mall.", descriptionAr: "أكبر مول الكتروني عالميا مع عروض وميزات يومية.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-4.png", imageUrl2: "/images/headers/hero-1.png", imageUrl3: "/images/headers/hero-2.png" },
+  { id: "tourism", titleEn: "CIAR Tourism", titleAr: "CiAr الدليل والوسيط السياحي", descriptionEn: "Global tourism services and offers.", descriptionAr: "الدليل والوسيط السياحي لكافة دول وشركات العالم.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-1.png", imageUrl2: "/images/headers/hero-3.png", imageUrl3: "/images/headers/hero-2.png" },
+  { id: "realestate", titleEn: "CIAR Real Estate", titleAr: "دليل CiAr للتسويق العقاري", descriptionEn: "Buy, sell, and rent all property types.", descriptionAr: "بيع وشراء وأجار كافة انواع العقارات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-2.png", imageUrl2: "/images/headers/hero-4.png", imageUrl3: "/images/headers/hero-1.png" },
+  { id: "cars", titleEn: "CIAR Cars", titleAr: "دليل CiAr لتجارة السيارات", descriptionEn: "Buy, sell, and rent all car types.", descriptionAr: "بيع وشراء وأجار كافة انواع السيارات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-3.png", imageUrl2: "/images/headers/hero-1.png", imageUrl3: "/images/headers/hero-4.png" },
+  { id: "services", titleEn: "CIAR Services", titleAr: "دليل CiAr للصيانة والتنظيف", descriptionEn: "Home and office maintenance and cleaning.", descriptionAr: "صيانة المنازل والمكاتب وخدمات التنظيف.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-4.png", imageUrl2: "/images/headers/hero-2.png", imageUrl3: "/images/headers/hero-3.png" },
+  { id: "shipping", titleEn: "CIAR Shipping", titleAr: "CiAr دليل الشحن العالمي", descriptionEn: "Shipping by land, sea, and air worldwide.", descriptionAr: "الشحن العالمي برا وبحرا وجوا إلى كافة دول العالم.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-1.png", imageUrl2: "/images/headers/hero-4.png", imageUrl3: "/images/headers/hero-3.png" },
+  { id: "jobs", titleEn: "CIAR Jobs", titleAr: "CiAr دليل شواغر التوظيف", descriptionEn: "Jobs, career search, and employee housing.", descriptionAr: "شواغر التوظيف والبحث عن العمل وسكن موظفين.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-2.png", imageUrl2: "/images/headers/hero-1.png", imageUrl3: "/images/headers/hero-4.png" },
+  { id: "marketing", titleEn: "CIAR Ads & Marketing", titleAr: "CiAr استضافة وتصميم الحملات الاعلانية", descriptionEn: "Design and hosting for full ad campaigns.", descriptionAr: "استضافة وتصميم كافة الحملات الاعلانية.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-3.png", imageUrl2: "/images/headers/hero-2.png", imageUrl3: "/images/headers/hero-1.png" },
+  { id: "investment", titleEn: "CIAR Investment", titleAr: "CiAr أسهم المنصة والمكافآت", descriptionEn: "Member shares and rewards in CIAR platform.", descriptionAr: "أسهم منصتنا الخاصة بالأعضاء والمكافآت.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-4.png", imageUrl2: "/images/headers/hero-3.png", imageUrl3: "/images/headers/hero-2.png" },
+]
 
 export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }: HomePageProps) {
   const { t, locale, dir } = useI18n()
@@ -187,6 +122,7 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
 
   const [animatedStats, setAnimatedStats] = useState({ projects: 0, views: 0, categories: 0 })
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [platformBanners, setPlatformBanners] = useState<PlatformBanner[]>(FALLBACK_BANNERS)
   const statsRef = useRef<HTMLDivElement>(null)
   const statsInView = useInView(statsRef, { once: true, margin: "-50px" })
 
@@ -217,6 +153,23 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    fetch("/api/super-platform/banners")
+      .then((r) => r.json())
+      .then((d) => {
+        const banners = Array.isArray(d?.banners) ? d.banners : []
+        const normalized = banners
+          .filter((b: any) => b?.module?.visibility === "VISIBLE" && b?.module?.isEnabled && b?.isActive)
+          .slice(0, 12)
+        if (normalized.length > 0) {
+          setPlatformBanners(normalized)
+        }
+      })
+      .catch(() => {
+        setPlatformBanners(FALLBACK_BANNERS)
+      })
+  }, [])
+
   const formatNumber = (num: number) => {
     try {
       return num.toLocaleString(
@@ -225,6 +178,28 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
     } catch {
       return num.toLocaleString()
     }
+  }
+
+  const resolvePlatformSlug = (banner: PlatformBanner) => {
+    if (banner.module?.slug) return banner.module.slug.toLowerCase()
+    const ctaMatch = banner.ctaHref?.match(/module=([^&]+)/i)
+    if (ctaMatch?.[1]) return ctaMatch[1].toLowerCase()
+
+    const fallbackMap: Record<string, string> = {
+      fashion: "fashion",
+      global: "global_products",
+      vip: "vip",
+      mall: "mall",
+      tourism: "tourism",
+      realestate: "real_estate",
+      cars: "cars",
+      services: "services",
+      shipping: "shipping",
+      jobs: "jobs",
+      marketing: "ads_marketing",
+      investment: "investment",
+    }
+    return fallbackMap[banner.id] || banner.id.toLowerCase()
   }
 
   const statItems = [
@@ -247,7 +222,7 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
     "International expansion across multiple industries",
   ]
   const tickerItems = newsTickerItems.length > 0 ? newsTickerItems : defaultNewsTickerItems
-  const newsTicker = tickerItems.join("   \u2022   ")
+  const tickerLoopItems = [...tickerItems, ...tickerItems]
 
   return (
     <div ref={heroRef} className="relative overflow-hidden">
@@ -292,22 +267,31 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
         <div className="absolute inset-0 dot-pattern opacity-35" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,oklch(0.10_0.025_265/45%)_70%,oklch(0.10_0.025_265/75%)_100%)]" />
 
-        <div className="absolute top-18 inset-x-0 z-30 border-y border-[oklch(0.78_0.14_82/18%)] bg-[oklch(0.10_0.025_265/72%)] backdrop-blur-sm overflow-hidden">
-          <div className="mx-auto max-w-7xl flex items-center">
-            <div className="shrink-0 px-3 sm:px-4 py-2 border-e border-[oklch(0.78_0.14_82/16%)]">
-              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[oklch(0.82_0.145_85)]">
-                News
-              </span>
-            </div>
-            <div className="relative flex-1 overflow-hidden py-2">
-              <motion.div
-                className="flex w-max whitespace-nowrap text-[12px] sm:text-[13px] text-foreground/85 font-medium"
-                animate={{ x: dir === "rtl" ? ["-50%", "0%"] : ["0%", "-50%"] }}
-                transition={{ duration: 26, repeat: Infinity, ease: "linear" }}
-              >
-                <span className="px-6">{newsTicker}</span>
-                <span className="px-6">{newsTicker}</span>
-              </motion.div>
+        <div className="absolute top-20 inset-x-0 z-30 px-4 sm:px-6">
+          <div className="mx-auto max-w-7xl overflow-hidden rounded-xl border border-[oklch(0.78_0.14_82/24%)] bg-black/55 shadow-lg backdrop-blur-md">
+            <div className="flex items-center">
+              <div className="shrink-0 px-3 sm:px-4 py-2.5 border-e border-white/20 bg-[oklch(0.78_0.14_82/22%)]">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-white">
+                  {locale === "ar" ? "أخبار" : "News"}
+                </span>
+              </div>
+              <div className="relative flex-1 overflow-hidden py-2.5">
+                <motion.div
+                  className="flex w-max whitespace-nowrap text-[12px] sm:text-[13px] text-white/95 font-medium tracking-wide"
+                  animate={{ x: dir === "rtl" ? ["-50%", "0%"] : ["0%", "-50%"] }}
+                  transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+                >
+                  {tickerLoopItems.map((item, index) => (
+                    <span
+                      key={`${item}-${index}`}
+                      className="inline-flex items-center gap-4 px-6 sm:px-8"
+                    >
+                      <span className="text-white/95">{item}</span>
+                      <span className="text-[oklch(0.82_0.145_85)]">•</span>
+                    </span>
+                  ))}
+                </motion.div>
+              </div>
             </div>
           </div>
         </div>
@@ -402,36 +386,61 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
 
       <div className="glow-line-gold" />
 
-      {/* ═══ 2. All Platforms Grid (directly after hero) ═══ */}
-      {featuredProjects.length > 0 && (
-        <section className="relative py-24 sm:py-32">
-          <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" />
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <motion.div {...fadeUp(0)} className="text-center mb-14">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[oklch(0.78_0.14_82/20%)] bg-[oklch(0.78_0.14_82/6%)] px-4 py-1.5 text-xs font-semibold text-[oklch(0.82_0.145_85)]">
-                <Layers className="h-3.5 w-3.5" />
-                Platform Ecosystem
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                {t("home.featured_projects") || "Our Platforms"}
-              </h2>
-              <div className="mt-4 mx-auto w-24 h-1 rounded-full bg-gradient-to-r from-[oklch(0.82_0.145_85)] via-[oklch(0.78_0.14_82)] to-[oklch(0.70_0.13_72)]" />
-              <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-                {t("home.featured_subtitle") || "Discover all our digital platforms"}
-              </p>
-            </motion.div>
-            <div className="rounded-3xl glass-premium p-5 sm:p-7">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
-              {featuredProjects.map((project, i) => (
-                <button key={project.id} onClick={() => navigate({ page: "project", slug: project.slug })} className="text-start w-full">
-                  <ProjectCard project={project} locale={locale} navigate={navigate} index={i} />
-                </button>
-              ))}
-              </div>
-            </div>
+      {/* ═══ 2. ALL PLATFORMS GRID (replaces single banner) ═══ */}
+      <section className="relative py-24 sm:py-32">
+        <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <motion.div {...fadeUp(0)} className="text-center mb-14">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[oklch(0.78_0.14_82/20%)] bg-[oklch(0.78_0.14_82/6%)] px-4 py-1.5 text-xs font-semibold text-[oklch(0.82_0.145_85)]">
+              <Layers className="h-3.5 w-3.5" />
+              {locale === "ar" ? "منصات CIAR" : "CIAR Platforms"}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              {locale === "ar" ? "جميع المنصات" : "All Platforms"}
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {platformBanners.map((banner, idx) => {
+              const title = locale === "ar" ? banner.titleAr : banner.titleEn
+              const description = locale === "ar" ? banner.descriptionAr : banner.descriptionEn
+              return (
+                <motion.article
+                  key={banner.id}
+                  {...fadeUp(idx * 0.05)}
+                  className="overflow-hidden rounded-2xl border border-[oklch(0.78_0.14_82/20%)] bg-card/40 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <div className="relative h-56 overflow-hidden bg-[oklch(0.10_0.025_265)]">
+                    <img
+                      src={banner.imageUrl1 || HERO_IMAGES[idx % HERO_IMAGES.length]}
+                      alt={title}
+                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute bottom-3 left-3 flex gap-1.5">
+                      <span className="h-1.5 w-6 rounded-full bg-white" />
+                      <span className="h-1.5 w-2 rounded-full bg-white/50" />
+                      <span className="h-1.5 w-2 rounded-full bg-white/50" />
+                    </div>
+                  </div>
+                  <div className="space-y-2 p-5">
+                    <h3 className="text-xl font-semibold">{title}</h3>
+                    <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
+                    <button
+                      type="button"
+                      onClick={() => navigate({ page: "platform", slug: resolvePlatformSlug(banner) })}
+                      className="inline-flex text-sm font-medium text-[oklch(0.78_0.14_82)] hover:underline"
+                    >
+                      {locale === "ar" ? banner.ctaTextAr || "استكشف القسم" : banner.ctaTextEn || "Explore section"}
+                    </button>
+                  </div>
+                </motion.article>
+              )
+            })}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       <div className="glow-line-gold" />
 

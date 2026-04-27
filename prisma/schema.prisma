@@ -91,6 +91,7 @@ model User {
   updatedAt DateTime @updatedAt
   products  Product[]
   orders    Order[]
+  adminMember AdminMember?
 
   @@index([email])
 }
@@ -246,4 +247,226 @@ model Media {
   updatedAt    DateTime @updatedAt
 
   @@index([category])
+}
+
+// =============================================================================
+// CIAR Super Platform
+// =============================================================================
+
+enum PlatformVisibility {
+  VISIBLE
+  HIDDEN
+}
+
+enum ModuleSlug {
+  FASHION
+  GLOBAL_PRODUCTS
+  VIP
+  MALL
+  TOURISM
+  REAL_ESTATE
+  CARS
+  SERVICES
+  SHIPPING
+  JOBS
+  ADS_MARKETING
+  INVESTMENT
+  DELIVERY_SYSTEM
+  TAXI_SYSTEM
+  INTERNAL_MANAGEMENT
+}
+
+enum AdminAccessRole {
+  ADMIN
+  MANAGER
+  EDITOR
+}
+
+model PlatformModule {
+  id           String             @id @default(cuid())
+  slug         ModuleSlug         @unique
+  nameEn       String
+  nameAr       String
+  descriptionEn String            @default("")
+  descriptionAr String            @default("")
+  visibility   PlatformVisibility @default(VISIBLE)
+  isEnabled    Boolean            @default(true)
+  order        Int                @default(0)
+  banner       PlatformBanner?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+model PlatformBanner {
+  id            String         @id @default(cuid())
+  moduleId       String         @unique
+  titleEn        String
+  titleAr        String
+  descriptionEn  String         @default("")
+  descriptionAr  String         @default("")
+  ctaTextEn      String         @default("Explore")
+  ctaTextAr      String         @default("استكشف")
+  ctaHref        String         @default("#")
+  imageUrl1      String
+  imageUrl2      String
+  imageUrl3      String
+  isActive       Boolean        @default(true)
+  module         PlatformModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model AdminMember {
+  id         String          @id @default(cuid())
+  userId     String?         @unique @db.Uuid
+  name       String
+  email      String          @unique
+  role       AdminAccessRole @default(EDITOR)
+  isActive   Boolean         @default(true)
+  user       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model FashionItem {
+  id         String   @id @default(cuid())
+  title      String
+  category   String
+  price      Decimal  @db.Decimal(12, 2)
+  imageUrl   String   @default("")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model GlobalProductItem {
+  id         String   @id @default(cuid())
+  title      String
+  origin     String   @default("")
+  marketType String   @default("B2C")
+  price      Decimal  @db.Decimal(12, 2)
+  imageUrl   String   @default("")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model VipProductItem {
+  id          String   @id @default(cuid())
+  title       String
+  brand       String   @default("")
+  price       Decimal  @db.Decimal(12, 2)
+  imageUrl    String   @default("")
+  isExclusive Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MallListing {
+  id          String   @id @default(cuid())
+  vendorName  String
+  title       String
+  price       Decimal  @db.Decimal(12, 2)
+  discountPct Int      @default(0)
+  imageUrl    String   @default("")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TourismOffer {
+  id            String   @id @default(cuid())
+  agencyName    String
+  destination   String
+  packagePrice  Decimal  @db.Decimal(12, 2)
+  durationDays  Int      @default(1)
+  isBookable    Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model RealEstateListing {
+  id            String   @id @default(cuid())
+  listingType   String
+  country       String
+  city          String
+  price         Decimal  @db.Decimal(14, 2)
+  areaSqm       Int      @default(0)
+  bedrooms      Int      @default(0)
+  imageUrl      String   @default("")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CarListing {
+  id            String   @id @default(cuid())
+  listingType   String
+  make          String
+  model         String
+  year          Int
+  price         Decimal  @db.Decimal(14, 2)
+  city          String   @default("")
+  imageUrl      String   @default("")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ServiceListing {
+  id            String   @id @default(cuid())
+  category      String
+  providerName  String
+  title         String
+  price         Decimal  @db.Decimal(12, 2)
+  city          String   @default("")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ShippingOrder {
+  id            String   @id @default(cuid())
+  method        String
+  sourceCountry String
+  targetCountry String
+  weightKg      Decimal  @db.Decimal(10, 2)
+  cost          Decimal  @db.Decimal(12, 2)
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model JobListing {
+  id             String   @id @default(cuid())
+  title          String
+  companyName    String
+  city           String
+  salaryRange    String   @default("")
+  hasHousing     Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model MarketingCampaign {
+  id            String   @id @default(cuid())
+  campaignName  String
+  budget        Decimal  @db.Decimal(14, 2)
+  channel       String
+  status        String   @default("DRAFT")
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model InvestmentShare {
+  id             String   @id @default(cuid())
+  investorName   String
+  sharesCount    Int      @default(0)
+  rewardPoints   Int      @default(0)
+  totalValue     Decimal  @db.Decimal(14, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

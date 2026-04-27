@@ -1,6 +1,6 @@
 import { Role } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
-import { signToken } from "@/lib/jwt"
+import { signJwt } from "@/lib/jwt"
 import { hashPassword, comparePassword } from "@/lib/bcrypt"
 
 export async function registerUser(input: {
@@ -28,7 +28,7 @@ export async function registerUser(input: {
   })
 
   const authUser = { id: user.id, email: user.email, name: user.name, role: user.role }
-  const token = signToken(authUser)
+  const token = signJwt(authUser)
   return { user: authUser, token }
 }
 
@@ -42,7 +42,7 @@ export async function loginUser(input: { email: string; password: string }) {
   if (!validPassword) return null
 
   const authUser = { id: user.id, email: user.email, name: user.name, role: user.role }
-  const token = signToken(authUser)
+  const token = signJwt(authUser)
   return { user: authUser, token }
 }
 

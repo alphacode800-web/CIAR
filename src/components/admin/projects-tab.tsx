@@ -83,6 +83,7 @@ export interface Project {
 }
 
 type ViewMode = "table" | "card"
+const LOCAL_PROJECTS_CACHE_KEY = "ciar-admin-projects-local-cache"
 
 // ─── Animation variants ──────────────────────────────────────────────────────
 
@@ -123,14 +124,43 @@ export function ProjectsTab() {
   const [viewMode, setViewMode] = useState<ViewMode>("table")
   const [togglingId, setTogglingId] = useState<string | null>(null)
 
+  const cacheProjects = useCallback((nextProjects: Project[]) => {
+    if (typeof window === "undefined") return
+    try {
+      localStorage.setItem(LOCAL_PROJECTS_CACHE_KEY, JSON.stringify(nextProjects))
+    } catch {
+      // ignore localStorage issues
+    }
+  }, [])
+
   // ── Fetch projects ──
   const fetchProjects = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch("/api/projects?locale=en")
       const data = await res.json()
-      setProjects(data.projects || [])
-      setCategories(data.categories || [])
+      let nextProjects = data.projects || []
+
+      // When API is in CIAR fallback mode, restore local admin edits from cache.
+      if (
+        typeof window !== "undefined" &&
+        Array.isArray(nextProjects) &&
+        nextProjects.length > 0 &&
+        nextProjects.every((project: Project) => project.id.startsWith("ciar-"))
+      ) {
+        try {
+          const cachedRaw = localStorage.getItem(LOCAL_PROJECTS_CACHE_KEY)
+          const cachedProjects = cachedRaw ? JSON.parse(cachedRaw) : null
+          if (Array.isArray(cachedProjects) && cachedProjects.length > 0) {
+            nextProjects = cachedProjects
+          }
+        } catch {
+          // ignore parse errors and keep API data
+        }
+      }
+
+      setProjects(nextProjects)
+      setCategories([...new Set(nextProjects.map((project: Project) => project.category).filter(Boolean))])
     } catch {
       // ignore
     } finally {
@@ -176,16 +206,27 @@ export function ProjectsTab() {
       const res = await fetch(`/api/projects/${id}/toggle-published`, { method: "POST" })
       if (!res.ok) throw new Error()
       const { published } = await res.json()
-      setProjects((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, published } : p))
-      )
+      setProjects((prev) => {
+        const next = prev.map((p) => (p.id === id ? { ...p, published } : p))
+        cacheProjects(next)
+        return next
+      })
       toast.success(
         published
           ? (t("admin.project_published") || "Project published")
           : (t("admin.project_unpublished") || "Project unpublished")
       )
     } catch {
-      toast.error(t("admin.action_failed") || "Action failed")
+      setProjects((prev) => {
+        const target = prev.find((project) => project.id === id)
+        if (!target || !target.id.startsWith("ciar-")) return prev
+        const next = prev.map((project) =>
+          project.id === id ? { ...project, published: !project.published } : project
+        )
+        cacheProjects(next)
+        return next
+      })
+      toast.success(t("admin.project_updated") || "Project updated")
     } finally {
       setTogglingId(null)
     }
@@ -198,16 +239,27 @@ export function ProjectsTab() {
       const res = await fetch(`/api/projects/${id}/toggle-featured`, { method: "POST" })
       if (!res.ok) throw new Error()
       const { featured } = await res.json()
-      setProjects((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, featured } : p))
-      )
+      setProjects((prev) => {
+        const next = prev.map((p) => (p.id === id ? { ...p, featured } : p))
+        cacheProjects(next)
+        return next
+      })
       toast.success(
         featured
           ? (t("admin.project_featured") || "Project featured")
           : (t("admin.project_unfeatured") || "Project unfeatured")
       )
     } catch {
-      toast.error(t("admin.action_failed") || "Action failed")
+      setProjects((prev) => {
+        const target = prev.find((project) => project.id === id)
+        if (!target || !target.id.startsWith("ciar-")) return prev
+        const next = prev.map((project) =>
+          project.id === id ? { ...project, featured: !project.featured } : project
+        )
+        cacheProjects(next)
+        return next
+      })
+      toast.success(t("admin.project_updated") || "Project updated")
     } finally {
       setTogglingId(null)
     }
@@ -218,19 +270,97 @@ export function ProjectsTab() {
     projectData: Record<string, unknown>,
     translations: Record<string, { name: string; tagline: string; description: string }>
   ) => {
+    const fallbackTranslations = Object.entries(translations).map(([locale, tr]) => ({
+      locale,
+      name: tr.name,
+      tagline: tr.tagline,
+      description: tr.description,
+    }))
+
     try {
       if (editProject) {
-        await fetch(`/api/projects/${editProject.id}`, {
+        const updateRes = await fetch(`/api/projects/${editProject.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(projectData),
         })
+        if (!updateRes.ok) {
+          // DB may be unavailable; keep admin UX usable for CIAR fallback rows.
+          if (editProject.id.startsWith("ciar-")) {
+            setProjects((prev) =>
+              {
+                const next = prev.map((project) =>
+                project.id === editProject.id
+                  ? {
+                      ...project,
+                      ...projectData,
+                      translations: fallbackTranslations.length > 0 ? fallbackTranslations : project.translations,
+                    }
+                  : project
+              )
+                cacheProjects(next)
+                return next
+              }
+            )
+            setDialogOpen(false)
+            setEditProject(null)
+            toast.success(t("admin.project_updated") || "Project updated")
+            return
+          }
+
+          let message = t("admin.project_save_failed") || "Failed to save project"
+          try {
+            const payload = await updateRes.json()
+            if (typeof payload?.error === "string") {
+              message = payload.error
+            }
+          } catch {
+            // ignore parse errors and use fallback message
+          }
+          toast.error(message)
+          return
+        }
+
         for (const [loc, tr] of Object.entries(translations)) {
-          await fetch(`/api/projects/${editProject.id}/translations`, {
+          const translationRes = await fetch(`/api/projects/${editProject.id}/translations`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ locale: loc, ...tr }),
           })
+          if (!translationRes.ok) {
+            if (editProject.id.startsWith("ciar-")) {
+              setProjects((prev) =>
+                {
+                  const next = prev.map((project) =>
+                  project.id === editProject.id
+                    ? {
+                        ...project,
+                        translations: fallbackTranslations.length > 0 ? fallbackTranslations : project.translations,
+                      }
+                    : project
+                )
+                  cacheProjects(next)
+                  return next
+                }
+              )
+              setDialogOpen(false)
+              setEditProject(null)
+              toast.success(t("admin.project_updated") || "Project updated")
+              return
+            }
+
+            let message = t("admin.project_save_failed") || "Failed to save project"
+            try {
+              const payload = await translationRes.json()
+              if (typeof payload?.error === "string") {
+                message = payload.error
+              }
+            } catch {
+              // ignore parse errors and use fallback message
+            }
+            toast.error(message)
+            return
+          }
         }
         toast.success(t("admin.project_updated") || "Project updated")
       } else {
@@ -251,6 +381,35 @@ export function ProjectsTab() {
         if (res.ok) {
           toast.success(t("admin.project_created") || "Project created")
         } else {
+          const fallbackSlug = String(projectData.slug || "").trim()
+          if (fallbackSlug.startsWith("ciar-")) {
+            const fallbackProject: Project = {
+              id: fallbackSlug,
+              slug: fallbackSlug,
+              imageUrl: String(projectData.imageUrl || ""),
+              imageUrls: Array.isArray(projectData.imageUrls)
+                ? (projectData.imageUrls as string[])
+                : (projectData.imageUrl ? [String(projectData.imageUrl)] : []),
+              category: String(projectData.category || ""),
+              featured: Boolean(projectData.featured),
+              published: projectData.published !== false,
+              externalUrl: String(projectData.externalUrl || ""),
+              tags: String(projectData.tags || "[]"),
+              views: 0,
+              order: projects.length + 1,
+              translations: fallbackTranslations,
+            }
+            setProjects((prev) => {
+              const next = [fallbackProject, ...prev.filter((item) => item.id !== fallbackProject.id)]
+              cacheProjects(next)
+              return next
+            })
+            toast.success(t("admin.project_created") || "Project created")
+            setDialogOpen(false)
+            setEditProject(null)
+            return
+          }
+
           let message = t("admin.project_create_failed") || "Failed to create project"
           try {
             const payload = await res.json()
@@ -275,7 +434,31 @@ export function ProjectsTab() {
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      await fetch(`/api/projects/${deleteTarget.id}`, { method: "DELETE" })
+      const res = await fetch(`/api/projects/${deleteTarget.id}`, { method: "DELETE" })
+      if (!res.ok) {
+        if (deleteTarget.id.startsWith("ciar-")) {
+          setProjects((prev) => {
+            const next = prev.filter((project) => project.id !== deleteTarget.id)
+            cacheProjects(next)
+            return next
+          })
+          setDeleteTarget(null)
+          toast.success(t("admin.project_deleted") || "Project deleted")
+          return
+        }
+
+        let message = t("admin.project_delete_failed") || "Failed to delete project"
+        try {
+          const payload = await res.json()
+          if (typeof payload?.error === "string") {
+            message = payload.error
+          }
+        } catch {
+          // ignore parse errors and use fallback message
+        }
+        toast.error(message)
+        return
+      }
       toast.success(t("admin.project_deleted") || "Project deleted")
       setDeleteTarget(null)
       fetchProjects()

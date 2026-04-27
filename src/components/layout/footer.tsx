@@ -1,12 +1,29 @@
 "use client"
 
+import { Mail, MapPin, Phone, ChevronRight } from "lucide-react"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
 
 export function Footer() {
-  const { t, dir } = useI18n()
+  const { t, dir, locale } = useI18n()
   const { navigate } = useRouter()
+  const isAr = locale === "ar"
+
+  const quickLinks = [
+    { label: isAr ? "الرئيسية" : "Home", page: "home" as const },
+    { label: isAr ? "منصتنا" : "Our Platforms", page: "projects" as const },
+    { label: isAr ? "من نحن" : "About", page: "about" as const },
+    { label: isAr ? "تواصل معنا" : "Contact", page: "contact" as const },
+  ]
+
+  const platformLinks = [
+    { label: isAr ? "CiAr موضة" : "CIAR Fashion", slug: "fashion" },
+    { label: isAr ? "CiAr للمنتجات العالمية" : "CIAR Global Products", slug: "global_products" },
+    { label: isAr ? "CiAr VIP" : "CIAR VIP", slug: "vip" },
+    { label: isAr ? "مول CiAr الإلكتروني" : "CIAR E-Mall", slug: "mall" },
+    { label: isAr ? "دليل CiAr السياحي" : "CIAR Tourism", slug: "tourism" },
+  ]
 
   return (
     <footer dir={dir} className="relative mt-auto">
@@ -30,8 +47,25 @@ export function Footer() {
                 </span>
               </div>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-xs">
-                {t("hero.subtitle")}
+                {isAr
+                  ? "منصة CIAR المتكاملة تجمع التجارة والخدمات والفرص في تجربة رقمية حديثة."
+                  : "CIAR integrated ecosystem brings commerce, services, and opportunities in one modern digital experience."}
               </p>
+
+              <div className="mt-5 space-y-2.5 text-sm text-muted-foreground">
+                <p className="inline-flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                  +971 50 000 0000
+                </p>
+                <p className="inline-flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  hello@ciar.com
+                </p>
+                <p className="inline-flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  {isAr ? "دبي، الإمارات العربية المتحدة" : "Dubai, United Arab Emirates"}
+                </p>
+              </div>
 
               {/* Social icons */}
               <div className="flex items-center gap-2.5 mt-5">
@@ -91,85 +125,73 @@ export function Footer() {
 
             {/* Platforms column */}
             <div>
-              <h3 className="text-sm font-semibold text-foreground mb-4">
-                {t("footer.products")}
-              </h3>
+              <h3 className="text-sm font-semibold text-foreground mb-4">{isAr ? "أهم المنصات" : "Top Platforms"}</h3>
               <ul className="space-y-2.5">
-                {[
-                  { key: "footer.product_1", slug: "ciar-realestate" },
-                  { key: "footer.product_2", slug: "ciar-carrental" },
-                  { key: "footer.product_3", slug: "ciar-mall" },
-                  { key: "footer.product_4", slug: "ciar-travel" },
-                  { key: "footer.product_5", slug: "ciar-food" },
-                ].map((item) => (
-                  <li key={item.key}>
+                {platformLinks.map((item) => (
+                  <li key={item.slug}>
                     <button
-                      onClick={() =>
-                        navigate({ page: "project", slug: item.slug })
-                      }
+                      onClick={() => navigate({ page: "platform", slug: item.slug })}
                       className={cn(
-                        "text-sm text-muted-foreground transition-colors duration-200",
-                        "hover:text-[oklch(0.78_0.14_82)]"
+                        "text-sm text-muted-foreground transition-all duration-200 inline-flex items-center gap-1.5",
+                        "hover:text-[oklch(0.78_0.14_82)] hover:translate-x-0.5"
                       )}
                     >
-                      {t(item.key)}
+                      <ChevronRight className={`h-3.5 w-3.5 ${isAr ? "rotate-180" : ""}`} />
+                      {item.label}
                     </button>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Company column */}
+            {/* Quick links */}
             <div>
-              <h3 className="text-sm font-semibold text-foreground mb-4">
-                {t("footer.company")}
-              </h3>
+              <h3 className="text-sm font-semibold text-foreground mb-4">{isAr ? "روابط سريعة" : "Quick Links"}</h3>
               <ul className="space-y-2.5">
-                {[
-                  { label: "nav.about", page: "about" as const },
-                  { label: "nav.projects", page: "projects" as const },
-                  { label: "nav.contact", page: "contact" as const },
-                  { label: "footer.blog", page: "home" as const },
-                  { label: "footer.careers", page: "home" as const },
-                ].map((item) => (
+                {quickLinks.map((item) => (
                   <li key={item.label}>
                     <button
                       onClick={() => navigate({ page: item.page })}
                       className={cn(
-                        "text-sm text-muted-foreground transition-colors duration-200",
-                        "hover:text-[oklch(0.78_0.14_82)]"
+                        "text-sm text-muted-foreground transition-all duration-200 inline-flex items-center gap-1.5",
+                        "hover:text-[oklch(0.78_0.14_82)] hover:translate-x-0.5"
                       )}
                     >
-                      {t(item.label)}
+                      <ChevronRight className={`h-3.5 w-3.5 ${isAr ? "rotate-180" : ""}`} />
+                      {item.label}
                     </button>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Legal column */}
+            {/* Legal / newsletter */}
             <div>
-              <h3 className="text-sm font-semibold text-foreground mb-4">
-                {t("footer.legal")}
-              </h3>
-              <ul className="space-y-2.5">
-                {[
-                  { label: "footer.privacy", page: "home" as const },
-                  { label: "footer.terms", page: "home" as const },
-                ].map((item) => (
-                  <li key={item.label}>
-                    <button
-                      onClick={() => navigate({ page: item.page })}
-                      className={cn(
-                        "text-sm text-muted-foreground transition-colors duration-200",
-                        "hover:text-[oklch(0.78_0.14_82)]"
-                      )}
-                    >
-                      {t(item.label)}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <h3 className="text-sm font-semibold text-foreground mb-4">{isAr ? "التحديثات" : "Updates"}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {isAr
+                  ? "اشترك لتصلك أحدث عروض المنصات والتحديثات الجديدة."
+                  : "Subscribe to receive latest platform offers and updates."}
+              </p>
+              <div className="mt-4 flex gap-2">
+                <input
+                  type="email"
+                  placeholder={isAr ? "بريدك الإلكتروني" : "Your email"}
+                  className="h-10 w-full rounded-xl border border-border/30 bg-card/50 px-3 text-sm outline-none focus:border-primary/40"
+                />
+                <button className="btn-gold rounded-xl px-4 text-sm font-semibold">
+                  {isAr ? "اشتراك" : "Join"}
+                </button>
+              </div>
+              <div className="mt-4 text-xs text-muted-foreground/80">
+                <button onClick={() => navigate({ page: "home" })} className="hover:text-primary">
+                  {isAr ? "سياسة الخصوصية" : "Privacy Policy"}
+                </button>
+                <span className="mx-2">•</span>
+                <button onClick={() => navigate({ page: "home" })} className="hover:text-primary">
+                  {isAr ? "الشروط والأحكام" : "Terms & Conditions"}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -178,10 +200,10 @@ export function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
               &copy; {new Date().getFullYear()} {t("footer.brand")}.{" "}
-              {t("footer.copyright")}
+              {isAr ? "جميع الحقوق محفوظة." : "All rights reserved."}
             </p>
             <p className="text-xs text-muted-foreground">
-              {t("footer.built_with")}
+              {isAr ? "صُمم بعناية لمنصات CIAR" : "Crafted with care for CIAR platforms"}
             </p>
           </div>
         </div>

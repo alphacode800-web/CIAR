@@ -6,8 +6,10 @@ export type PageRoute =
   | { page: "home" }
   | { page: "projects" }
   | { page: "project"; slug: string }
+  | { page: "platform"; slug: string }
   | { page: "about" }
   | { page: "contact" }
+  | { page: "admin-login" }
   | { page: "admin"; tab?: string }
 
 interface RouterContextType {
@@ -49,8 +51,10 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
       if (!hash || hash === "/") return { page: "home" }
       if (hash === "/projects") return { page: "projects" }
       if (hash.startsWith("/project/")) return { page: "project", slug: hash.slice(9) }
+      if (hash.startsWith("/platform/")) return { page: "platform", slug: hash.slice(10) }
       if (hash === "/about") return { page: "about" }
       if (hash === "/contact") return { page: "contact" }
+      if (hash === "/admin-login") return { page: "admin-login" }
       if (hash.startsWith("/admin")) {
         const parts = hash.split("/")
         return { page: "admin", tab: parts[2] || "overview" }
@@ -84,8 +88,10 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
       case "home": hash = "/"; break
       case "projects": hash = "/projects"; break
       case "project": hash = `/project/${route.slug}`; break
+      case "platform": hash = `/platform/${route.slug}`; break
       case "about": hash = "/about"; break
       case "contact": hash = "/contact"; break
+      case "admin-login": hash = "/admin-login"; break
       case "admin": hash = `/admin/${route.tab || "overview"}`; break
     }
     if (window.location.hash !== hash) {

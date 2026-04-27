@@ -1,4 +1,5 @@
 import { db } from '@/lib/db'
+import { CIAR_MODULES, MODULE_BANNER_IMAGES } from '@/features/super-platform/config'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,53 +21,37 @@ const DEFAULT_PROJECTS_SEED: Array<{
   order: number
   views: number
   translations: ProjectTranslationItem[]
-}> = [
-  {
-    slug: "ciar-realestate",
-    imageUrl: "/images/real-estate.png",
-    category: "Real Estate",
-    externalUrl: "https://realestate.ciar.com",
-    tags: JSON.stringify(["Real Estate", "Property", "Listings"]),
-    featured: true,
-    published: true,
-    order: 1,
-    views: 32450,
-    translations: [
-      { locale: "en", name: "CIAR Real Estate", tagline: "Discover your dream property", description: "Premium real estate services." },
-      { locale: "ar", name: "CIAR العقارات", tagline: "اكتشف عقارك المثالي", description: "حلول عقارية رقمية متكاملة." },
-    ],
-  },
-  {
-    slug: "ciar-carrental",
-    imageUrl: "/images/car-rental.png",
-    category: "Car Rental",
-    externalUrl: "https://cars.ciar.com",
-    tags: JSON.stringify(["Car Rental", "Transportation", "Booking"]),
-    featured: true,
-    published: true,
-    order: 2,
-    views: 28930,
-    translations: [
-      { locale: "en", name: "CIAR Car Rental", tagline: "Rent smarter and faster", description: "Flexible car rental experiences." },
-      { locale: "ar", name: "CIAR لتأجير السيارات", tagline: "استئجار أسرع وأذكى", description: "تجربة تأجير سيارات مرنة." },
-    ],
-  },
-  {
-    slug: "ciar-mall",
-    imageUrl: "/images/ecommerce.png",
-    category: "E-Commerce",
-    externalUrl: "https://mall.ciar.com",
-    tags: JSON.stringify(["E-Commerce", "Shopping", "Marketplace"]),
-    featured: true,
-    published: true,
-    order: 3,
-    views: 45720,
-    translations: [
-      { locale: "en", name: "CIAR Mall", tagline: "Your premium marketplace", description: "A complete online shopping platform." },
-      { locale: "ar", name: "CIAR مول", tagline: "تجربة سوق رقمية متكاملة", description: "منصة تجارة إلكترونية شاملة." },
-    ],
-  },
-]
+}> = CIAR_MODULES
+  .filter((platformModule) => platformModule.visibility === "VISIBLE")
+  .map((platformModule) => {
+    const slug = `ciar-${platformModule.slug.toLowerCase().replace(/_/g, "-")}`
+    const imageUrl = MODULE_BANNER_IMAGES[platformModule.slug]?.[0] || "/images/ecommerce.png"
+    return {
+      slug,
+      imageUrl,
+      category: platformModule.nameEn.replace(/^CIAR\s+/i, ""),
+      externalUrl: `https://${slug}.ciar.com`,
+      tags: JSON.stringify(["CIAR", platformModule.slug, "Platform"]),
+      featured: platformModule.order <= 4,
+      published: true,
+      order: platformModule.order,
+      views: 12000 + platformModule.order * 1750,
+      translations: [
+        {
+          locale: "en",
+          name: platformModule.nameEn,
+          tagline: "Enterprise-ready CIAR module.",
+          description: platformModule.descriptionEn,
+        },
+        {
+          locale: "ar",
+          name: platformModule.nameAr,
+          tagline: "منصة احترافية ضمن منظومة CIAR.",
+          description: platformModule.descriptionAr,
+        },
+      ],
+    }
+  })
 
 function normalizeBrandText(value: string): string {
   return value.replace(/سيار/g, 'CIAR')
@@ -187,22 +172,67 @@ function mapProject(row: {
 }
 
 async function ensureSeedProjectsInFirebase(): Promise<void> {
-  const total = await db.project.count()
-  if (total > 0) return
+  const requiredSlugs = DEFAULT_PROJECTS_SEED.map((project) => project.slug)
+  const [total, legacyCount, ciarSeedCount] = await Promise.all([
+    db.project.count(),
+    db.project.count({ where: { slug: { startsWith: "jomaa-" } } }),
+    db.project.count({ where: { slug: { in: requiredSlugs } } }),
+  ])
 
-  for (const project of DEFAULT_PROJECTS_SEED) {
-    await createProject({
-      slug: project.slug,
-      imageUrl: project.imageUrl,
-      category: project.category,
-      externalUrl: project.externalUrl,
-      tags: project.tags,
-      featured: project.featured,
-      published: project.published,
-      order: project.order,
-      translations: project.translations,
-    })
+  if (legacyCount === 0 && total > 0 && ciarSeedCount === requiredSlugs.length) {
+    return
   }
+
+  await db.$transaction(async (tx) => {
+    if (legacyCount > 0) {
+      await tx.project.deleteMany({ where: { slug: { startsWith: "jomaa-" } } })
+    }
+
+    for (const project of DEFAULT_PROJECTS_SEED) {
+      const upserted = await tx.project.upsert({
+        where: { slug: project.slug },
+        update: {
+          imageUrl: project.imageUrl,
+          category: project.category,
+          externalUrl: project.externalUrl,
+          tags: project.tags,
+          featured: project.featured,
+          published: project.published,
+          order: project.order,
+          views: project.views,
+        },
+        create: {
+          slug: project.slug,
+          imageUrl: project.imageUrl,
+          category: project.category,
+          externalUrl: project.externalUrl,
+          tags: project.tags,
+          featured: project.featured,
+          published: project.published,
+          order: project.order,
+          views: project.views,
+        },
+      })
+
+      for (const tr of project.translations) {
+        await tx.projectTranslation.upsert({
+          where: { projectId_locale: { projectId: upserted.id, locale: tr.locale } },
+          update: {
+            name: tr.name,
+            tagline: tr.tagline,
+            description: tr.description,
+          },
+          create: {
+            projectId: upserted.id,
+            locale: tr.locale,
+            name: tr.name,
+            tagline: tr.tagline,
+            description: tr.description,
+          },
+        })
+      }
+    }
+  })
 }
 
 // ── Service Functions ────────────────────────────────────────────────────────

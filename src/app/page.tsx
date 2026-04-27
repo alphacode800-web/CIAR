@@ -5,10 +5,12 @@ import { AnimatePresence, motion } from "framer-motion"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { useAuth } from "@/lib/auth-context"
-import { useAuthModal } from "@/lib/auth-modal-context"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SuperPlatformHome } from "@/components/super-platform/super-platform-home"
+import { PlatformDetailsPage } from "@/components/super-platform/platform-details-page"
+import { AdminLoginPage } from "@/components/pages/admin-login-page"
 
 const HomePage = lazy(() => import("@/components/pages/home-page").then(m => ({ default: m.HomePage })))
 const ProjectsPage = lazy(() => import("@/components/pages/projects-page").then(m => ({ default: m.ProjectsPage })))
@@ -48,7 +50,6 @@ export default function Page() {
   const { locale, dir } = useI18n()
   const { route, navigate } = useRouter()
   const { user, loading: authLoading } = useAuth()
-  const { openLogin } = useAuthModal()
   const [stats, setStats] = useState({ totalProjects: 0, totalViews: 0, totalCategories: 0 })
   const [projects, setProjects] = useState<Project[]>([])
   const [categories, setCategories] = useState<string[]>([])
@@ -92,7 +93,10 @@ export default function Page() {
   }, [locale])
 
   useEffect(() => {
-    fetchData()
+    const timer = setTimeout(() => {
+      fetchData()
+    }, 0)
+    return () => clearTimeout(timer)
   }, [fetchData])
 
   useEffect(() => {
@@ -100,18 +104,17 @@ export default function Page() {
     document.documentElement.lang = locale
   }, [dir, locale])
 
-  const isAdmin = route.page === "admin"
-  const isAdminAuthenticated = user?.role === "admin"
+  const isAdmin = route.page === "admin" || route.page === "admin-login"
+  const isAdminAuthenticated = String(user?.role || "").toUpperCase() === "ADMIN"
   const publishedProjects = projects.filter((p) => p.published !== false)
   const homeProjects = publishedProjects.length > 0 ? publishedProjects : projects
 
   useEffect(() => {
     if (authLoading) return
     if (route.page === "admin" && !isAdminAuthenticated) {
-      navigate({ page: "home" })
-      openLogin()
+      navigate({ page: "admin-login" })
     }
-  }, [route.page, isAdminAuthenticated, authLoading, navigate, openLogin])
+  }, [route.page, isAdminAuthenticated, authLoading, navigate])
 
   return (
     <div className="min-h-screen flex flex-col" dir={dir}>
@@ -146,11 +149,7 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <ProjectsPage
-                  projects={projects}
-                  categories={categories}
-                  onRefresh={fetchData}
-                />
+                <SuperPlatformHome />
               </Suspense>
             </motion.div>
           )}
@@ -165,6 +164,20 @@ export default function Page() {
             >
               <Suspense fallback={<PageSkeleton />}>
                 <ProjectDetailsPage slug={route.slug} />
+              </Suspense>
+            </motion.div>
+          )}
+
+          {route.page === "platform" && (
+            <motion.div
+              key={`platform-${route.slug}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <PlatformDetailsPage slug={route.slug} />
               </Suspense>
             </motion.div>
           )}
@@ -207,6 +220,20 @@ export default function Page() {
             >
               <Suspense fallback={<PageSkeleton />}>
                 {isAdminAuthenticated ? <AdminPage /> : null}
+              </Suspense>
+            </motion.div>
+          )}
+
+          {route.page === "admin-login" && (
+            <motion.div
+              key="admin-login"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <AdminLoginPage />
               </Suspense>
             </motion.div>
           )}
