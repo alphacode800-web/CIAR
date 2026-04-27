@@ -1,46 +1,15 @@
-import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
-
-const ADMIN_USER = {
-  id: "admin-ciar-800",
-  name: "CIAR-800",
-  email: "admin@ciar.local",
-  role: "admin",
-}
+import { NextRequest } from "next/server"
+import { fail, ok } from "@/lib/api-response"
+import { getAuthUser } from "@/lib/auth"
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization")
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const token = authHeader.slice(7)
-    const parts = token.split(".")
-    if (parts.length !== 3) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
-    }
-
-    const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString())
-    if (payload.exp && Date.now() > payload.exp) {
-      return NextResponse.json({ error: "Token expired" }, { status: 401 })
-    }
-
-    if (payload.id === ADMIN_USER.id) {
-      return NextResponse.json({ user: ADMIN_USER })
-    }
-
-    const user = await db.user.findUnique({
-      where: { id: payload.id },
-      select: { id: true, name: true, email: true, role: true, avatar: true },
-    })
-
+    const user = await getAuthUser(request)
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+      return fail("Unauthorized", 401)
     }
-
-    return NextResponse.json({ user })
+    return ok({ user })
   } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return fail("Unauthorized", 401)
   }
 }

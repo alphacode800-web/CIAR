@@ -33,16 +33,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUser = useCallback(async () => {
     try {
       const token = localStorage.getItem("ciar_token")
-      if (!token) {
-        setLoading(false)
-        return
-      }
-      const res = await fetch("/api/auth/me", {
+      const res = await fetch("/api/auth/me", token ? {
         headers: { Authorization: `Bearer ${token}` },
-      })
+      } : undefined)
       if (res.ok) {
         const data = await res.json()
-        setUser(data.user)
+        setUser(data?.data?.user ?? data?.user ?? null)
       } else {
         localStorage.removeItem("ciar_token")
       }
@@ -64,8 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       if (!res.ok) return false
       const data = await res.json()
-      localStorage.setItem("ciar_token", data.token)
-      setUser(data.user)
+      const payload = data?.data ?? data
+      if (payload?.token) {
+        localStorage.setItem("ciar_token", payload.token)
+      }
+      setUser(payload?.user ?? null)
       return true
     } catch {
       return false
@@ -81,8 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       if (!res.ok) return false
       const data = await res.json()
-      localStorage.setItem("ciar_token", data.token)
-      setUser(data.user)
+      const payload = data?.data ?? data
+      if (payload?.token) {
+        localStorage.setItem("ciar_token", payload.token)
+      }
+      setUser(payload?.user ?? null)
       return true
     } catch {
       return false
