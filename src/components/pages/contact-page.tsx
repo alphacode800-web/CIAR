@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
-import { Mail, MapPin, Clock, Send } from "lucide-react"
+import { Mail, Phone, MapPin, Clock, Send } from "lucide-react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -17,9 +17,13 @@ import { cn } from "@/lib/utils"
 // ── Client-side Zod validation schema ───────────────────────────────────────
 const contactFormSchema = z.object({
   name: z.string().min(2),
-  email: z.string().email(),
+  email: z.string().email().optional().or(z.literal("")),
+  phone: z.string().regex(/^\+?[0-9]{8,15}$/).optional().or(z.literal("")),
   subject: z.string().min(2),
   message: z.string().min(10),
+}).refine((data) => Boolean(data.email || data.phone), {
+  message: "Email or phone is required",
+  path: ["email"],
 })
 
 type ContactForm = z.infer<typeof contactFormSchema>
@@ -27,6 +31,7 @@ type ContactForm = z.infer<typeof contactFormSchema>
 interface FieldErrors {
   name?: string
   email?: string
+  phone?: string
   subject?: string
   message?: string
 }
@@ -100,6 +105,7 @@ export function ContactPage() {
   const [form, setForm] = useState<ContactForm>({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: "",
   })
@@ -142,7 +148,7 @@ export function ContactPage() {
       const data = await res.json()
       if (res.ok) {
         toast.success(t("contact.success"))
-        setForm({ name: "", email: "", subject: "", message: "" })
+        setForm({ name: "", email: "", phone: "", subject: "", message: "" })
       } else {
         toast.error(data.error || t("contact.error"))
       }
@@ -292,13 +298,31 @@ export function ContactPage() {
                       value={form.email}
                       onChange={(e) => updateField("email", e.target.value)}
                       placeholder={t("contact.email_placeholder")}
-                      required
                       className={inputClasses("email")}
                     />
                     {errors.email && (
                       <p className="text-xs text-destructive mt-1.5">{errors.email}</p>
                     )}
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contact-phone" className="text-sm font-medium">
+                    {t("contact.phone_label") || "Phone Number"}
+                  </Label>
+                  <div className="relative">
+                    <Phone className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                    <Input
+                      id="contact-phone"
+                      type="tel"
+                      value={form.phone}
+                      onChange={(e) => updateField("phone", e.target.value)}
+                      placeholder={t("contact.phone_placeholder") || "+9665..."}
+                      className={cn(inputClasses("phone"), "ps-9")}
+                    />
+                  </div>
+                  {errors.phone && (
+                    <p className="text-xs text-destructive mt-1.5">{errors.phone}</p>
+                  )}
                 </div>
 
                 {/* Subject */}

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Mail, Lock, User, Loader2 } from "lucide-react"
+import { X, Mail, Lock, User, Loader2, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,7 +22,9 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
   const { mode, openLogin, openRegister } = useAuthModal()
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
 
   const isLogin = mode === "login"
@@ -33,11 +35,16 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
     try {
       let success = false
       if (isLogin) {
-        success = await login(email, password)
+        success = await login(identifier, password)
         if (!success) toast.error(t("auth.login_failed") || "Invalid credentials")
       } else {
         if (!name.trim()) { toast.error(t("auth.name_required") || "Name is required"); setLoading(false); return }
-        success = await register(name, email, password)
+        if (!email.trim() && !phone.trim()) {
+          toast.error(t("auth.contact_required") || "Email or phone is required")
+          setLoading(false)
+          return
+        }
+        success = await register(name, password, email || undefined, phone || undefined)
         if (!success) toast.error(t("auth.register_failed") || "Registration failed")
       }
       if (success) {
@@ -93,13 +100,32 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
                 </div>
               </div>
             )}
-            <div className="space-y-2">
-              <Label>{t("auth.email") || "Username / Email"}</Label>
-              <div className="relative">
-                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                <Input type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="CIAR-800 or you@example.com" className="ps-10 rounded-xl" required />
+            {isLogin ? (
+              <div className="space-y-2">
+                <Label>{t("auth.email") || "Email / Phone"}</Label>
+                <div className="relative">
+                  <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                  <Input type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="you@example.com or +9665..." className="ps-10 rounded-xl" required />
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label>{t("auth.email") || "Email"}</Label>
+                  <div className="relative">
+                    <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="ps-10 rounded-xl" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t("auth.phone") || "Phone Number"}</Label>
+                  <div className="relative">
+                    <Phone className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                    <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+9665..." className="ps-10 rounded-xl" />
+                  </div>
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Label>{t("auth.password") || "Password"}</Label>
               <div className="relative">

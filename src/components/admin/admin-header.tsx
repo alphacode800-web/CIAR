@@ -34,6 +34,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useI18n, ALL_LOCALES, LOCALE_NAMES } from "@/lib/i18n-context"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
@@ -112,10 +114,17 @@ export function AdminHeader({
   onMobileMenuToggle,
 }: AdminHeaderProps) {
   const { t, locale, setLocale } = useI18n()
+  const { logout } = useAuth()
+  const { navigate } = useRouter()
   const [notifOpen, setNotifOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [notifCount, setNotifCount] = useState(3)
   const time = useLiveClock()
+
+  const handleLogout = () => {
+    logout()
+    navigate({ page: "admin-login" })
+  }
 
   // Fetch notification count periodically
   useEffect(() => {
@@ -350,7 +359,7 @@ export function AdminHeader({
               <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-foreground">{t("admin.admin_user") || "Admin User"}</span>
-                  <span>admin@ciar.com</span>
+                  <span>admin@jomaa.store</span>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-[oklch(0.78_0.14_82/8%)]" />
@@ -368,7 +377,10 @@ export function AdminHeader({
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-[oklch(0.78_0.14_82/8%)]" />
-              <DropdownMenuItem className="gap-2.5 cursor-pointer focus:bg-red-500/10 focus:text-red-400">
+              <DropdownMenuItem
+                className="gap-2.5 cursor-pointer focus:bg-red-500/10 focus:text-red-400"
+                onClick={handleLogout}
+              >
                 <LogOut className="h-4 w-4 text-muted-foreground" />
                 {t("admin.logout") || "Log out"}
               </DropdownMenuItem>

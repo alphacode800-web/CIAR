@@ -6,10 +6,14 @@ import { submitContact } from '@/services/contact.service'
 
 const contactSchema = z.object({
   name: z.string().min(2).max(100),
-  email: z.string().email(),
+  email: z.string().email().optional().or(z.literal("")).transform((value) => value || undefined),
+  phone: z.string().trim().regex(/^\+?[0-9]{8,15}$/).optional().or(z.literal("")).transform((value) => value || undefined),
   subject: z.string().min(2).max(200),
   message: z.string().min(10).max(5000),
   locale: z.string().optional().default('en'),
+}).refine((data) => Boolean(data.email || data.phone), {
+  message: "Either email or phone is required",
+  path: ["email"],
 })
 
 // ── Route Handlers ───────────────────────────────────────────────────────────

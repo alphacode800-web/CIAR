@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!result) {
-      return fail("Email already registered", 409)
+      return fail("Email or phone already registered", 409)
     }
 
     const response = ok(result, 201)

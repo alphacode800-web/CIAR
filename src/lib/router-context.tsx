@@ -9,6 +9,7 @@ export type PageRoute =
   | { page: "platform"; slug: string }
   | { page: "about" }
   | { page: "contact" }
+  | { page: "user-auth" }
   | { page: "admin-login" }
   | { page: "admin"; tab?: string }
 
@@ -54,6 +55,7 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
       if (hash.startsWith("/platform/")) return { page: "platform", slug: hash.slice(10) }
       if (hash === "/about") return { page: "about" }
       if (hash === "/contact") return { page: "contact" }
+      if (hash === "/login") return { page: "user-auth" }
       if (hash === "/admin-login") return { page: "admin-login" }
       if (hash.startsWith("/admin")) {
         const parts = hash.split("/")
@@ -91,6 +93,7 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
       case "platform": hash = `/platform/${route.slug}`; break
       case "about": hash = "/about"; break
       case "contact": hash = "/contact"; break
+      case "user-auth": hash = "/login"; break
       case "admin-login": hash = "/admin-login"; break
       case "admin": hash = `/admin/${route.tab || "overview"}`; break
     }

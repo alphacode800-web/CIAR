@@ -1,16 +1,11 @@
 "use client"
 
 import { useRef, useCallback, useEffect, useState } from "react"
-import { motion, AnimatePresence, useScroll, useTransform, useInView } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
   ArrowRight,
-  Eye,
   Layers,
-  Zap,
   Sparkles,
-  ShieldCheck,
-  Rocket,
-  Gauge,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -23,8 +18,6 @@ import { MarqueeBanner } from "@/components/home/MarqueeBanner"
 import { AboutBrief } from "@/components/home/AboutBrief"
 import { ServicesGrid } from "@/components/home/ServicesGrid"
 import { HowItWorks } from "@/components/home/HowItWorks"
-import { StatsSection } from "@/components/home/StatsSection"
-import { PlatformShowcase } from "@/components/home/PlatformShowcase"
 import { TechStack } from "@/components/home/TechStack"
 import { Testimonials } from "@/components/home/Testimonials"
 import { GlobalPresence } from "@/components/home/GlobalPresence"
@@ -43,12 +36,6 @@ const HERO_IMAGES = [
   "/images/headers/hero-4.png",
 ]
 
-interface HomeStats {
-  totalProjects: number
-  totalViews: number
-  totalCategories: number
-}
-
 interface FeaturedProject {
   id: string
   slug: string
@@ -62,7 +49,6 @@ interface FeaturedProject {
 }
 
 interface HomePageProps {
-  stats: HomeStats
   featuredProjects?: FeaturedProject[]
   newsTickerItems?: string[]
 }
@@ -106,7 +92,7 @@ const FALLBACK_BANNERS: PlatformBanner[] = [
   { id: "investment", titleEn: "CIAR Investment", titleAr: "CiAr أسهم المنصة والمكافآت", descriptionEn: "Member shares and rewards in CIAR platform.", descriptionAr: "أسهم منصتنا الخاصة بالأعضاء والمكافآت.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", imageUrl1: "/images/headers/hero-4.png", imageUrl2: "/images/headers/hero-3.png", imageUrl3: "/images/headers/hero-2.png" },
 ]
 
-export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }: HomePageProps) {
+export function HomePage({ featuredProjects = [], newsTickerItems = [] }: HomePageProps) {
   const { t, locale, dir } = useI18n()
   const { navigate } = useRouter()
   const heroRef = useRef<HTMLDivElement>(null)
@@ -120,31 +106,8 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
   const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.97])
 
-  const [animatedStats, setAnimatedStats] = useState({ projects: 0, views: 0, categories: 0 })
   const [currentSlide, setCurrentSlide] = useState(0)
   const [platformBanners, setPlatformBanners] = useState<PlatformBanner[]>(FALLBACK_BANNERS)
-  const statsRef = useRef<HTMLDivElement>(null)
-  const statsInView = useInView(statsRef, { once: true, margin: "-50px" })
-
-  useEffect(() => {
-    if (!statsInView) return
-    const duration = 1500
-    const steps = 60
-    const interval = duration / steps
-    let step = 0
-    const timer = setInterval(() => {
-      step++
-      const progress = step / steps
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setAnimatedStats({
-        projects: Math.round(stats.totalProjects * eased),
-        views: Math.round(stats.totalViews * eased),
-        categories: Math.round(stats.totalCategories * eased),
-      })
-      if (step >= steps) clearInterval(timer)
-    }, interval)
-    return () => clearInterval(timer)
-  }, [statsInView, stats.totalProjects, stats.totalViews, stats.totalCategories])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -170,16 +133,6 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
       })
   }, [])
 
-  const formatNumber = (num: number) => {
-    try {
-      return num.toLocaleString(
-        locale === "ar" ? "ar-SA" : locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : locale === "de" ? "de-DE" : "en-US"
-      )
-    } catch {
-      return num.toLocaleString()
-    }
-  }
-
   const resolvePlatformSlug = (banner: PlatformBanner) => {
     if (banner.module?.slug) return banner.module.slug.toLowerCase()
     const ctaMatch = banner.ctaHref?.match(/module=([^&]+)/i)
@@ -202,19 +155,6 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
     return fallbackMap[banner.id] || banner.id.toLowerCase()
   }
 
-  const statItems = [
-    { icon: Layers, value: formatNumber(animatedStats.projects), label: t("hero.stat_products") },
-    { icon: Eye, value: formatNumber(animatedStats.views), label: t("hero.stat_views") },
-    { icon: Zap, value: formatNumber(animatedStats.categories) + "+", label: t("hero.stat_categories") },
-  ]
-
-  const heroHighlights = [
-    { icon: ShieldCheck, label: "Enterprise Security" },
-    { icon: Rocket, label: "Fast Scalable Delivery" },
-    { icon: Gauge, label: "99.9% Platform Uptime" },
-  ]
-
-  const luxuryPills = ["Glass UI", "AI Optimized", "Global Standards"]
   const defaultNewsTickerItems = [
     "Launching new enterprise platforms this quarter",
     "24/7 technical support now available for all clients",
@@ -227,7 +167,7 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
   return (
     <div ref={heroRef} className="relative overflow-hidden">
       {/* ═══ 1. HERO SECTION with 10-image slideshow ═══ */}
-      <section className="relative min-h-screen flex items-center justify-center">
+      <section className="relative h-[75vh] flex items-center justify-center">
         <div className="absolute inset-0">
           <AnimatePresence mode="wait">
             <motion.img
@@ -244,24 +184,6 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
             />
           </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.10_0.025_265/64%)] via-[oklch(0.10_0.025_265/82%)] to-[oklch(0.10_0.025_265/96%)]" />
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          {HERO_IMAGES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setCurrentSlide(i)
-              }}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-500",
-                i === currentSlide
-                  ? "w-8 bg-[oklch(0.78_0.14_82)] shadow-[0_0_8px_oklch(0.78_0.14_82/50%)]"
-                  : "w-1.5 bg-white/20 hover:bg-white/40"
-              )}
-              aria-label={`Slide ${i + 1}`}
-            />
-          ))}
         </div>
 
         <div className="absolute inset-0 dot-pattern opacity-35" />
@@ -328,59 +250,6 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
             </Button>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.58 }}
-            className="mt-5 flex flex-wrap justify-center gap-2.5"
-          >
-            {luxuryPills.map((pill) => (
-              <span key={pill} className="glass rounded-full px-3.5 py-1.5 text-[11px] font-medium tracking-wide text-foreground/85">
-                {pill}
-              </span>
-            ))}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.62, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-6 flex flex-wrap items-center justify-center gap-2.5"
-          >
-            {heroHighlights.map((item) => (
-              <span
-                key={item.label}
-                className="inline-flex items-center gap-2 rounded-full border border-[oklch(0.78_0.14_82/16%)] bg-[oklch(0.12_0.03_265/55%)] px-3.5 py-1.5 text-xs text-muted-foreground"
-              >
-                <item.icon className="h-3.5 w-3.5 text-[oklch(0.82_0.145_85)]" />
-                {item.label}
-              </span>
-            ))}
-          </motion.div>
-
-          <motion.div ref={statsRef} initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.65, ease: [0.22, 1, 0.36, 1] }} className="mt-16 sm:mt-20 w-full max-w-2xl">
-            <div className="glass-premium rounded-2xl p-6 sm:p-8 shadow-lg shadow-black/10">
-              <div className="grid grid-cols-3 divide-x divide-[oklch(0.78_0.14_82/15%)]">
-                {statItems.map((stat) => (
-                  <div key={stat.label} className="flex flex-col items-center gap-1.5 px-3 sm:px-6 first:ps-0 last:pe-0">
-                    <stat.icon className="h-5 w-5 text-[oklch(0.78_0.14_82)] mb-1" />
-                    <span className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight gradient-text">{stat.value}</span>
-                    <span className="text-xs sm:text-sm text-muted-foreground">{stat.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.7, delay: 0.85 }}
-            className="mt-10 hidden sm:flex flex-col items-center gap-2"
-          >
-            <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">Scroll</span>
-            <span className="h-8 w-[1px] bg-gradient-to-b from-[oklch(0.78_0.14_82)] to-transparent" />
-          </motion.div>
         </motion.div>
       </section>
 
@@ -473,12 +342,10 @@ export function HomePage({ stats, featuredProjects = [], newsTickerItems = [] }:
       <div className="glow-line-gold" />
 
       {/* ═══ 9. Stats Section ═══ */}
-      <StatsSection />
 
       <div className="section-divider-gold mx-auto max-w-7xl" />
 
       {/* ═══ 10. Platform Showcase Carousel ═══ */}
-      <PlatformShowcase />
 
       <div className="section-divider-gold mx-auto max-w-7xl" />
 

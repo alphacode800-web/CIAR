@@ -26,7 +26,7 @@ const deleteContactSchema = z.object({
  * Query params:
  *   - page (number, default 1)
  *   - limit (number, default 20)
- *   - search (string): search name, email, or subject
+ *   - search (string): search name, email, phone, or subject
  *   - dateFrom (string ISO date): filter from date
  *   - dateTo (string ISO date): filter to date
  */
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { name: { contains: search } },
         { email: { contains: search } },
+        { phone: { contains: search } },
         { subject: { contains: search } },
       ]
     }

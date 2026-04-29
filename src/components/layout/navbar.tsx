@@ -14,7 +14,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useI18n, ALL_LOCALES, LOCALE_NAMES } from "@/lib/i18n-context"
 import { useRouter, type PageRoute } from "@/lib/router-context"
 import { useAuth } from "@/lib/auth-context"
-import { useAuthModal } from "@/lib/auth-modal-context"
 import { useCurrency, CURRENCIES } from "@/lib/currency-context"
 import { ThemeSwitcher } from "@/components/layout/theme-switcher"
 import { cn } from "@/lib/utils"
@@ -30,7 +29,6 @@ export function Navbar() {
   const { t, locale, setLocale, dir } = useI18n()
   const { route, navigate } = useRouter()
   const { user, logout } = useAuth()
-  const { openLogin } = useAuthModal()
   const { currency, setCurrency } = useCurrency()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -252,7 +250,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={openLogin}
+              onClick={() => navigate({ page: "user-auth" })}
               className={cn(
                 "gap-1.5 text-muted-foreground hover:text-foreground text-xs font-medium h-9 px-3",
                 "hover:ring-2 hover:ring-[oklch(0.78_0.14_82/20%)]"
@@ -300,48 +298,83 @@ export function Navbar() {
             />
             <motion.div
               dir={dir}
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0, x: dir === "rtl" ? -24 : 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: dir === "rtl" ? -18 : 18 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="md:hidden glass-strong border-b border-[oklch(0.78_0.14_82/20%)] overflow-hidden"
+              className={cn(
+                "md:hidden fixed top-18 bottom-0 z-50 w-[88%] max-w-sm glass-strong border-[oklch(0.78_0.14_82/24%)] overflow-hidden",
+                "border-s border-y shadow-2xl shadow-black/30",
+                dir === "rtl" ? "left-0 rounded-e-2xl" : "right-0 rounded-s-2xl"
+              )}
             >
-              <div className="px-6 py-5 space-y-1">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,oklch(0.78_0.14_82/10%),transparent_45%)] pointer-events-none" />
+              <div className="relative px-4 py-4 h-full overflow-y-auto">
+                <div className="mb-4 flex items-center justify-between rounded-2xl border border-[oklch(0.78_0.14_82/18%)] bg-[oklch(0.12_0.03_265/55%)] px-3 py-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <img src="/logo.png" alt="CIAR" className="h-8 w-8 object-contain" />
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Menu</p>
+                      <p className="text-sm font-semibold">{locale === "ar" ? "التنقل السريع" : "Quick Navigation"}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setMobileOpen(false)}
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                    aria-label="Close menu"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="rounded-2xl border border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.12_0.03_265/45%)] p-2 space-y-1.5">
                 {NAV_ITEMS.map((item, index) => {
                   const isActive = currentPage === item.route.page
                   return (
                     <motion.button
                       key={item.key}
-                      initial={{ opacity: 0, x: -12 }}
+                      initial={{ opacity: 0, x: dir === "rtl" ? -12 : 12 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05, duration: 0.3 }}
                       onClick={() => { navigate(item.route); setMobileOpen(false) }}
                       className={cn(
-                        "flex w-full items-center rounded-xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
+                        "group flex w-full items-center justify-between rounded-xl px-4 py-3.5 text-sm font-medium transition-all duration-300 min-h-12",
                         isActive
-                          ? "bg-gradient-to-r from-[oklch(0.78_0.14_82/10%)] to-[oklch(0.72_0.13_75/10%)] text-[oklch(0.78_0.14_82)] border border-[oklch(0.78_0.14_82/20%)]"
+                          ? "bg-gradient-to-r from-[oklch(0.78_0.14_82/14%)] to-[oklch(0.72_0.13_75/14%)] text-[oklch(0.82_0.145_85)] border border-[oklch(0.78_0.14_82/30%)]"
                           : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground border border-transparent"
                       )}
                     >
-                      <span className="relative z-10">{t(item.key)}</span>
+                      <span className="relative z-10 tracking-wide">{t(item.key)}</span>
+                      <span className={cn(
+                        "h-2 w-2 rounded-full transition-all",
+                        isActive ? "bg-[oklch(0.78_0.14_82)] shadow-[0_0_10px_oklch(0.78_0.14_82/70%)]" : "bg-transparent group-hover:bg-foreground/30"
+                      )} />
                     </motion.button>
                   )
                 })}
+                </div>
 
                 {/* Mobile utilities */}
-                <div className="pt-4 mt-4 border-t border-border/20 flex items-center gap-3">
-                  <span className="text-sm">{currentCurrency.flag} {currency.code}</span>
-                  <span className="text-muted-foreground/30">|</span>
-                  <Globe className="h-4 w-4 text-muted-foreground/50" />
-                  <span className="text-xs text-muted-foreground/50 uppercase">{locale}</span>
-                  <div className="flex-1" />
+                <div className="pt-4 mt-4 border-t border-border/20 space-y-3">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border/50 px-2.5 py-1">
+                      <span>{currentCurrency.flag}</span>
+                      <span className="font-mono">{currency.code}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border/50 px-2.5 py-1 uppercase">
+                      <Globe className="h-3.5 w-3.5" />
+                      {locale}
+                    </span>
+                  </div>
                   {user ? (
-                    <Button variant="ghost" size="sm" onClick={() => { logout(); setMobileOpen(false) }} className="text-destructive text-xs h-8 gap-1.5">
+                    <Button variant="ghost" size="sm" onClick={() => { logout(); setMobileOpen(false) }} className="w-full text-destructive text-sm h-10 gap-1.5 rounded-xl border border-destructive/20 hover:bg-destructive/10">
                       <LogOut className="h-3.5 w-3.5" />
                       {t("auth.logout") || "Logout"}
                     </Button>
                   ) : (
-                    <Button variant="ghost" size="sm" onClick={() => { openLogin(); setMobileOpen(false) }} className="text-xs h-8 gap-1.5">
+                    <Button variant="default" size="sm" onClick={() => { navigate({ page: "user-auth" }); setMobileOpen(false) }} className="w-full text-sm h-10 gap-1.5 rounded-xl btn-gold">
                       <LogIn className="h-3.5 w-3.5" />
                       {t("auth.login") || "Login"}
                     </Button>

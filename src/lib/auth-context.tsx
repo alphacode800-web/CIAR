@@ -5,7 +5,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 interface AuthUser {
   id: string
   name: string
-  email: string
+  email?: string | null
+  phone?: string | null
   role: string
   avatar?: string
 }
@@ -13,8 +14,8 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null
   loading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  register: (name: string, email: string, password: string) => Promise<boolean>
+  login: (identifier: string, password: string) => Promise<boolean>
+  register: (name: string, password: string, email?: string, phone?: string) => Promise<boolean>
   logout: () => void
 }
 
@@ -51,12 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { fetchUser() }, [fetchUser])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (identifier: string, password: string): Promise<boolean> => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       })
       if (!res.ok) return false
       const data = await res.json()
@@ -71,12 +72,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+  const register = async (name: string, password: string, email?: string, phone?: string): Promise<boolean> => {
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, phone, password }),
       })
       if (!res.ok) return false
       const data = await res.json()

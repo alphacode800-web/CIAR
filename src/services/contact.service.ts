@@ -5,7 +5,8 @@ import { db } from '@/lib/db'
 export interface ContactSubmissionRow {
   id: string
   name: string
-  email: string
+  email?: string | null
+  phone?: string | null
   subject: string
   message: string
   locale: string
@@ -23,7 +24,8 @@ export interface ContactSubmissionRow {
 export async function submitContact(
   data: {
     name: string
-    email: string
+    email?: string
+    phone?: string
     subject: string
     message: string
     locale?: string
@@ -32,7 +34,8 @@ export async function submitContact(
   const submission = await db.contactSubmission.create({
     data: {
       name: data.name,
-      email: data.email,
+      email: data.email || null,
+      phone: data.phone || null,
       subject: data.subject,
       message: data.message,
       locale: data.locale ?? 'en',

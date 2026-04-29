@@ -54,7 +54,8 @@ import { BulkActionsBar } from "./bulk-actions-bar"
 interface ContactMessage {
   id: string
   name: string
-  email: string
+  email?: string | null
+  phone?: string | null
   subject: string
   message: string
   locale: string
@@ -311,7 +312,11 @@ export function ContactsTab() {
     const body = encodeURIComponent(
       `\n\n---\nOn ${formatFullDate(viewContact.createdAt)}, ${viewContact.name} wrote:\n\n${viewContact.message}`
     )
-    window.open(`mailto:${viewContact.email}?subject=${subject}&body=${body}`)
+    if (viewContact.email) {
+      window.open(`mailto:${viewContact.email}?subject=${subject}&body=${body}`)
+    } else if (viewContact.phone) {
+      window.open(`tel:${viewContact.phone}`)
+    }
   }
 
   /* ── Render ── */
@@ -542,7 +547,7 @@ export function ContactsTab() {
                         {contact.name}
                       </p>
                       <span className="text-xs text-muted-foreground hidden sm:inline truncate">
-                        — {contact.email}
+                        — {contact.email || contact.phone || "—"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
@@ -554,7 +559,7 @@ export function ContactsTab() {
                       </p>
                     </div>
                     <p className="text-[11px] text-muted-foreground/60 truncate mt-0.5 sm:hidden">
-                      {contact.email}
+                      {contact.email || contact.phone || "—"}
                     </p>
                   </div>
 
@@ -639,12 +644,21 @@ export function ContactsTab() {
                 {/* Email */}
                 <div className="flex items-center gap-3 rounded-xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.78_0.14_82/3%)] p-3">
                   <Mail className="h-4 w-4 text-[oklch(0.78_0.14_82)] shrink-0" />
-                  <a
-                    href={`mailto:${viewContact.email}`}
-                    className="text-sm text-[oklch(0.78_0.14_82)] hover:underline truncate"
-                  >
-                    {viewContact.email}
-                  </a>
+                  {viewContact.email ? (
+                    <a
+                      href={`mailto:${viewContact.email}`}
+                      className="text-sm text-[oklch(0.78_0.14_82)] hover:underline truncate"
+                    >
+                      {viewContact.email}
+                    </a>
+                  ) : (
+                    <a
+                      href={`tel:${viewContact.phone || ""}`}
+                      className="text-sm text-[oklch(0.78_0.14_82)] hover:underline truncate"
+                    >
+                      {viewContact.phone || "—"}
+                    </a>
+                  )}
                   <ExternalLink className="h-3 w-3 text-muted-foreground ms-auto shrink-0" />
                 </div>
 

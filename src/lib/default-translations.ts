@@ -9,6 +9,8 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
 
     // ── Auth ─────────────────────────────────────────────────────────────────
     "auth.login": "Login",
+    "auth.phone": "Phone Number",
+    "auth.contact_required": "Email or phone is required",
 
     // ── Hero ─────────────────────────────────────────────────────────────────
     "hero.badge": "Transforming Services Digitally",
@@ -92,12 +94,6 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "home.how_step3_desc": "Create your account in seconds.",
     "home.how_step4_title": "Start",
     "home.how_step4_desc": "Use the platform immediately with full support.",
-
-    // ── Home — Stats ─────────────────────────────────────────────────────────
-    "home.stats_platforms": "Platforms",
-    "home.stats_users": "Active Users",
-    "home.stats_languages": "Languages",
-    "home.stats_support": "Support",
 
     // ── Home — Platform Showcase ─────────────────────────────────────────────
     "home.platforms_title": "Our Platform Ecosystem",
@@ -294,6 +290,8 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "contact.email_label": "Email Address",
     "contact.email_label2": "Email Address",
     "contact.email_placeholder": "your@email.com",
+    "contact.phone_label": "Phone Number",
+    "contact.phone_placeholder": "+9665...",
     "contact.subject_label": "Subject",
     "contact.subject_placeholder": "How can we help you?",
     "contact.message_label": "Message",
@@ -466,6 +464,8 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
 
     // ── Auth ─────────────────────────────────────────────────────────────────
     "auth.login": "تسجيل الدخول",
+    "auth.phone": "رقم الهاتف",
+    "auth.contact_required": "البريد الإلكتروني أو رقم الهاتف مطلوب",
 
     // ── Hero ─────────────────────────────────────────────────────────────────
     "hero.badge": "نحوّل الخدمات رقمياً",
@@ -549,12 +549,6 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "home.how_step3_desc": "أنشئ حسابك خلال ثوانٍ.",
     "home.how_step4_title": "ابدأ",
     "home.how_step4_desc": "استخدم المنصة فورًا مع دعم كامل.",
-
-    // ── Home — Stats ─────────────────────────────────────────────────────────
-    "home.stats_platforms": "منصات",
-    "home.stats_users": "مستخدم نشط",
-    "home.stats_languages": "لغات",
-    "home.stats_support": "دعم",
 
     // ── Home — Platform Showcase ─────────────────────────────────────────────
     "home.platforms_title": "منظومة منصاتنا",
@@ -747,6 +741,8 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "contact.email_label": "البريد الإلكتروني",
     "contact.email_label2": "البريد الإلكتروني",
     "contact.email_placeholder": "بريدك@الإلكتروني.com",
+    "contact.phone_label": "رقم الهاتف",
+    "contact.phone_placeholder": "+9665...",
     "contact.subject_label": "الموضوع",
     "contact.subject_placeholder": "كيف يمكننا مساعدتك؟",
     "contact.message_label": "الرسالة",

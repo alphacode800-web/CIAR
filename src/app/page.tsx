@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { SuperPlatformHome } from "@/components/super-platform/super-platform-home"
 import { PlatformDetailsPage } from "@/components/super-platform/platform-details-page"
 import { AdminLoginPage } from "@/components/pages/admin-login-page"
+import { UserAuthPage } from "@/components/pages/user-auth-page"
 
 const HomePage = lazy(() => import("@/components/pages/home-page").then(m => ({ default: m.HomePage })))
 const ProjectsPage = lazy(() => import("@/components/pages/projects-page").then(m => ({ default: m.ProjectsPage })))
@@ -104,7 +105,7 @@ export default function Page() {
     document.documentElement.lang = locale
   }, [dir, locale])
 
-  const isAdmin = route.page === "admin" || route.page === "admin-login"
+  const isAdmin = route.page === "admin" || route.page === "admin-login" || route.page === "user-auth"
   const isAdminAuthenticated = String(user?.role || "").toUpperCase() === "ADMIN"
   const publishedProjects = projects.filter((p) => p.published !== false)
   const homeProjects = publishedProjects.length > 0 ? publishedProjects : projects
@@ -131,11 +132,7 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <HomePage
-                  stats={stats}
-                  featuredProjects={homeProjects}
-                  newsTickerItems={newsTickerItems}
-                />
+                <HomePage featuredProjects={homeProjects} newsTickerItems={newsTickerItems} />
               </Suspense>
             </motion.div>
           )}
@@ -234,6 +231,20 @@ export default function Page() {
             >
               <Suspense fallback={<PageSkeleton />}>
                 <AdminLoginPage />
+              </Suspense>
+            </motion.div>
+          )}
+
+          {route.page === "user-auth" && (
+            <motion.div
+              key="user-auth"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <UserAuthPage />
               </Suspense>
             </motion.div>
           )}
