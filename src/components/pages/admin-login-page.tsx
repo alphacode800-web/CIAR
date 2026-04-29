@@ -15,6 +15,8 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const defaultAdminUser = "CIAR800"
+  const defaultAdminPassword = "CIAR-8000"
 
   useEffect(() => {
     if (String(user?.role || "").toUpperCase() === "ADMIN") {
@@ -49,33 +51,69 @@ export function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
-      <form onSubmit={onSubmit} className="w-full max-w-md rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20 text-foreground flex items-center justify-center p-4">
+      <form
+        onSubmit={onSubmit}
+        className="w-full max-w-md rounded-2xl border border-border bg-card/95 shadow-lg backdrop-blur p-6 sm:p-7 space-y-5"
+      >
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground">CIAR</p>
           <h1 className="text-2xl font-semibold mt-1">
             {locale === "ar" ? "تسجيل دخول الأدمن" : "Admin Login"}
           </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {locale === "ar"
+              ? "استخدم بيانات حساب الأدمن للدخول إلى لوحة التحكم."
+              : "Use admin account credentials to access the dashboard."}
+          </p>
         </div>
 
-        <Input
-          type="email"
-          placeholder={locale === "ar" ? "البريد الإلكتروني" : "Email"}
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          required
-        />
-        <Input
-          type="password"
-          placeholder={locale === "ar" ? "كلمة المرور" : "Password"}
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-        />
+        <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm space-y-1">
+          <p className="font-medium">{locale === "ar" ? "بيانات تسجيل الأدمن:" : "Admin Login Credentials:"}</p>
+          <p>
+            <span className="text-muted-foreground">{locale === "ar" ? "يوزر:" : "Username:"}</span> {defaultAdminUser}
+          </p>
+          <p>
+            <span className="text-muted-foreground">{locale === "ar" ? "الباسوورد:" : "Password:"}</span> {defaultAdminPassword}
+          </p>
+        </div>
 
-        {error ? <p className="text-sm text-red-400">{error}</p> : null}
+        <div className="space-y-2">
+          <label htmlFor="admin-user" className="text-sm font-medium">
+            {locale === "ar" ? "يوزر الأدمن" : "Admin Username"}
+          </label>
+          <Input
+            id="admin-user"
+            type="text"
+            placeholder={locale === "ar" ? "أدخل يوزر الأدمن" : "Enter admin username"}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            autoComplete="username"
+          />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="admin-password" className="text-sm font-medium">
+            {locale === "ar" ? "باسوورد الأدمن" : "Admin Password"}
+          </label>
+          <Input
+            id="admin-password"
+            type="password"
+            placeholder={locale === "ar" ? "أدخل باسوورد الأدمن" : "Enter admin password"}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            autoComplete="current-password"
+          />
+        </div>
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        {error ? (
+          <p className="text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        ) : null}
+
+        <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
           {loading
             ? locale === "ar" ? "جاري تسجيل الدخول..." : "Signing in..."
             : locale === "ar" ? "دخول لوحة الأدمن" : "Enter Admin Dashboard"}

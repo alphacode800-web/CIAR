@@ -6,7 +6,8 @@ import { prisma } from "@/lib/prisma"
 
 export type AuthUser = {
   id: string
-  email: string
+  email?: string | null
+  phone?: string | null
   name: string
   role: Role
 }
@@ -61,25 +62,42 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
 
   try {
     const payload = verifyToken(token)
-    const user = await prisma.user.findUnique({
-      where: { id: payload.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
-    })
-    return user
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: payload.id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      })
+      if (user) {
+        return {
+          ...user,
+          phone: null,
+        }
+      }
+    } catch {
+      // Fallback to JWT payload when database schema is behind.
+    }
+    return {
+      id: payload.id,
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone ?? null,
+      role: payload.role,
+    }
   } catch {
     return null
   }
 }
 
-export function toAuthUser(user: Pick<User, "id" | "email" | "name" | "role">): AuthUser {
+export function toAuthUser(user: Pick<User, "id" | "email" | "phone" | "name" | "role">): AuthUser {
   return {
     id: user.id,
     email: user.email,
+    phone: user.phone,
     name: user.name,
     role: user.role as Role,
   }

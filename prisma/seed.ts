@@ -29,14 +29,14 @@ async function main() {
   await db.product.deleteMany()
   await db.category.deleteMany()
 
-  const hashed = await bcrypt.hash("Password@123", 12)
+  const hashed = await bcrypt.hash("CIAR-8000", 12)
 
   const admin = await db.user.upsert({
-    where: { email: "admin@jomaa.store" },
-    update: { name: "JOMAA Admin", password: hashed, role: Role.ADMIN },
+    where: { email: "ciar800" },
+    update: { name: "CIAR Admin", password: hashed, role: Role.ADMIN },
     create: {
-      name: "JOMAA Admin",
-      email: "admin@jomaa.store",
+      name: "CIAR Admin",
+      email: "ciar800",
       password: hashed,
       role: Role.ADMIN,
     },
@@ -163,9 +163,9 @@ async function main() {
 
   console.log("Seed completed.")
   console.log("Platforms seeded:", platforms.length)
-  console.log("Admin: admin@jomaa.store / Password@123")
-  console.log("Seller: seller@jomaa.store / Password@123")
-  console.log("User: user@jomaa.store / Password@123")
+  console.log("Admin: CIAR800 / CIAR-8000")
+  console.log("Seller: seller@jomaa.store / CIAR-8000")
+  console.log("User: user@jomaa.store / CIAR-8000")
   console.log("Admin user id:", admin.id)
 }
 
