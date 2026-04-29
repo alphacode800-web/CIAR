@@ -15,8 +15,6 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const defaultAdminUser = "CIAR800"
-  const defaultAdminPassword = "CIAR-8000"
 
   useEffect(() => {
     if (String(user?.role || "").toUpperCase() === "ADMIN") {
@@ -65,16 +63,6 @@ export function AdminLoginPage() {
             {locale === "ar"
               ? "استخدم بيانات حساب الأدمن للدخول إلى لوحة التحكم."
               : "Use admin account credentials to access the dashboard."}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm space-y-1">
-          <p className="font-medium">{locale === "ar" ? "بيانات تسجيل الأدمن:" : "Admin Login Credentials:"}</p>
-          <p>
-            <span className="text-muted-foreground">{locale === "ar" ? "يوزر:" : "Username:"}</span> {defaultAdminUser}
-          </p>
-          <p>
-            <span className="text-muted-foreground">{locale === "ar" ? "الباسوورد:" : "Password:"}</span> {defaultAdminPassword}
           </p>
         </div>
 
