@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useCallback, useEffect, useState } from "react"
+import { useRef, useCallback, useEffect, useMemo, useState } from "react"
 import { motion, useScroll, useTransform } from "framer-motion"
 import {
   ArrowRight,
@@ -30,16 +30,16 @@ import { NewsletterCTA } from "@/components/home/NewsletterCTA"
 import { PaymentMethods } from "@/components/home/PaymentMethods"
 
 const DEFAULT_HERO_IMAGES = [
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2200&q=90", // tourism
-  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=2200&q=90", // real estate
-  "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=2200&q=90", // fashion
-  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=2200&q=90", // cars
-  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=2200&q=90", // nature
-  "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=2200&q=90", // beauty
-  "https://images.unsplash.com/photo-1473625247510-8ceb1760943f?auto=format&fit=crop&w=2200&q=90", // city
-  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=2200&q=90", // restaurants
-  "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=2200&q=90", // technology
-  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=2200&q=90", // sports
+  "/images/headers/hero-1.png",
+  "/images/headers/hero-2.png",
+  "/images/headers/hero-3.png",
+  "/images/headers/hero-4.png",
+  "/images/headers/hero-1.png",
+  "/images/headers/hero-2.png",
+  "/images/headers/hero-3.png",
+  "/images/headers/hero-4.png",
+  "/images/headers/hero-1.png",
+  "/images/headers/hero-2.png",
 ]
 
 interface FeaturedProject {
@@ -115,14 +115,18 @@ export function HomePage({ featuredProjects = [], newsTickerItems = [] }: HomePa
   const [currentSlide, setCurrentSlide] = useState(0)
   const [heroImages, setHeroImages] = useState<string[]>(DEFAULT_HERO_IMAGES)
   const [platformBanners, setPlatformBanners] = useState<PlatformBanner[]>(FALLBACK_BANNERS)
+  const activeHeroImages = useMemo(() => {
+    const cleaned = heroImages.map((url) => String(url || "").trim()).filter(Boolean)
+    return cleaned.length > 0 ? cleaned : DEFAULT_HERO_IMAGES
+  }, [heroImages])
 
   useEffect(() => {
-    if (heroImages.length <= 1) return
+    if (activeHeroImages.length <= 1) return
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length)
+      setCurrentSlide((prev) => (prev + 1) % activeHeroImages.length)
     }, 7000)
     return () => clearInterval(interval)
-  }, [heroImages.length])
+  }, [activeHeroImages.length])
 
   useEffect(() => {
     fetch("/api/settings")
@@ -196,12 +200,19 @@ export function HomePage({ featuredProjects = [], newsTickerItems = [] }: HomePa
       <section className="relative h-[75vh] flex items-center justify-center">
         <div className="absolute inset-0">
           <img
-            key={heroImages[currentSlide] || `hero-slide-${currentSlide}`}
-            src={heroImages[currentSlide] || DEFAULT_HERO_IMAGES[0]}
+            key={activeHeroImages[currentSlide] || `hero-slide-${currentSlide}`}
+            src={activeHeroImages[currentSlide] || DEFAULT_HERO_IMAGES[0]}
             alt=""
             loading="eager"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover"
+            onError={() => {
+              setHeroImages((prev) => {
+                if (prev.length <= 1) return DEFAULT_HERO_IMAGES
+                return prev.filter((_, idx) => idx !== currentSlide)
+              })
+              setCurrentSlide(0)
+            }}
           />
           <div className="absolute inset-0 bg-black/35" />
         </div>
@@ -296,7 +307,7 @@ export function HomePage({ featuredProjects = [], newsTickerItems = [] }: HomePa
                 >
                   <div className="relative h-56 overflow-hidden bg-[oklch(0.10_0.025_265)]">
                     <img
-                      src={banner.imageUrl1 || heroImages[idx % heroImages.length] || DEFAULT_HERO_IMAGES[0]}
+                      src={banner.imageUrl1 || activeHeroImages[idx % activeHeroImages.length] || DEFAULT_HERO_IMAGES[0]}
                       alt={title}
                       className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                       loading="lazy"
