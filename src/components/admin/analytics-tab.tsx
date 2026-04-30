@@ -317,7 +317,7 @@ export function AnalyticsTab() {
                 label: t("admin.localization_score") || "Localization Score",
                 value: analytics?.translationCoverage ?? 0,
                 suffix: "%",
-                period: "5 languages",
+                period: `${analytics?.activeLocales ?? 0} active locales`,
                 positive: (analytics?.translationCoverage ?? 0) >= 80,
               },
             ].map((card, index) => (

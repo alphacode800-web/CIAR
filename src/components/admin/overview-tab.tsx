@@ -330,7 +330,7 @@ function WelcomeBanner({ analytics }: { analytics: AnalyticsData | null }) {
               </Badge>
               <Badge variant="outline" className="text-[10px] border-emerald-500/20% text-emerald-400 bg-emerald-500/6%">
                 <Activity className="h-3 w-3 mr-1" />
-                {analytics.activeLocales ?? 5} languages
+                {analytics.activeLocales} languages
               </Badge>
             </div>
           )}
@@ -353,27 +353,36 @@ function WelcomeBanner({ analytics }: { analytics: AnalyticsData | null }) {
 
 /* ─── System Status ─────────────────────────────────────────────────────── */
 
-function SystemStatusSection() {
+function SystemStatusSection({
+  analytics,
+  activities,
+}: {
+  analytics: AnalyticsData | null
+  activities: ActivityEntry[]
+}) {
   const { t } = useI18n()
+  const latestActivityTime = activities[0]?.timestamp
+    ? timeAgo(activities[0].timestamp)
+    : "No activity"
 
   const systems = [
     {
-      name: t("admin.server_status") || "Server",
+      name: t("admin.total_projects") || "Total Projects",
       status: "operational" as const,
       icon: HardDrive,
-      detail: "99.9% uptime",
+      detail: `${analytics?.projects.total ?? 0} records`,
     },
     {
-      name: t("admin.database_status") || "Database",
+      name: t("admin.contact_messages") || "Contact Messages",
       status: "operational" as const,
       icon: Database,
-      detail: "SQLite connected",
+      detail: `${analytics?.contactMessages ?? analytics?.contacts ?? 0} messages`,
     },
     {
-      name: t("admin.last_backup") || "Last Backup",
-      status: "warning" as const,
+      name: t("admin.recent_activity") || "Recent Activity",
+      status: activities.length > 0 ? ("operational" as const) : ("warning" as const),
       icon: ShieldCheck,
-      detail: "2 hours ago",
+      detail: latestActivityTime,
     },
   ]
 
@@ -477,7 +486,6 @@ export function OverviewTab() {
           value: analytics.projects.total,
           color: "bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/8%)]",
           iconColor: "text-[oklch(0.78_0.14_82)]",
-          trend: { value: 12, positive: true },
         },
         {
           icon: Eye,
@@ -485,7 +493,6 @@ export function OverviewTab() {
           value: analytics.totalViews,
           color: "bg-gradient-to-br from-violet-500/16% to-fuchsia-500/8%",
           iconColor: "text-violet-400",
-          trend: { value: 8, positive: true },
         },
         {
           icon: MessageSquare,
@@ -493,13 +500,11 @@ export function OverviewTab() {
           value: analytics.contactMessages ?? analytics.contacts,
           color: "bg-gradient-to-br from-emerald-500/16% to-teal-500/8%",
           iconColor: "text-emerald-400",
-          trend: { value: 24, positive: true },
         },
         {
           icon: Globe,
           label: t("admin.active_languages") || "Active Languages",
-          value: analytics.activeLocales ?? 5,
-          suffix: "/ 5",
+          value: analytics.activeLocales,
           color: "bg-gradient-to-br from-amber-500/16% to-orange-500/8%",
           iconColor: "text-amber-400",
         },
@@ -781,7 +786,7 @@ export function OverviewTab() {
         </GlassCard>
 
         {/* ── Right Column: System Status ── */}
-        <SystemStatusSection />
+        <SystemStatusSection analytics={analytics} activities={activities} />
       </div>
 
       {/* ── Two-Column: Category Breakdown + Monthly Trend ── */}
