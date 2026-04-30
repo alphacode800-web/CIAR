@@ -84,6 +84,7 @@ export interface Project {
 
 type ViewMode = "table" | "card"
 const LOCAL_PROJECTS_CACHE_KEY = "ciar-admin-projects-local-cache"
+const PROJECTS_VIEW_MODE_KEY = "ciar-admin-projects-view-mode"
 
 // ─── Animation variants ──────────────────────────────────────────────────────
 
@@ -121,7 +122,11 @@ export function ProjectsTab() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogKey, setDialogKey] = useState(0)
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>("table")
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window === "undefined") return "card"
+    const saved = localStorage.getItem(PROJECTS_VIEW_MODE_KEY)
+    return saved === "table" || saved === "card" ? saved : "card"
+  })
   const [togglingId, setTogglingId] = useState<string | null>(null)
 
   const cacheProjects = useCallback((nextProjects: Project[]) => {
@@ -171,6 +176,11 @@ export function ProjectsTab() {
   useEffect(() => {
     fetchProjects()
   }, [fetchProjects])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    localStorage.setItem(PROJECTS_VIEW_MODE_KEY, viewMode)
+  }, [viewMode])
 
   // ── Filtering ──
   const filteredProjects = useMemo(
@@ -936,45 +946,33 @@ export function ProjectsTab() {
           </Select>
 
           {/* View Toggle */}
-          <div className="flex items-center rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-sm p-0.5">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => setViewMode("table")}
-                  className={`h-8 w-8 rounded-lg transition-colors ${
-                    viewMode === "table"
-                      ? "bg-[oklch(0.78_0.14_82)]/15 text-[oklch(0.78_0.14_82)]"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <LayoutList className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {t("admin.table_view") || "Table View"}
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => setViewMode("card")}
-                  className={`h-8 w-8 rounded-lg transition-colors ${
-                    viewMode === "card"
-                      ? "bg-[oklch(0.78_0.14_82)]/15 text-[oklch(0.78_0.14_82)]"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {t("admin.card_view") || "Card View"}
-              </TooltipContent>
-            </Tooltip>
+          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.04] p-1 backdrop-blur-sm">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setViewMode("card")}
+              className={`h-8 gap-1.5 rounded-lg px-3 text-xs ${
+                viewMode === "card"
+                  ? "bg-[oklch(0.78_0.14_82)]/20 text-[oklch(0.78_0.14_82)]"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              {t("admin.card_view") || "عرض الكروت"}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setViewMode("table")}
+              className={`h-8 gap-1.5 rounded-lg px-3 text-xs ${
+                viewMode === "table"
+                  ? "bg-[oklch(0.78_0.14_82)]/20 text-[oklch(0.78_0.14_82)]"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutList className="h-3.5 w-3.5" />
+              {t("admin.table_view") || "عرض الجدول"}
+            </Button>
           </div>
         </div>
 

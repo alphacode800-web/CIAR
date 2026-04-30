@@ -17,6 +17,7 @@ import {
   FileText,
   Globe,
   Newspaper,
+  Wallpaper,
 } from "lucide-react"
 import {
   CommandDialog,
@@ -90,6 +91,14 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
     icon: Languages,
     group: "pages",
     action: (nav) => nav?.("translations"),
+  },
+  {
+    id: "backgrounds",
+    labelKey: "admin.cmd_go_backgrounds",
+    fallback: "Go to Backgrounds",
+    icon: Wallpaper,
+    group: "pages",
+    action: (nav) => nav?.("backgrounds"),
   },
   {
     id: "news-ticker",

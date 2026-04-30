@@ -12,6 +12,7 @@ const ActivityTab = lazy(() => import("@/components/admin/activity-tab").then(m 
 const ProjectsTab = lazy(() => import("@/components/admin/projects-tab").then(m => ({ default: m.ProjectsTab })))
 const TranslationsTab = lazy(() => import("@/components/admin/translations-tab").then(m => ({ default: m.TranslationsTab })))
 const MediaTab = lazy(() => import("@/components/admin/media-tab").then(m => ({ default: m.MediaTab })))
+const BackgroundsTab = lazy(() => import("@/components/admin/backgrounds-tab").then(m => ({ default: m.BackgroundsTab })))
 const ContactsTab = lazy(() => import("@/components/admin/contacts-tab").then(m => ({ default: m.ContactsTab })))
 const UsersTab = lazy(() => import("@/components/admin/users-tab").then(m => ({ default: m.UsersTab })))
 const HomeSectionsTab = lazy(() => import("@/components/admin/home-sections-tab").then(m => ({ default: m.HomeSectionsTab })))
@@ -52,6 +53,8 @@ export function AdminPage() {
         return <TranslationsTab />
       case "media":
         return <MediaTab />
+      case "backgrounds":
+        return <BackgroundsTab />
       case "contacts":
         return <ContactsTab />
       case "users":

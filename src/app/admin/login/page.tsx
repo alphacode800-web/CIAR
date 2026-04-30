@@ -27,20 +27,20 @@ export default function AdminLoginPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data?.error?.message ?? data?.error ?? "Invalid credentials")
+        setError(data?.error?.message ?? data?.error ?? "بيانات الدخول غير صحيحة")
         return
       }
       const payload = data?.data ?? data
       if (payload?.token) localStorage.setItem("ciar_token", payload.token)
       const role = String(payload?.user?.role || "").toUpperCase()
       if (role !== "ADMIN") {
-        setError("This account is not allowed to access admin dashboard.")
+        setError("هذا الحساب غير مصرح له بالدخول إلى لوحة الأدمن.")
         localStorage.removeItem("ciar_token")
         return
       }
       router.replace("/admin/dashboard")
     } catch {
-      setError("Something went wrong. Try again.")
+      setError("حدث خطأ غير متوقع. حاول مرة أخرى.")
     } finally {
       setLoading(false)
     }

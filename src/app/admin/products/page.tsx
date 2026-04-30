@@ -79,56 +79,58 @@ export default function AdminProductsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Products</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage marketplace catalog and stock.</p>
+        <h1 className="text-2xl font-semibold text-[#6f1d1b]">المنتجات</h1>
+        <p className="mt-1 text-sm text-[#475569]">إدارة كتالوج المتجر والمخزون.</p>
       </div>
 
-      <form onSubmit={createProduct} className="grid gap-3 rounded-xl border border-border p-4">
-        <h2 className="text-sm font-medium">Create New Product</h2>
+      <form onSubmit={createProduct} className="grid gap-3 rounded-xl border border-white/55 bg-white/40 p-4 backdrop-blur-xl">
+        <h2 className="text-sm font-medium text-[#7a2e1f]">إضافة منتج جديد</h2>
         <div className="grid gap-3 md:grid-cols-2">
-          <Input placeholder="Product title" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} required />
-          <Input placeholder="Price (e.g. 99.99)" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))} required />
-          <Input placeholder="Stock" value={form.stock} onChange={(e) => setForm((p) => ({ ...p, stock: e.target.value }))} required />
+          <Input placeholder="اسم المنتج" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} required />
+          <Input placeholder="السعر (مثال: 99.99)" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))} required />
+          <Input placeholder="المخزون" value={form.stock} onChange={(e) => setForm((p) => ({ ...p, stock: e.target.value }))} required />
           <select
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            className="h-10 rounded-md border border-white/60 bg-white/55 px-3 text-sm text-[#1e3a5f]"
             value={form.categoryId}
             onChange={(e) => setForm((p) => ({ ...p, categoryId: e.target.value }))}
             required
           >
-            <option value="">Select category</option>
+            <option value="">اختر التصنيف</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </select>
         </div>
-        <Input placeholder="Image URLs separated by comma" value={form.images} onChange={(e) => setForm((p) => ({ ...p, images: e.target.value }))} required />
-        <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} required />
+        <Input placeholder="روابط الصور مفصولة بفاصلة" value={form.images} onChange={(e) => setForm((p) => ({ ...p, images: e.target.value }))} required />
+        <Textarea placeholder="وصف المنتج" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} required />
         <div>
-          <Button disabled={loading}>{loading ? "Saving..." : "Create Product"}</Button>
+          <Button className="bg-[#1e3a5f] text-white hover:bg-[#173150]" disabled={loading}>
+            {loading ? "جاري الحفظ..." : "إضافة المنتج"}
+          </Button>
         </div>
       </form>
 
-      <div className="rounded-xl border border-border p-3">
+      <div className="rounded-xl border border-white/55 bg-white/40 p-3 backdrop-blur-xl">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-[#334155]">الاسم</TableHead>
+              <TableHead className="text-[#334155]">التصنيف</TableHead>
+              <TableHead className="text-[#334155]">السعر</TableHead>
+              <TableHead className="text-[#334155]">المخزون</TableHead>
+              <TableHead className="text-right text-[#334155]">الإجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell>{product.title}</TableCell>
-                <TableCell>{product.category?.name ?? "-"}</TableCell>
-                <TableCell>${Number(product.price).toFixed(2)}</TableCell>
-                <TableCell>{product.stock}</TableCell>
+              <TableRow key={product.id} className="hover:bg-white/45">
+                <TableCell className="text-[#1e3a5f]">{product.title}</TableCell>
+                <TableCell className="text-[#334155]">{product.category?.name ?? "-"}</TableCell>
+                <TableCell className="text-[#1e3a5f]">${Number(product.price).toFixed(2)}</TableCell>
+                <TableCell className="text-[#334155]">{product.stock}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="destructive" size="sm" onClick={() => deleteProduct(product.id)}>
-                    Delete
+                    حذف
                   </Button>
                 </TableCell>
               </TableRow>

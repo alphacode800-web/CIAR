@@ -46,6 +46,46 @@ interface AnalyticsData {
   monthlyTrend: Array<{ month: string; count: number }>
 }
 
+const EMPTY_ANALYTICS: AnalyticsData = {
+  projects: { total: 0, published: 0, draft: 0, featured: 0 },
+  totalViews: 0,
+  avgViews: 0,
+  translations: 0,
+  contacts: 0,
+  contactMessages: 0,
+  users: 0,
+  activeLocales: 0,
+  translationCoverage: 0,
+  projectsByCategory: [],
+  topProjects: [],
+  monthlyTrend: [],
+}
+
+function normalizeAnalytics(input: unknown): AnalyticsData {
+  const raw = (input as { data?: Partial<AnalyticsData> } | null)?.data ?? (input as Partial<AnalyticsData> | null) ?? {}
+  const rawProjects = raw.projects ?? {}
+
+  return {
+    projects: {
+      total: Number(rawProjects.total ?? 0),
+      published: Number(rawProjects.published ?? 0),
+      draft: Number(rawProjects.draft ?? 0),
+      featured: Number(rawProjects.featured ?? 0),
+    },
+    totalViews: Number(raw.totalViews ?? 0),
+    avgViews: Number(raw.avgViews ?? 0),
+    translations: Number(raw.translations ?? 0),
+    contacts: Number(raw.contacts ?? 0),
+    contactMessages: Number(raw.contactMessages ?? raw.contacts ?? 0),
+    users: Number(raw.users ?? 0),
+    activeLocales: Number(raw.activeLocales ?? 0),
+    translationCoverage: Number(raw.translationCoverage ?? 0),
+    projectsByCategory: Array.isArray(raw.projectsByCategory) ? raw.projectsByCategory : [],
+    topProjects: Array.isArray(raw.topProjects) ? raw.topProjects : [],
+    monthlyTrend: Array.isArray(raw.monthlyTrend) ? raw.monthlyTrend : [],
+  }
+}
+
 /* ─── Gold chart colors for category donut ──────────────────────────────── */
 
 const CATEGORY_COLORS = [
@@ -69,10 +109,13 @@ export function AnalyticsTab() {
   const fetchAnalytics = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/analytics")
+      if (!res.ok) {
+        throw new Error("Failed to load analytics")
+      }
       const data = await res.json()
-      setAnalytics(data)
+      setAnalytics(normalizeAnalytics(data))
     } catch {
-      // silent
+      setAnalytics(EMPTY_ANALYTICS)
     } finally {
       setLoading(false)
     }

@@ -14,6 +14,7 @@ import {
   Mail,
   Users,
   Image,
+  Wallpaper,
   Palette,
   Search,
   Globe,
@@ -60,6 +61,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: "projects", icon: FolderOpen, labelKey: "admin.projects", fallback: "Projects", group: "content" },
   { id: "translations", icon: Languages, labelKey: "admin.translations", fallback: "Translations", group: "content" },
   { id: "media", icon: Image, labelKey: "admin.media", fallback: "Media Library", group: "content" },
+  { id: "backgrounds", icon: Wallpaper, labelKey: "admin.backgrounds", fallback: "Backgrounds", group: "content" },
   { id: "contacts", icon: Mail, labelKey: "admin.contacts", fallback: "Contacts", group: "content" },
   { id: "users", icon: Users, labelKey: "admin.users", fallback: "Users", group: "content" },
   { id: "home-sections", icon: Layers, labelKey: "admin.home_sections", fallback: "Home Sections", group: "system" },
@@ -193,15 +195,15 @@ function SidebarButton({
         collapsed ? "justify-center px-0" : ""
       } ${
         isActive
-          ? "text-[oklch(0.78_0.14_82)] bg-[oklch(0.78_0.14_82/10%)]"
-          : "text-muted-foreground hover:bg-[oklch(0.78_0.14_82/5%)] hover:text-foreground"
+          ? "text-[oklch(0.90_0.08_90)] bg-gradient-to-r from-[oklch(0.32_0.07_275)] to-[oklch(0.26_0.05_255)] shadow-[0_6px_20px_oklch(0.12_0.03_265/45%)]"
+          : "text-slate-300 hover:bg-[oklch(0.78_0.14_82/9%)] hover:text-white"
       }`}
       aria-label={label}
     >
       {isActive && (
         <motion.div
           layoutId={collapsed ? "admin-sidebar-active-collapsed" : "admin-sidebar-active"}
-          className="absolute inset-0 rounded-lg border border-[oklch(0.78_0.14_82/20%)]"
+          className="absolute inset-0 rounded-lg border border-[oklch(0.78_0.14_82/35%)]"
           transition={{ type: "spring", stiffness: 350, damping: 30 }}
         />
       )}
@@ -332,8 +334,8 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
   }
 
   return (
-    <div className="p-3 border-t border-[oklch(0.78_0.14_82/8%)]">
-      <div className="rounded-lg bg-gradient-to-br from-[oklch(0.78_0.14_82/6%)] to-[oklch(0.72_0.13_75/3%)] border border-[oklch(0.78_0.14_82/10%)] p-3 space-y-2.5">
+    <div className="border-t border-[oklch(0.78_0.14_82/15%)] p-3">
+      <div className="rounded-lg border border-[oklch(0.78_0.14_82/18%)] bg-gradient-to-br from-[oklch(0.2_0.05_265/95%)] to-[oklch(0.14_0.028_265/96%)] p-3 space-y-2.5">
         {/* Header with status */}
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -487,12 +489,12 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
   const sidebarWidth = sidebarCollapsed ? 64 : 256 // 16 = 64px, 64 = 256px
 
   return (
-    <div className="flex min-h-screen pt-16 bg-background">
+    <div className="flex min-h-screen bg-gradient-to-br from-[oklch(0.09_0.025_270)] via-[oklch(0.12_0.03_265)] to-[oklch(0.08_0.02_255)] pt-16 text-slate-100 [&_.text-foreground]:text-slate-100 [&_.text-muted-foreground]:text-slate-300/90">
       {/* ── Desktop Sidebar ── */}
       <motion.aside
         animate={{ width: sidebarWidth }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="hidden lg:flex shrink-0 border-e border-[oklch(0.78_0.14_82/8%)] bg-card/30 backdrop-blur-sm flex-col fixed top-16 bottom-0 z-20 overflow-hidden"
+        className="fixed top-16 bottom-0 z-20 hidden shrink-0 overflow-hidden border-e border-[oklch(0.78_0.14_82/18%)] bg-[oklch(0.1_0.03_265/92%)] shadow-[0_20px_60px_-25px_rgba(0,0,0,0.8)] backdrop-blur-xl lg:flex flex-col [&_.text-muted-foreground]:text-slate-300/85 [&_.text-foreground]:text-slate-100"
       >
         {/* Logo Area */}
         {!sidebarCollapsed && (
@@ -500,22 +502,22 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.15 }}
-            className="p-4 border-b border-[oklch(0.78_0.14_82/8%)]"
+            className="border-b border-[oklch(0.78_0.14_82/16%)] p-4"
           >
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)] flex items-center justify-center shrink-0">
                 <LayoutDashboard className="h-4 w-4 text-[oklch(0.12_0.03_265)]" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-sm font-bold">{t("admin.title") || "Admin Panel"}</h1>
-                <p className="text-[10px] text-muted-foreground">{t("admin.management") || "CIAR Management"}</p>
+                <h1 className="text-sm font-bold text-[oklch(0.93_0.03_90)]">{t("admin.title") || "Admin Panel"}</h1>
+                <p className="text-[10px] text-slate-400">{t("admin.management") || "CIAR Management"}</p>
               </div>
             </div>
           </motion.div>
         )}
 
         {sidebarCollapsed && (
-          <div className="p-3 border-b border-[oklch(0.78_0.14_82/8%)] flex justify-center">
+          <div className="flex justify-center border-b border-[oklch(0.78_0.14_82/16%)] p-3">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)] flex items-center justify-center">
               <LayoutDashboard className="h-4 w-4 text-[oklch(0.12_0.03_265)]" />
             </div>
@@ -622,7 +624,7 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
-              className="max-w-7xl mx-auto"
+              className="mx-auto max-w-7xl rounded-2xl border border-[oklch(0.78_0.14_82/14%)] bg-[oklch(0.14_0.028_265/78%)] p-4 shadow-[0_20px_60px_-25px_rgba(0,0,0,0.7)] backdrop-blur-xl sm:p-6 [&_.text-muted-foreground]:text-slate-300/85 [&_.text-foreground]:text-slate-100"
             >
               {children}
             </motion.div>

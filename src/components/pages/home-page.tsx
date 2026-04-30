@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useCallback, useEffect, useState } from "react"
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform } from "framer-motion"
 import {
   ArrowRight,
   Layers,
@@ -29,11 +29,17 @@ import { FAQSection } from "@/components/home/FAQSection"
 import { NewsletterCTA } from "@/components/home/NewsletterCTA"
 import { PaymentMethods } from "@/components/home/PaymentMethods"
 
-const HERO_IMAGES = [
-  "/images/headers/hero-1.png",
-  "/images/headers/hero-2.png",
-  "/images/headers/hero-3.png",
-  "/images/headers/hero-4.png",
+const DEFAULT_HERO_IMAGES = [
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2200&q=90", // tourism
+  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=2200&q=90", // real estate
+  "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=2200&q=90", // fashion
+  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=2200&q=90", // cars
+  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=2200&q=90", // nature
+  "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=2200&q=90", // beauty
+  "https://images.unsplash.com/photo-1473625247510-8ceb1760943f?auto=format&fit=crop&w=2200&q=90", // city
+  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=2200&q=90", // restaurants
+  "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=2200&q=90", // technology
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=2200&q=90", // sports
 ]
 
 interface FeaturedProject {
@@ -107,13 +113,33 @@ export function HomePage({ featuredProjects = [], newsTickerItems = [] }: HomePa
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.97])
 
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [heroImages, setHeroImages] = useState<string[]>(DEFAULT_HERO_IMAGES)
   const [platformBanners, setPlatformBanners] = useState<PlatformBanner[]>(FALLBACK_BANNERS)
 
   useEffect(() => {
+    if (heroImages.length <= 1) return
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length)
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length)
     }, 7000)
     return () => clearInterval(interval)
+  }, [heroImages.length])
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        const fromSettings = Array.from({ length: 10 }, (_, index) =>
+          String(data?.[`home_hero_image_${index + 1}`] || "").trim()
+        ).filter(Boolean)
+
+        if (fromSettings.length > 0) {
+          setHeroImages(fromSettings)
+          setCurrentSlide((prev) => prev % fromSettings.length)
+        }
+      })
+      .catch(() => {
+        setHeroImages(DEFAULT_HERO_IMAGES)
+      })
   }, [])
 
   useEffect(() => {
@@ -169,25 +195,18 @@ export function HomePage({ featuredProjects = [], newsTickerItems = [] }: HomePa
       {/* ═══ 1. HERO SECTION with 10-image slideshow ═══ */}
       <section className="relative h-[75vh] flex items-center justify-center">
         <div className="absolute inset-0">
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={HERO_IMAGES[currentSlide]}
-              src={HERO_IMAGES[currentSlide]}
-              alt=""
-              loading="eager"
-              decoding="async"
-              initial={{ opacity: 0, scale: 1.03 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.02 }}
-              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          </AnimatePresence>
-          <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.10_0.025_265/64%)] via-[oklch(0.10_0.025_265/82%)] to-[oklch(0.10_0.025_265/96%)]" />
+          <img
+            key={heroImages[currentSlide] || `hero-slide-${currentSlide}`}
+            src={heroImages[currentSlide] || DEFAULT_HERO_IMAGES[0]}
+            alt=""
+            loading="eager"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/35" />
         </div>
 
-        <div className="absolute inset-0 dot-pattern opacity-35" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,oklch(0.10_0.025_265/45%)_70%,oklch(0.10_0.025_265/75%)_100%)]" />
+        <div className="absolute inset-0 dot-pattern opacity-20" />
 
         <div className="absolute top-20 inset-x-0 z-30 px-4 sm:px-6">
           <div className="mx-auto max-w-7xl overflow-hidden rounded-xl border border-[oklch(0.78_0.14_82/24%)] bg-black/55 shadow-lg backdrop-blur-md">
@@ -217,10 +236,6 @@ export function HomePage({ featuredProjects = [], newsTickerItems = [] }: HomePa
             </div>
           </div>
         </div>
-
-        <div className={cn("absolute -top-20 -start-40 h-[500px] w-[500px] rounded-full blur-[120px] pointer-events-none", "bg-[oklch(0.78_0.14_82/15%)]", "animate-float")} />
-        <div className={cn("absolute top-10 -end-32 h-[400px] w-[400px] rounded-full blur-[100px] pointer-events-none", "bg-[oklch(0.22_0.04_265/20%)]", "animate-float-delayed")} />
-        <div className={cn("absolute bottom-20 start-1/3 h-[350px] w-[350px] rounded-full blur-[100px] pointer-events-none", "bg-[oklch(0.72_0.12_75/10%)]", "animate-float")} style={{ animationDelay: "1.5s" }} />
 
         <motion.div style={{ y, opacity, scale }} className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 pb-20 sm:pt-36 sm:pb-28 flex flex-col items-center text-center">
           <motion.div
@@ -281,7 +296,7 @@ export function HomePage({ featuredProjects = [], newsTickerItems = [] }: HomePa
                 >
                   <div className="relative h-56 overflow-hidden bg-[oklch(0.10_0.025_265)]">
                     <img
-                      src={banner.imageUrl1 || HERO_IMAGES[idx % HERO_IMAGES.length]}
+                      src={banner.imageUrl1 || heroImages[idx % heroImages.length] || DEFAULT_HERO_IMAGES[0]}
                       alt={title}
                       className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                       loading="lazy"

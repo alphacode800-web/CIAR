@@ -59,6 +59,7 @@ const TAB_LABELS: Record<string, string> = {
   contacts: "admin.contacts",
   users: "admin.users",
   media: "admin.media",
+  backgrounds: "admin.backgrounds",
   "home-sections": "admin.home_sections",
   "news-ticker": "admin.news_ticker",
   seo: "admin.seo",
@@ -74,6 +75,7 @@ const TAB_DESCRIPTIONS: Record<string, { key: string; fallback: string }> = {
   projects: { key: "admin.tab_desc_projects", fallback: "Manage platforms, content, and publishing" },
   translations: { key: "admin.tab_desc_translations", fallback: "Edit UI strings across all languages" },
   media: { key: "admin.tab_desc_media", fallback: "Upload and manage images, documents, and files" },
+  backgrounds: { key: "admin.tab_desc_backgrounds", fallback: "Manage page background images and visual themes" },
   contacts: { key: "admin.tab_desc_contacts", fallback: "Review and respond to submitted messages" },
   users: { key: "admin.tab_desc_users", fallback: "Manage user accounts, roles, and permissions" },
   "home-sections": { key: "admin.tab_desc_home_sections", fallback: "Customize homepage section order and visibility" },
@@ -176,7 +178,7 @@ export function AdminHeader({
   const tabDescriptionText = tabDesc ? t(tabDesc.key) || tabDesc.fallback : ""
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.12_0.028_265/80%)] backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-[oklch(0.78_0.14_82/18%)] bg-[linear-gradient(135deg,oklch(0.15_0.035_270/96%),oklch(0.11_0.03_255/96%))] text-slate-100 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-xl [&_.text-muted-foreground]:text-slate-300/85 [&_.text-foreground]:text-slate-100">
       <div className="flex items-center justify-between gap-4 px-4 sm:px-6 h-14">
         {/* ── Left Section ── */}
         <div className="flex items-center gap-3 min-w-0">
@@ -196,7 +198,7 @@ export function AdminHeader({
               <BreadcrumbItem>
                 <BreadcrumbLink
                   onClick={() => setTab("overview")}
-                  className="cursor-pointer text-muted-foreground hover:text-[oklch(0.78_0.14_82)] transition-colors"
+                  className="cursor-pointer text-slate-300 transition-colors hover:text-[oklch(0.86_0.09_85)]"
                 >
                   {t("admin.title") || "Admin"}
                 </BreadcrumbLink>
@@ -205,7 +207,7 @@ export function AdminHeader({
                 <ChevronRight className="h-3 w-3" />
               </BreadcrumbSeparator>
               <BreadcrumbItem>
-                <BreadcrumbPage className="text-foreground font-medium">
+                <BreadcrumbPage className="font-medium text-[oklch(0.93_0.03_90)]">
                   {currentTabLabel}
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -213,7 +215,7 @@ export function AdminHeader({
           </Breadcrumb>
 
           {/* Mobile tab label */}
-          <span className="sm:hidden text-sm font-medium text-foreground truncate">
+          <span className="truncate text-sm font-medium text-slate-100 sm:hidden">
             {currentTabLabel}
           </span>
         </div>
@@ -224,9 +226,9 @@ export function AdminHeader({
             onClick={() => setSearchOpen(true)}
             className={cn(
               "group flex items-center gap-2 w-full max-w-xs px-3.5 py-2 rounded-lg",
-              "border border-[oklch(0.78_0.14_82/12%)] bg-[oklch(0.14_0.028_265/50%)]",
-              "text-muted-foreground text-sm transition-all duration-200",
-              "hover:border-[oklch(0.78_0.14_82/25%)] hover:bg-[oklch(0.14_0.028_265/70%)] hover:shadow-[0_0_16px_oklch(0.78_0.14_82/6%)]",
+              "border border-[oklch(0.78_0.14_82/24%)] bg-[oklch(0.16_0.03_270/85%)]",
+              "text-slate-300 text-sm transition-all duration-200",
+              "hover:border-[oklch(0.78_0.14_82/40%)] hover:bg-[oklch(0.18_0.03_270/90%)] hover:shadow-[0_0_18px_oklch(0.78_0.14_82/12%)]",
               "cursor-pointer"
             )}
           >
@@ -307,7 +309,7 @@ export function AdminHeader({
               className="h-8 w-8 hover:bg-[oklch(0.78_0.14_82/8%)] relative"
               onClick={() => setNotifOpen(!notifOpen)}
             >
-              <Bell className="h-4 w-4 text-muted-foreground" />
+              <Bell className="h-4 w-4 text-slate-300" />
               {notifCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
@@ -346,7 +348,7 @@ export function AdminHeader({
                     AD
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline text-xs font-medium text-foreground">
+                  <span className="hidden text-xs font-medium text-[oklch(0.93_0.03_90)] sm:inline">
                   {t("admin.title") || "Admin"}
                 </span>
                 <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block" />
