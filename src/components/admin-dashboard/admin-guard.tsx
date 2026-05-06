@@ -1,15 +1,21 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 type AuthState = "loading" | "authorized" | "unauthorized"
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
   const router = useRouter()
   const [state, setState] = useState<AuthState>("loading")
 
+  const isLoginRoute =
+    pathname === "/admin/login" || (pathname?.startsWith("/admin/login/") ?? false)
+
   useEffect(() => {
+    if (isLoginRoute) return
+
     const check = async () => {
       try {
         const token = localStorage.getItem("ciar_token")
@@ -25,7 +31,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
         const data = await res.json()
         const user = data?.data?.user ?? data?.user
-        if (!user || (user.role !== "admin" && user.role !== "seller")) {
+        const role = String(user?.role ?? "").toLowerCase()
+        if (!user || (role !== "admin" && role !== "seller")) {
           setState("unauthorized")
           router.replace("/admin/login")
           return
@@ -39,7 +46,11 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     }
 
     void check()
-  }, [router])
+  }, [router, isLoginRoute])
+
+  if (isLoginRoute) {
+    return <>{children}</>
+  }
 
   if (state === "loading") {
     return (

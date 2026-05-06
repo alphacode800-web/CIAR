@@ -18,6 +18,7 @@ import {
   Globe,
   Newspaper,
   Wallpaper,
+  Clapperboard,
 } from "lucide-react"
 import {
   CommandDialog,
@@ -107,6 +108,14 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
     icon: Newspaper,
     group: "pages",
     action: (nav) => nav?.("news-ticker"),
+  },
+  {
+    id: "home-banners",
+    labelKey: "admin.cmd_go_home_banners",
+    fallback: "Go to Home Banners",
+    icon: Clapperboard,
+    group: "pages",
+    action: (nav) => nav?.("home-banners"),
   },
   {
     id: "settings",
@@ -253,7 +262,7 @@ export function SearchCommand({ open, onOpenChange, onNavigate }: SearchCommandP
               onSelect={() => handleSelect(item.id)}
               className="gap-3 py-2.5 cursor-pointer"
             >
-              <item.icon className="h-4 w-4 text-[oklch(0.78_0.14_82)] shrink-0" />
+              <item.icon className="h-4 w-4 text-[oklch(0.76_0.19_48)] shrink-0" />
               <span className="flex-1">{t(item.labelKey) || item.fallback}</span>
             </CommandItem>
           ))}

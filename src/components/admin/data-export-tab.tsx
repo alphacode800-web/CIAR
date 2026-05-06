@@ -68,14 +68,14 @@ function GlassCard({
       {...fadeInUp}
       className={cn(
         "relative rounded-2xl border backdrop-blur-xl p-6",
-        "border-[oklch(0.78_0.14_82/12%)] bg-[oklch(0.14_0.028_265/45%)]",
+        "border-[oklch(0.76_0.19_48/12%)] bg-[oklch(0.14_0.028_265/45%)]",
         "dark:bg-[oklch(0.12_0.03_265/55%)]",
-        "[html:not(.dark)_&]:bg-white/70 [html:not(.dark)_&]:border-[oklch(0.78_0.14_82/18%)]",
+        "[html:not(.dark)_&]:bg-white/70 [html:not(.dark)_&]:border-[oklch(0.76_0.19_48/18%)]",
         className
       )}
     >
-      <span className="absolute top-0 start-0 w-5 h-5 border-t border-s border-[oklch(0.78_0.14_82/30%)] rounded-tl-2xl pointer-events-none" />
-      <span className="absolute bottom-0 end-0 w-5 h-5 border-b border-e border-[oklch(0.78_0.14_82/30%)] rounded-br-2xl pointer-events-none" />
+      <span className="absolute top-0 start-0 w-5 h-5 border-t border-s border-[oklch(0.76_0.19_48/30%)] rounded-tl-2xl pointer-events-none" />
+      <span className="absolute bottom-0 end-0 w-5 h-5 border-b border-e border-[oklch(0.76_0.19_48/30%)] rounded-br-2xl pointer-events-none" />
       {children}
     </motion.div>
   )
@@ -410,8 +410,8 @@ export function DataExportTab() {
       icon: FileJson,
       action: exportProjects,
       sizeEst: t("admin.estimated") || "~50-200 KB",
-      gradient: "from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/10%)]",
-      iconColor: "text-[oklch(0.78_0.14_82)]",
+      gradient: "from-[oklch(0.76_0.19_48/20%)] to-[oklch(0.58_0.17_38/10%)]",
+      iconColor: "text-[oklch(0.76_0.19_48)]",
       format: "JSON",
     },
     {
@@ -469,7 +469,7 @@ export function DataExportTab() {
         transition={{ duration: 0.4 }}
       >
         <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
-          <Database className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+          <Database className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           {t("admin.data_export") || "Data Export & Import"}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -482,8 +482,8 @@ export function DataExportTab() {
       {/* ── Export Section ── */}
       <GlassCard>
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/10%)] flex items-center justify-center">
-            <FileDown className="h-5 w-5 text-[oklch(0.78_0.14_82)]" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[oklch(0.76_0.19_48/20%)] to-[oklch(0.58_0.17_38/10%)] flex items-center justify-center">
+            <FileDown className="h-5 w-5 text-[oklch(0.76_0.19_48)]" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-foreground">
@@ -509,7 +509,7 @@ export function DataExportTab() {
                 variants={fadeInUp}
                 whileHover={{ scale: 1.01, y: -1 }}
                 whileTap={{ scale: 0.99 }}
-                className="group relative rounded-xl border border-[oklch(0.78_0.14_82/8%)] bg-[oklch(0.14_0.028_265/30%)] hover:border-[oklch(0.78_0.14_82/18%)] hover:bg-[oklch(0.78_0.14_82/4%)] transition-all overflow-hidden"
+                className="group relative rounded-xl border border-[oklch(0.76_0.19_48/8%)] bg-[oklch(0.14_0.028_265/30%)] hover:border-[oklch(0.76_0.19_48/18%)] hover:bg-[oklch(0.76_0.19_48/4%)] transition-all overflow-hidden"
               >
                 <div className="p-4">
                   <div className="flex items-start gap-3">
@@ -533,7 +533,7 @@ export function DataExportTab() {
                 </div>
 
                 {/* Footer with format badge, size, and actions */}
-                <div className="flex items-center justify-between px-4 py-2.5 border-t border-[oklch(0.78_0.14_82/6%)] bg-[oklch(0.14_0.028_265/20%)]">
+                <div className="flex items-center justify-between px-4 py-2.5 border-t border-[oklch(0.76_0.19_48/6%)] bg-[oklch(0.14_0.028_265/20%)]">
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-mono">
                       {btn.format}
@@ -554,7 +554,7 @@ export function DataExportTab() {
                     </Button>
                     <Button
                       size="sm"
-                      className="h-7 px-3 text-[11px] bg-[oklch(0.78_0.14_82)] text-[oklch(0.15_0.04_80)] hover:opacity-90"
+                      className="h-7 px-3 text-[11px] bg-[oklch(0.76_0.19_48)] text-[oklch(0.15_0.04_80)] hover:opacity-90"
                       onClick={btn.action}
                       disabled={exporting === btn.id}
                     >
@@ -603,21 +603,21 @@ export function DataExportTab() {
             onDrop={handleDrop}
             className={cn(
               "relative flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200",
-              "border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/20%)]",
-              "hover:border-[oklch(0.78_0.14_82/30%)] hover:bg-[oklch(0.78_0.14_82/4%)]",
-              dragging && "border-[oklch(0.78_0.14_82/50%)] bg-[oklch(0.78_0.14_82/8%)] scale-[1.005]",
-              importFile && "border-[oklch(0.78_0.14_82/30%)] bg-[oklch(0.78_0.14_82/5%)]"
+              "border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/20%)]",
+              "hover:border-[oklch(0.76_0.19_48/30%)] hover:bg-[oklch(0.76_0.19_48/4%)]",
+              dragging && "border-[oklch(0.76_0.19_48/50%)] bg-[oklch(0.76_0.19_48/8%)] scale-[1.005]",
+              importFile && "border-[oklch(0.76_0.19_48/30%)] bg-[oklch(0.76_0.19_48/5%)]"
             )}
             onClick={() => {
               const fileInput = document.getElementById("import-translations-input") as HTMLInputElement
               fileInput?.click()
             }}
           >
-            <div className="w-14 h-14 rounded-2xl bg-[oklch(0.78_0.14_82/10%)] flex items-center justify-center">
+            <div className="w-14 h-14 rounded-2xl bg-[oklch(0.76_0.19_48/10%)] flex items-center justify-center">
               {importFile ? (
-                <CheckCircle2 className="h-7 w-7 text-[oklch(0.78_0.14_82)]" />
+                <CheckCircle2 className="h-7 w-7 text-[oklch(0.76_0.19_48)]" />
               ) : dragging ? (
-                <UploadCloud className="h-7 w-7 text-[oklch(0.78_0.14_82)] animate-bounce" />
+                <UploadCloud className="h-7 w-7 text-[oklch(0.76_0.19_48)] animate-bounce" />
               ) : (
                 <Upload className="h-7 w-7 text-muted-foreground/50" />
               )}
@@ -654,7 +654,7 @@ export function DataExportTab() {
                 exit={{ opacity: 0, height: 0 }}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Eye className="h-3.5 w-3.5 text-[oklch(0.78_0.14_82)]" />
+                  <Eye className="h-3.5 w-3.5 text-[oklch(0.76_0.19_48)]" />
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     {t("admin.preview") || "Preview"}
                   </span>
@@ -663,7 +663,7 @@ export function DataExportTab() {
                   readOnly
                   value={importPreview}
                   rows={6}
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] font-mono text-xs resize-none text-[oklch(0.78_0.14_82/70%)]"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] font-mono text-xs resize-none text-[oklch(0.76_0.19_48/70%)]"
                 />
               </motion.div>
             )}
@@ -680,7 +680,7 @@ export function DataExportTab() {
                 <Button
                   onClick={handleImport}
                   disabled={importing}
-                  className="gap-2 bg-gradient-to-r from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)] text-[oklch(0.15_0.04_80)] hover:opacity-90 rounded-xl px-6"
+                  className="gap-2 bg-gradient-to-r from-[oklch(0.76_0.19_48)] to-[oklch(0.58_0.17_38)] text-[oklch(0.15_0.04_80)] hover:opacity-90 rounded-xl px-6"
                 >
                   {importing ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -787,10 +787,10 @@ export function DataExportTab() {
 
       {/* ── Preview Dialog ── */}
       <AlertDialog open={!!previewData} onOpenChange={() => setPreviewData(null)}>
-        <AlertDialogContent className="rounded-2xl border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/95%)] max-w-lg">
+        <AlertDialogContent className="rounded-2xl border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/95%)] max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <Info className="h-5 w-5 text-[oklch(0.78_0.14_82)]" />
+              <Info className="h-5 w-5 text-[oklch(0.76_0.19_48)]" />
               {previewData?.label || "Preview"}
             </AlertDialogTitle>
           </AlertDialogHeader>
@@ -798,12 +798,12 @@ export function DataExportTab() {
             readOnly
             value={previewData?.content || ""}
             rows={10}
-            className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] font-mono text-xs resize-none text-foreground/80"
+            className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] font-mono text-xs resize-none text-foreground/80"
           />
           <AlertDialogFooter>
             <AlertDialogAction
               onClick={() => setPreviewData(null)}
-              className="rounded-xl bg-[oklch(0.78_0.14_82)] text-[oklch(0.15_0.04_80)] hover:opacity-90"
+              className="rounded-xl bg-[oklch(0.76_0.19_48)] text-[oklch(0.15_0.04_80)] hover:opacity-90"
             >
               {t("common.close") || "Close"}
             </AlertDialogAction>

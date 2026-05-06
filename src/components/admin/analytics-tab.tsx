@@ -153,8 +153,8 @@ export function AnalyticsTab() {
           icon: Star,
           label: t("admin.featured") || "Featured",
           value: analytics.projects.featured,
-          color: "bg-gradient-to-br from-[oklch(0.78_0.14_82/30%)] to-[oklch(0.72_0.13_75/15%)]",
-          iconColor: "text-[oklch(0.78_0.14_82)]",
+          color: "bg-gradient-to-br from-[oklch(0.76_0.19_48/30%)] to-[oklch(0.58_0.17_38/15%)]",
+          iconColor: "text-[oklch(0.76_0.19_48)]",
         },
         {
           icon: Eye,
@@ -224,10 +224,10 @@ export function AnalyticsTab() {
           initial={{ opacity: 0, x: -16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="lg:col-span-2 rounded-2xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 dark:bg-[oklch(0.12_0.03_265/50%)]"
+          className="lg:col-span-2 rounded-2xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 dark:bg-[oklch(0.12_0.03_265/50%)]"
         >
           <div className="flex items-center gap-2 mb-5">
-            <Eye className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+            <Eye className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               {t("admin.views_distribution") || "Views Distribution"}
             </h3>
@@ -254,10 +254,10 @@ export function AnalyticsTab() {
           initial={{ opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.35, duration: 0.5 }}
-          className="rounded-2xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 dark:bg-[oklch(0.12_0.03_265/50%)]"
+          className="rounded-2xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 dark:bg-[oklch(0.12_0.03_265/50%)]"
         >
           <div className="flex items-center gap-2 mb-5">
-            <PieChart className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+            <PieChart className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               {t("admin.category_breakdown") || "Categories"}
             </h3>
@@ -326,7 +326,7 @@ export function AnalyticsTab() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 + index * 0.08 }}
-                className="rounded-2xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 dark:bg-[oklch(0.12_0.03_265/50%)]"
+                className="rounded-2xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 dark:bg-[oklch(0.12_0.03_265/50%)]"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">

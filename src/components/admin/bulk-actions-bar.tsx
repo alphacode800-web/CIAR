@@ -40,11 +40,11 @@ export function BulkActionsBar({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="sticky top-0 z-20 flex items-center justify-between gap-4 rounded-xl border border-[oklch(0.78_0.14_82)]/30 bg-[oklch(0.78_0.14_82)]/10 backdrop-blur-xl px-4 py-3"
+          className="sticky top-0 z-20 flex items-center justify-between gap-4 rounded-xl border border-[oklch(0.76_0.19_48)]/30 bg-[oklch(0.76_0.19_48)]/10 backdrop-blur-xl px-4 py-3"
         >
           {/* Selected count */}
           <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[oklch(0.78_0.14_82)] text-[oklch(0.15_0.04_80)]">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[oklch(0.76_0.19_48)] text-[oklch(0.15_0.04_80)]">
               <span className="text-xs font-bold">{selectedCount}</span>
             </div>
             <span className="text-sm font-medium text-foreground">
@@ -65,7 +65,7 @@ export function BulkActionsBar({
                   className={cn(
                     "gap-2 h-8 text-xs",
                     action.variant !== "destructive" &&
-                      "border-[oklch(0.78_0.14_82)]/30 text-[oklch(0.78_0.14_82)] hover:bg-[oklch(0.78_0.14_82)]/15 hover:text-[oklch(0.78_0.14_82)]"
+                      "border-[oklch(0.76_0.19_48)]/30 text-[oklch(0.76_0.19_48)] hover:bg-[oklch(0.76_0.19_48)]/15 hover:text-[oklch(0.76_0.19_48)]"
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />

@@ -152,6 +152,7 @@ export function ContactsTab() {
   // State
   const [contacts, setContacts] = useState<ContactMessage[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [dateFilter, setDateFilter] = useState("all")
   const [page, setPage] = useState(1)
@@ -187,8 +188,12 @@ export function ContactsTab() {
       setContacts(data.submissions || [])
       setTotalPages(data.pagination?.totalPages || 1)
       setStats(data.stats || { total: 0, thisMonth: 0 })
+      setLoadError(null)
     } catch {
-      toast.error(t("admin.fetch_contacts_failed") || "Failed to load contact messages")
+      setContacts([])
+      setTotalPages(1)
+      setStats({ total: 0, thisMonth: 0 })
+      setLoadError(t("admin.fetch_contacts_failed") || "Failed to load contact messages")
     } finally {
       setLoading(false)
     }
@@ -326,10 +331,10 @@ export function ContactsTab() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
-          <Mail className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+          <Mail className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           {t("admin.contacts") || "Contact Messages"}
         </h2>
-        <Badge variant="outline" className="gap-1.5 text-xs border-[oklch(0.78_0.14_82/30%)] text-[oklch(0.78_0.14_82)]">
+        <Badge variant="outline" className="gap-1.5 text-xs border-[oklch(0.76_0.19_48/30%)] text-[oklch(0.76_0.19_48)]">
           <Mail className="h-3 w-3" />
           {t("admin.inbox") || "Inbox"}
         </Badge>
@@ -337,17 +342,23 @@ export function ContactsTab() {
 
       <div className="glow-line-gold" />
 
+      {loadError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+          {loadError}
+        </div>
+      )}
+
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0 }}
-          className="rounded-2xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-xl p-5"
+          className="rounded-2xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-xl p-5"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[oklch(0.78_0.14_82/15%)] flex items-center justify-center">
-              <MessageSquare className="h-5 w-5 text-[oklch(0.78_0.14_82)]" />
+            <div className="w-10 h-10 rounded-xl bg-[oklch(0.76_0.19_48/15%)] flex items-center justify-center">
+              <MessageSquare className="h-5 w-5 text-[oklch(0.76_0.19_48)]" />
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.total}</p>
@@ -362,7 +373,7 @@ export function ContactsTab() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="rounded-2xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-xl p-5"
+          className="rounded-2xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-xl p-5"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[oklch(0.55_0.18_160/15%)] flex items-center justify-center">
@@ -381,7 +392,7 @@ export function ContactsTab() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-xl p-5"
+          className="rounded-2xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-xl p-5"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[oklch(0.65_0.25_25/15%)] flex items-center justify-center">
@@ -425,10 +436,10 @@ export function ContactsTab() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("admin.search_contacts") || "Search by name, email, subject..."}
-            className="ps-9 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border-[oklch(0.78_0.14_82/10%)]"
+            className="ps-9 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border-[oklch(0.76_0.19_48/10%)]"
           />
         </div>
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.78_0.14_82/8%)]">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]">
           {dateFilterPills.map((pill) => (
             <button
               key={pill.value}
@@ -436,8 +447,8 @@ export function ContactsTab() {
               className={cn(
                 "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
                 dateFilter === pill.value
-                  ? "bg-[oklch(0.78_0.14_82/15%)] text-[oklch(0.78_0.14_82)] shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.78_0.14_82/5%)]"
+                  ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/5%)]"
               )}
             >
               {pill.label}
@@ -457,10 +468,10 @@ export function ContactsTab() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-dashed border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/20%)]"
+          className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-dashed border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/20%)]"
         >
-          <div className="w-20 h-20 rounded-full bg-[oklch(0.78_0.14_82/8%)] flex items-center justify-center mb-6">
-            <Inbox className="h-10 w-10 text-[oklch(0.78_0.14_82/30%)]" />
+          <div className="w-20 h-20 rounded-full bg-[oklch(0.76_0.19_48/8%)] flex items-center justify-center mb-6">
+            <Inbox className="h-10 w-10 text-[oklch(0.76_0.19_48/30%)]" />
           </div>
           <h3 className="text-lg font-semibold text-muted-foreground mb-2">
             {search || dateFilter !== "all"
@@ -485,7 +496,7 @@ export function ContactsTab() {
                   selectedIds.size === filteredContacts.length
                 }
                 onChange={toggleSelectAll}
-                className="h-4 w-4 rounded border-border accent-[oklch(0.78_0.14_82)]"
+                className="h-4 w-4 rounded border-border accent-[oklch(0.76_0.19_48)]"
                 aria-label={t("admin.select_all") || "Select all messages"}
               />
               <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
@@ -508,10 +519,10 @@ export function ContactsTab() {
                   onClick={() => openContactDetail(contact)}
                   className={cn(
                     "group relative flex items-center gap-3 sm:gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-200",
-                    "border-[oklch(0.78_0.14_82/8%)] bg-[oklch(0.14_0.028_265/35%)] backdrop-blur-lg",
-                    "hover:border-[oklch(0.78_0.14_82/20%)] hover:bg-[oklch(0.78_0.14_82/3%)]",
-                    selectedIds.has(contact.id) && "bg-[oklch(0.78_0.14_82/5%)] border-[oklch(0.78_0.14_82/25%)]",
-                    !contact.read && "border-l-2 border-l-[oklch(0.78_0.14_82)]"
+                    "border-[oklch(0.76_0.19_48/8%)] bg-[oklch(0.14_0.028_265/35%)] backdrop-blur-lg",
+                    "hover:border-[oklch(0.76_0.19_48/20%)] hover:bg-[oklch(0.76_0.19_48/3%)]",
+                    selectedIds.has(contact.id) && "bg-[oklch(0.76_0.19_48/5%)] border-[oklch(0.76_0.19_48/25%)]",
+                    !contact.read && "border-l-2 border-l-[oklch(0.76_0.19_48)]"
                   )}
                 >
                   {/* Checkbox */}
@@ -523,17 +534,17 @@ export function ContactsTab() {
                       toggleSelect(contact.id)
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="h-4 w-4 rounded border-border accent-[oklch(0.78_0.14_82)] shrink-0"
+                    className="h-4 w-4 rounded border-border accent-[oklch(0.76_0.19_48)] shrink-0"
                     aria-label={`Select message from ${contact.name}`}
                   />
 
                   {/* Unread indicator */}
                   {!contact.read && (
-                    <Circle className="h-2.5 w-2.5 fill-[oklch(0.78_0.14_82)] text-[oklch(0.78_0.14_82)] shrink-0" />
+                    <Circle className="h-2.5 w-2.5 fill-[oklch(0.76_0.19_48)] text-[oklch(0.76_0.19_48)] shrink-0" />
                   )}
 
                   {/* Avatar */}
-                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/10%)] flex items-center justify-center text-xs font-bold text-[oklch(0.78_0.14_82)] shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[oklch(0.76_0.19_48/20%)] to-[oklch(0.58_0.17_38/10%)] flex items-center justify-center text-xs font-bold text-[oklch(0.76_0.19_48)] shrink-0">
                     {getInitials(contact.name)}
                   </div>
 
@@ -591,7 +602,7 @@ export function ContactsTab() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-[oklch(0.78_0.14_82/8%)] bg-[oklch(0.14_0.028_265/30%)]">
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-[oklch(0.76_0.19_48/8%)] bg-[oklch(0.14_0.028_265/30%)]">
               <p className="text-xs text-muted-foreground">
                 {t("admin.page_info") || `Page ${page} of ${totalPages}`}
               </p>
@@ -617,12 +628,12 @@ export function ContactsTab() {
 
       {/* ── Slide-Over Panel for Contact Details ── */}
       <Sheet open={slideOverOpen} onOpenChange={setSlideOverOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg p-0 border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/98%)] dark:bg-[oklch(0.10_0.03_265/98%)] backdrop-blur-xl">
+        <SheetContent side="right" className="w-full sm:max-w-lg p-0 border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/98%)] dark:bg-[oklch(0.10_0.03_265/98%)] backdrop-blur-xl">
           {viewContact && (
             <div className="flex flex-col h-full">
               {/* Slide-over header */}
-              <div className="flex items-center gap-4 p-5 border-b border-[oklch(0.78_0.14_82/10%)]">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/10%)] flex items-center justify-center text-sm font-bold text-[oklch(0.78_0.14_82)]">
+              <div className="flex items-center gap-4 p-5 border-b border-[oklch(0.76_0.19_48/10%)]">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[oklch(0.76_0.19_48/20%)] to-[oklch(0.58_0.17_38/10%)] flex items-center justify-center text-sm font-bold text-[oklch(0.76_0.19_48)]">
                   {getInitials(viewContact.name)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -633,7 +644,7 @@ export function ContactsTab() {
                     {viewContact.subject}
                   </SheetDescription>
                 </div>
-                <Badge variant="outline" className="text-[10px] gap-1 border-[oklch(0.78_0.14_82/20%)] text-[oklch(0.78_0.14_82)]">
+                <Badge variant="outline" className="text-[10px] gap-1 border-[oklch(0.76_0.19_48/20%)] text-[oklch(0.76_0.19_48)]">
                   <Mail className="h-2.5 w-2.5" />
                   {viewContact.locale?.toUpperCase() || "EN"}
                 </Badge>
@@ -642,19 +653,19 @@ export function ContactsTab() {
               {/* Slide-over body */}
               <div className="flex-1 overflow-y-auto p-5 space-y-5">
                 {/* Email */}
-                <div className="flex items-center gap-3 rounded-xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.78_0.14_82/3%)] p-3">
-                  <Mail className="h-4 w-4 text-[oklch(0.78_0.14_82)] shrink-0" />
+                <div className="flex items-center gap-3 rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.76_0.19_48/3%)] p-3">
+                  <Mail className="h-4 w-4 text-[oklch(0.76_0.19_48)] shrink-0" />
                   {viewContact.email ? (
                     <a
                       href={`mailto:${viewContact.email}`}
-                      className="text-sm text-[oklch(0.78_0.14_82)] hover:underline truncate"
+                      className="text-sm text-[oklch(0.76_0.19_48)] hover:underline truncate"
                     >
                       {viewContact.email}
                     </a>
                   ) : (
                     <a
                       href={`tel:${viewContact.phone || ""}`}
-                      className="text-sm text-[oklch(0.78_0.14_82)] hover:underline truncate"
+                      className="text-sm text-[oklch(0.76_0.19_48)] hover:underline truncate"
                     >
                       {viewContact.phone || "—"}
                     </a>
@@ -670,7 +681,7 @@ export function ContactsTab() {
                   </span>
                 </div>
 
-                <Separator className="bg-[oklch(0.78_0.14_82/10%)]" />
+                <Separator className="bg-[oklch(0.76_0.19_48/10%)]" />
 
                 {/* Subject */}
                 <div>
@@ -691,7 +702,7 @@ export function ContactsTab() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.15 }}
-                    className="mt-2 rounded-xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/30%)] p-4"
+                    className="mt-2 rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/30%)] p-4"
                   >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
                       {viewContact.message}
@@ -701,11 +712,11 @@ export function ContactsTab() {
               </div>
 
               {/* Slide-over footer */}
-              <div className="flex items-center gap-2 p-5 border-t border-[oklch(0.78_0.14_82/10%)]">
+              <div className="flex items-center gap-2 p-5 border-t border-[oklch(0.76_0.19_48/10%)]">
                 <Button
                   size="sm"
                   onClick={handleReply}
-                  className="gap-2 bg-gradient-to-r from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)] text-[oklch(0.15_0.04_80)] hover:opacity-90"
+                  className="gap-2 bg-gradient-to-r from-[oklch(0.76_0.19_48)] to-[oklch(0.58_0.17_38)] text-[oklch(0.15_0.04_80)] hover:opacity-90"
                 >
                   <Reply className="h-3.5 w-3.5" />
                   {t("admin.reply") || "Reply"}
@@ -727,7 +738,7 @@ export function ContactsTab() {
 
       {/* Delete single confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <AlertDialogContent className="rounded-2xl border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/95%)]">
+        <AlertDialogContent className="rounded-2xl border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/95%)]">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t("admin.delete_message") || "Delete Message"}
@@ -756,7 +767,7 @@ export function ContactsTab() {
 
       {/* Delete multiple confirmation */}
       <AlertDialog open={deleteMultiple} onOpenChange={setDeleteMultiple}>
-        <AlertDialogContent className="rounded-2xl border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/95%)]">
+        <AlertDialogContent className="rounded-2xl border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/95%)]">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t("admin.delete_messages") || "Delete Messages"}

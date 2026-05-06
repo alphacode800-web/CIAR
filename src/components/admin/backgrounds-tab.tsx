@@ -14,27 +14,33 @@ const PAGE_BACKGROUNDS = [
   { id: "contact", label: "صفحة تواصل معنا", path: "/contact" },
   { id: "projects", label: "صفحة المشاريع", path: "/projects" },
   { id: "store", label: "صفحة المتجر", path: "/store" },
-  { id: "admin-dashboard", label: "لوحة الأدمن - الرئيسية", path: "/admin/dashboard" },
-  { id: "admin-products", label: "لوحة الأدمن - المنتجات", path: "/admin/products" },
-  { id: "admin-orders", label: "لوحة الأدمن - الطلبات", path: "/admin/orders" },
-  { id: "admin-users", label: "لوحة الأدمن - المستخدمين", path: "/admin/users" },
+  { id: "admin-super", label: "لوحة الأدمن - المنصات والمحتوى", path: "/admin/super-platform" },
   { id: "admin-media", label: "لوحة الأدمن - الوسائط", path: "/admin/media" },
 ]
 const HOME_HERO_IMAGES = [
-  { key: "home_hero_image_1", label: "صورة الهيدر 1 (سياحة)" },
+  { key: "home_hero_image_1", label: "صورة الهيدر 1 (سياحة / طيران)" },
   { key: "home_hero_image_2", label: "صورة الهيدر 2 (عقارات)" },
-  { key: "home_hero_image_3", label: "صورة الهيدر 3 (أزياء)" },
+  { key: "home_hero_image_3", label: "صورة الهيدر 3 (تجارة / مول)" },
   { key: "home_hero_image_4", label: "صورة الهيدر 4 (سيارات)" },
-  { key: "home_hero_image_5", label: "صورة الهيدر 5" },
-  { key: "home_hero_image_6", label: "صورة الهيدر 6" },
-  { key: "home_hero_image_7", label: "صورة الهيدر 7" },
-  { key: "home_hero_image_8", label: "صورة الهيدر 8" },
-  { key: "home_hero_image_9", label: "صورة الهيدر 9" },
-  { key: "home_hero_image_10", label: "صورة الهيدر 10" },
+  { key: "home_hero_image_5", label: "صورة الهيدر 5 (شحن / لوجستيات)" },
+  { key: "home_hero_image_6", label: "صورة الهيدر 6 (فرق / توظيف)" },
+  { key: "home_hero_image_7", label: "صورة الهيدر 7 (تحليلات / إعلان)" },
+  { key: "home_hero_image_8", label: "صورة الهيدر 8 (دفع / تجارة إلكترونية)" },
+  { key: "home_hero_image_9", label: "صورة الهيدر 9 (ضيافة)" },
+  { key: "home_hero_image_10", label: "صورة الهيدر 10 (أزياء)" },
+  { key: "home_hero_image_11", label: "صورة الهيدر 11 (خدمات مهنية)" },
+  { key: "home_hero_image_12", label: "صورة الهيدر 12 (صيانة / خدمات ميدانية)" },
+  { key: "home_hero_image_13", label: "صورة الهيدر 13 (فاخر / VIP)" },
+  { key: "home_hero_image_14", label: "صورة الهيدر 14 (استثمار / أعمال)" },
+  { key: "home_hero_image_15", label: "صورة الهيدر 15 (حملات / منتج)" },
+  { key: "home_hero_image_16", label: "صورة الهيدر 16 (لوجستيات عالمية)" },
+  { key: "home_hero_image_17", label: "صورة الهيدر 17 (تسويق / إبداع)" },
+  { key: "home_hero_image_18", label: "صورة الهيدر 18 (شراكات)" },
+  { key: "home_hero_image_19", label: "صورة الهيدر 19 (مساحات عمل)" },
+  { key: "home_hero_image_20", label: "صورة الهيدر 20 (رقمي / منصة)" },
 ]
-const IMAGE_KEY_PATTERN = /(image|images|banner|background|bg|logo|hero)/i
+const MEDIA_KEY_PATTERN = /(image|images|banner|background|bg|logo|hero|video|poster)/i
 const PAGE_KEY_PATTERN = /^page_background_/i
-const EXCLUDED_COMPONENT_KEYS = /(platform|module|card|cards|carousel|slider|cta|topProjects|projectsByCategory)/i
 
 type BannerRow = {
   id: string
@@ -46,12 +52,16 @@ type BannerRow = {
   imageUrl3?: string
 }
 
-type ConfiguredImage = {
+type ConfiguredMedia = {
   key: string
   value: string
-  sourceType: "setting"
+  sourceType: "setting" | "platform-banner"
   settingKey?: string
+  bannerId?: string
+  bannerField?: "imageUrl1" | "imageUrl2" | "imageUrl3"
 }
+
+const isLikelyVideo = (url: string) => /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(String(url || "").trim())
 
 export function BackgroundsTab() {
   const [settings, setSettings] = useState<Record<string, string>>({})
@@ -59,22 +69,40 @@ export function BackgroundsTab() {
   const [loading, setLoading] = useState(true)
   const [savingKey, setSavingKey] = useState<string | null>(null)
   const [savingAll, setSavingAll] = useState(false)
+  const [savingBannerKey, setSavingBannerKey] = useState<string | null>(null)
   const [query, setQuery] = useState("")
-  const [selectedImage, setSelectedImage] = useState<ConfiguredImage | null>(null)
+  const [selectedImage, setSelectedImage] = useState<ConfiguredMedia | null>(null)
   const [selectedImageUrl, setSelectedImageUrl] = useState("")
   const [savingImageDetails, setSavingImageDetails] = useState(false)
   const [brokenPreviews, setBrokenPreviews] = useState<Record<string, boolean>>({})
+  const [platformBanners, setPlatformBanners] = useState<BannerRow[]>([])
 
   useEffect(() => {
     const load = async () => {
       setLoading(true)
       try {
-        const settingsRes = await fetch("/api/settings")
+        const [settingsRes, bannersRes] = await Promise.all([
+          fetch("/api/settings"),
+          fetch("/api/super-platform/banners"),
+        ])
         const settingsData = settingsRes.ok ? await settingsRes.json() : {}
+        const bannersData = bannersRes.ok ? await bannersRes.json() : {}
 
         const normalizedSettings = settingsData && typeof settingsData === "object" ? settingsData : {}
         setSettings(normalizedSettings)
         setInitialSettings(normalizedSettings)
+        const rows = Array.isArray(bannersData?.banners)
+          ? bannersData.banners.map((row: BannerRow) => ({
+              id: String(row.id || ""),
+              moduleId: String(row.moduleId || ""),
+              titleAr: String(row.titleAr || ""),
+              titleEn: String(row.titleEn || ""),
+              imageUrl1: String(row.imageUrl1 || ""),
+              imageUrl2: String(row.imageUrl2 || ""),
+              imageUrl3: String(row.imageUrl3 || ""),
+            }))
+          : []
+        setPlatformBanners(rows.filter((row: BannerRow) => row.id))
       } catch {
         toast.error("تعذر تحميل الخلفيات")
       } finally {
@@ -105,12 +133,11 @@ export function BackgroundsTab() {
     [settings]
   )
 
-  const configuredSettingImages = useMemo(
+  const configuredSettingMedia = useMemo(
     () =>
       Object.entries(settings)
         .filter(([key, value]) => {
-          if (!IMAGE_KEY_PATTERN.test(key)) return false
-          if (EXCLUDED_COMPONENT_KEYS.test(key)) return false
+          if (!MEDIA_KEY_PATTERN.test(key)) return false
           return String(value || "").trim().length > 0
         })
         .map(([key, value]) => ({
@@ -137,13 +164,37 @@ export function BackgroundsTab() {
 
   const componentImages = useMemo(
     () =>
-      configuredSettingImages.filter(
+      configuredSettingMedia.filter(
         (item) => !PAGE_KEY_PATTERN.test(item.key)
       ),
-    [configuredSettingImages]
+    [configuredSettingMedia]
   )
 
-  const configuredImages = useMemo(() => [...pageImages, ...componentImages], [pageImages, componentImages])
+  const platformBannerMedia = useMemo<ConfiguredMedia[]>(
+    () =>
+      platformBanners.flatMap((banner) => {
+        const base = banner.titleAr || banner.titleEn || banner.moduleId || banner.id
+        return (["imageUrl1", "imageUrl2", "imageUrl3"] as const)
+          .map((field) => {
+            const value = String(banner[field] || "").trim()
+            if (!value) return null
+            return {
+              key: `platform_banner_${base}_${field}`,
+              value,
+              sourceType: "platform-banner" as const,
+              bannerId: banner.id,
+              bannerField: field,
+            }
+          })
+          .filter(Boolean) as ConfiguredMedia[]
+      }),
+    [platformBanners]
+  )
+
+  const configuredImages = useMemo(
+    () => [...pageImages, ...componentImages, ...platformBannerMedia],
+    [pageImages, componentImages, platformBannerMedia]
+  )
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -153,10 +204,10 @@ export function BackgroundsTab() {
 
   const changedKeys = useMemo(
     () =>
-      rows
+      [...rows, ...heroRows]
         .filter((row) => (settings[row.key] || "") !== (initialSettings[row.key] || ""))
         .map((row) => row.key),
-    [rows, settings, initialSettings]
+    [rows, heroRows, settings, initialSettings]
   )
 
   const updateLocal = (key: string, value: string) => {
@@ -205,7 +256,7 @@ export function BackgroundsTab() {
     }
   }
 
-  const openImageDialog = (image: ConfiguredImage) => {
+  const openImageDialog = (image: ConfiguredMedia) => {
     setSelectedImage(image)
     setSelectedImageUrl(image.value)
   }
@@ -229,6 +280,30 @@ export function BackgroundsTab() {
         if (!res.ok) throw new Error("save failed")
         setSettings((prev) => ({ ...prev, [key]: nextUrl }))
         setInitialSettings((prev) => ({ ...prev, [key]: nextUrl }))
+      } else if (
+        selectedImage.sourceType === "platform-banner" &&
+        selectedImage.bannerId &&
+        selectedImage.bannerField
+      ) {
+        const target = platformBanners.find((row) => row.id === selectedImage.bannerId)
+        if (!target) throw new Error("banner not found")
+        const payload = {
+          ...target,
+          [selectedImage.bannerField]: nextUrl,
+        }
+        const res = await fetch(`/api/super-platform/banners/${selectedImage.bannerId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error("save failed")
+        setPlatformBanners((prev) =>
+          prev.map((row) =>
+            row.id === selectedImage.bannerId
+              ? { ...row, [selectedImage.bannerField!]: nextUrl }
+              : row
+          )
+        )
       } else {
         throw new Error("unsupported source")
       }
@@ -242,10 +317,36 @@ export function BackgroundsTab() {
     }
   }
 
+  const savePlatformBannerField = async (
+    bannerId: string,
+    field: "imageUrl1" | "imageUrl2" | "imageUrl3",
+    value: string
+  ) => {
+    const target = platformBanners.find((row) => row.id === bannerId)
+    if (!target) return
+    const key = `${bannerId}:${field}`
+    setSavingBannerKey(key)
+    try {
+      const payload = { ...target, [field]: value }
+      const res = await fetch(`/api/super-platform/banners/${bannerId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error("save failed")
+      setPlatformBanners((prev) => prev.map((row) => (row.id === bannerId ? { ...row, [field]: value } : row)))
+      toast.success("تم حفظ صورة البنر")
+    } catch {
+      toast.error("فشل حفظ صورة البنر")
+    } finally {
+      setSavingBannerKey(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-[260px] items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-[oklch(0.78_0.14_82)]" />
+        <Loader2 className="h-6 w-6 animate-spin text-[oklch(0.76_0.19_48)]" />
       </div>
     )
   }
@@ -254,13 +355,13 @@ export function BackgroundsTab() {
     <div className="space-y-6">
       <div>
         <h2 className="flex items-center gap-2 text-2xl font-bold gradient-text">
-          <ImageIcon className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+          <ImageIcon className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           تبويب الخلفيات
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">إدارة خلفيات جميع صفحات الموقع من مكان واحد.</p>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4 md:flex-row md:items-center md:justify-between">
         <div className="relative w-full md:max-w-sm">
           <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -279,12 +380,12 @@ export function BackgroundsTab() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
-        <h3 className="mb-3 text-sm font-semibold text-foreground">صور هيدر الصفحة الرئيسية (10 صور)</h3>
-        <p className="mb-3 text-xs text-muted-foreground">أضف 10 صور واضحة للهيدر (يفضل مقاس عريض 1920x1080 أو أعلى).</p>
+      <div className="rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
+        <h3 className="mb-3 text-sm font-semibold text-foreground">صور هيدر الصفحة الرئيسية (20 صورة)</h3>
+        <p className="mb-3 text-xs text-muted-foreground">أضف حتى 20 صورة للهيدر تعكس منتجات وخدمات المنصة (يفضل عريض 1920×1080 أو أعلى).</p>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {heroRows.map((row) => (
-            <div key={row.key} className="space-y-2 rounded-lg border border-[oklch(0.78_0.14_82/12%)] bg-[oklch(0.12_0.03_265/55%)] p-3">
+            <div key={row.key} className="space-y-2 rounded-lg border border-[oklch(0.76_0.19_48/12%)] bg-[oklch(0.12_0.03_265/55%)] p-3">
               <Label className="text-xs text-slate-300">{row.label}</Label>
               <Input
                 value={settings[row.key] || ""}
@@ -292,12 +393,20 @@ export function BackgroundsTab() {
                 placeholder="https://example.com/hero-image.jpg"
               />
               {row.value ? (
-                <img
-                  src={row.value}
-                  alt={row.label}
-                  className="h-24 w-full rounded-lg object-cover"
-                  onError={() => setBrokenPreviews((prev) => ({ ...prev, [row.key]: true }))}
-                />
+                isLikelyVideo(row.value) ? (
+                  <video src={row.value} className="h-24 w-full rounded-lg object-cover" controls muted playsInline />
+                ) : (
+                  isLikelyVideo(row.value) ? (
+                    <video src={row.value} className="h-24 w-full rounded-lg object-cover" controls muted playsInline />
+                  ) : (
+                    <img
+                      src={row.value}
+                      alt={row.label}
+                      className="h-24 w-full rounded-lg object-cover"
+                      onError={() => setBrokenPreviews((prev) => ({ ...prev, [row.key]: true }))}
+                    />
+                  )
+                )
               ) : null}
               {brokenPreviews[row.key] ? (
                 <p className="text-[11px] text-amber-200">رابط الصورة غير صحيح أو الصورة غير متاحة.</p>
@@ -313,7 +422,7 @@ export function BackgroundsTab() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
+      <div className="rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
         <h3 className="mb-3 text-sm font-semibold text-foreground">صور الصفحات</h3>
         {pageImages.length === 0 ? (
           <p className="text-xs text-muted-foreground">لا توجد صور صفحات مضبوطة حاليًا.</p>
@@ -324,9 +433,13 @@ export function BackgroundsTab() {
                 key={item.key}
                 type="button"
                 onClick={() => openImageDialog(item)}
-                className="rounded-lg border border-[oklch(0.78_0.14_82/14%)] bg-[oklch(0.12_0.03_265/65%)] p-2 text-start transition hover:border-[oklch(0.78_0.14_82/35%)] hover:shadow-[0_0_18px_oklch(0.78_0.14_82/10%)]"
+                className="rounded-lg border border-[oklch(0.76_0.19_48/14%)] bg-[oklch(0.12_0.03_265/65%)] p-2 text-start transition hover:border-[oklch(0.76_0.19_48/35%)] hover:shadow-[0_0_18px_oklch(0.76_0.19_48/10%)]"
               >
-                <img src={item.value} alt={item.key} className="h-24 w-full rounded-md object-cover" />
+                {isLikelyVideo(item.value) ? (
+                  <video src={item.value} className="h-24 w-full rounded-md object-cover" controls muted playsInline />
+                ) : (
+                  <img src={item.value} alt={item.key} className="h-24 w-full rounded-md object-cover" />
+                )}
                 <p className="mt-2 truncate text-[11px] text-slate-300" title={item.key}>
                   {item.key}
                 </p>
@@ -339,7 +452,7 @@ export function BackgroundsTab() {
         )}
       </div>
 
-      <div className="rounded-xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
+      <div className="rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
         <h3 className="mb-3 text-sm font-semibold text-foreground">صور المكونات (بدون كروت المنصات)</h3>
         {componentImages.length === 0 ? (
           <p className="text-xs text-muted-foreground">لا توجد صور مكونات إضافية حاليًا.</p>
@@ -350,9 +463,13 @@ export function BackgroundsTab() {
                 key={item.key}
                 type="button"
                 onClick={() => openImageDialog(item)}
-                className="rounded-lg border border-[oklch(0.78_0.14_82/14%)] bg-[oklch(0.12_0.03_265/65%)] p-2 text-start transition hover:border-[oklch(0.78_0.14_82/35%)] hover:shadow-[0_0_18px_oklch(0.78_0.14_82/10%)]"
+                className="rounded-lg border border-[oklch(0.76_0.19_48/14%)] bg-[oklch(0.12_0.03_265/65%)] p-2 text-start transition hover:border-[oklch(0.76_0.19_48/35%)] hover:shadow-[0_0_18px_oklch(0.76_0.19_48/10%)]"
               >
-                <img src={item.value} alt={item.key} className="h-24 w-full rounded-md object-cover" />
+                {isLikelyVideo(item.value) ? (
+                  <video src={item.value} className="h-24 w-full rounded-md object-cover" controls muted playsInline />
+                ) : (
+                  <img src={item.value} alt={item.key} className="h-24 w-full rounded-md object-cover" />
+                )}
                 <p className="mt-2 truncate text-[11px] text-slate-300" title={item.key}>
                   {item.key}
                 </p>
@@ -365,11 +482,70 @@ export function BackgroundsTab() {
         )}
       </div>
 
+      <div className="rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
+        <h3 className="mb-3 text-sm font-semibold text-foreground">صور بنرات المنصات الحالية</h3>
+        {platformBanners.length === 0 ? (
+          <p className="text-xs text-muted-foreground">لا توجد بنرات منصات حالياً.</p>
+        ) : (
+          <div className="space-y-3">
+            {platformBanners.map((banner) => (
+              <div key={banner.id} className="rounded-lg border border-border/40 bg-background/40 p-3">
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {(banner.titleAr || banner.titleEn || banner.moduleId || banner.id).trim()}
+                </p>
+                <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                  {(["imageUrl1", "imageUrl2", "imageUrl3"] as const).map((field) => {
+                    const value = String(banner[field] || "")
+                    const fieldKey = `${banner.id}:${field}`
+                    return (
+                      <div key={fieldKey} className="space-y-2 rounded-md border border-border/40 p-2">
+                        <Label className="text-[11px] text-muted-foreground">{field}</Label>
+                        <Input
+                          value={value}
+                          onChange={(e) =>
+                            setPlatformBanners((prev) =>
+                              prev.map((row) =>
+                                row.id === banner.id ? { ...row, [field]: e.target.value } : row
+                              )
+                            )
+                          }
+                          placeholder="https://example.com/banner-image.jpg"
+                        />
+                        {value ? (
+                          isLikelyVideo(value) ? (
+                            <video src={value} className="h-20 w-full rounded object-cover" controls muted playsInline />
+                          ) : (
+                            <img src={value} className="h-20 w-full rounded object-cover" alt={fieldKey} />
+                          )
+                        ) : null}
+                        <Button
+                          size="sm"
+                          onClick={() => savePlatformBannerField(banner.id, field, value)}
+                          disabled={savingBannerKey === fieldKey}
+                          className="w-full gap-2"
+                        >
+                          {savingBannerKey === fieldKey ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Save className="h-3.5 w-3.5" />
+                          )}
+                          حفظ
+                        </Button>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="space-y-3">
         {filteredRows.map((row) => (
           <div
             key={row.id}
-            className="grid gap-3 rounded-xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4 md:grid-cols-[1.2fr_2fr_auto]"
+            className="grid gap-3 rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4 md:grid-cols-[1.2fr_2fr_auto]"
           >
             <div>
               <p className="text-sm font-semibold text-foreground">{row.label}</p>
@@ -473,7 +649,17 @@ export function BackgroundsTab() {
 
           {selectedImage ? (
             <div className="space-y-4">
-              <img src={selectedImageUrl || selectedImage.value} alt={selectedImage.key} className="h-64 w-full rounded-xl object-cover" />
+              {isLikelyVideo(selectedImageUrl || selectedImage.value) ? (
+                <video
+                  src={selectedImageUrl || selectedImage.value}
+                  className="h-64 w-full rounded-xl object-cover"
+                  controls
+                  muted
+                  playsInline
+                />
+              ) : (
+                <img src={selectedImageUrl || selectedImage.value} alt={selectedImage.key} className="h-64 w-full rounded-xl object-cover" />
+              )}
 
               <div className="space-y-1">
                 <Label>المعرف</Label>

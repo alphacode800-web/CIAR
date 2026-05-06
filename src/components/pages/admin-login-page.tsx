@@ -18,7 +18,7 @@ export function AdminLoginPage() {
 
   useEffect(() => {
     if (String(user?.role || "").toUpperCase() === "ADMIN") {
-      navigate({ page: "admin", tab: "dashboard" })
+      navigate({ page: "admin", tab: "overview" })
     }
   }, [user, navigate])
 
@@ -40,7 +40,7 @@ export function AdminLoginPage() {
         setError(locale === "ar" ? "هذا الحساب ليس حساب أدمن" : "This account is not an admin account")
         return
       }
-      navigate({ page: "admin", tab: "dashboard" })
+      navigate({ page: "admin", tab: "overview" })
     } catch {
       setError(locale === "ar" ? "حدث خطأ أثناء تسجيل الدخول" : "Something went wrong while signing in")
     } finally {

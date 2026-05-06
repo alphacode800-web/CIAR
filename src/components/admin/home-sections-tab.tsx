@@ -206,7 +206,7 @@ export function HomeSectionsTab() {
         transition={{ duration: 0.4 }}
       >
         <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
-          <LayoutGrid className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+          <LayoutGrid className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           {t("admin.home_sections") || "Home Page Sections"}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -221,22 +221,22 @@ export function HomeSectionsTab() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="flex flex-wrap items-center gap-3 p-4 rounded-2xl border border-[oklch(0.78_0.14_82/12%)] bg-[oklch(0.14_0.028_265/45%)] backdrop-blur-xl dark:bg-[oklch(0.12_0.03_265/55%)]"
+        className="flex flex-wrap items-center gap-3 p-4 rounded-2xl border border-[oklch(0.76_0.19_48/12%)] bg-[oklch(0.14_0.028_265/45%)] backdrop-blur-xl dark:bg-[oklch(0.12_0.03_265/55%)]"
       >
         <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+          <Layers className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
           <span className="text-sm text-muted-foreground">
             {sections.length} sections total
           </span>
         </div>
-        <div className="w-px h-4 bg-[oklch(0.78_0.14_82/15%)]" />
+        <div className="w-px h-4 bg-[oklch(0.76_0.19_48/15%)]" />
         <div className="flex items-center gap-2">
           <Eye className="h-4 w-4 text-emerald-400" />
           <span className="text-sm text-muted-foreground">
             {visibleCount} visible
           </span>
         </div>
-        <div className="w-px h-4 bg-[oklch(0.78_0.14_82/15%)]" />
+        <div className="w-px h-4 bg-[oklch(0.76_0.19_48/15%)]" />
         <div className="flex items-center gap-2">
           <EyeOff className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
@@ -267,13 +267,13 @@ export function HomeSectionsTab() {
                 whileDrag={{ scale: 1.02, boxShadow: "0 0 24px oklch(0.78 0.14 82/15%)" }}
                 className={cn(
                   "group relative flex items-center gap-3 sm:gap-4 p-4 rounded-xl border transition-all cursor-grab active:cursor-grabbing",
-                  "border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/45%)] backdrop-blur-lg dark:bg-[oklch(0.12_0.03_265/55%)]",
-                  "hover:border-[oklch(0.78_0.14_82/22%)] hover:bg-[oklch(0.78_0.14_82/4%)]",
+                  "border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] backdrop-blur-lg dark:bg-[oklch(0.12_0.03_265/55%)]",
+                  "hover:border-[oklch(0.76_0.19_48/22%)] hover:bg-[oklch(0.76_0.19_48/4%)]",
                   !section.visible && "opacity-60"
                 )}
               >
                 {/* Order number */}
-                <div className="hidden sm:flex w-7 h-7 rounded-lg bg-[oklch(0.78_0.14_82/10%)] items-center justify-center text-xs font-bold text-[oklch(0.78_0.14_82)] shrink-0">
+                <div className="hidden sm:flex w-7 h-7 rounded-lg bg-[oklch(0.76_0.19_48/10%)] items-center justify-center text-xs font-bold text-[oklch(0.76_0.19_48)] shrink-0">
                   {index + 1}
                 </div>
 
@@ -320,7 +320,7 @@ export function HomeSectionsTab() {
                       moveSection(index, "up")
                     }}
                     disabled={index === 0}
-                    className="p-1 rounded-md hover:bg-[oklch(0.78_0.14_82/10%)] text-muted-foreground hover:text-[oklch(0.78_0.14_82)] transition-colors disabled:opacity-20 disabled:pointer-events-none"
+                    className="p-1 rounded-md hover:bg-[oklch(0.76_0.19_48/10%)] text-muted-foreground hover:text-[oklch(0.76_0.19_48)] transition-colors disabled:opacity-20 disabled:pointer-events-none"
                   >
                     <ChevronUp className="h-3.5 w-3.5" />
                   </button>
@@ -330,7 +330,7 @@ export function HomeSectionsTab() {
                       moveSection(index, "down")
                     }}
                     disabled={index === sections.length - 1}
-                    className="p-1 rounded-md hover:bg-[oklch(0.78_0.14_82/10%)] text-muted-foreground hover:text-[oklch(0.78_0.14_82)] transition-colors disabled:opacity-20 disabled:pointer-events-none"
+                    className="p-1 rounded-md hover:bg-[oklch(0.76_0.19_48/10%)] text-muted-foreground hover:text-[oklch(0.76_0.19_48)] transition-colors disabled:opacity-20 disabled:pointer-events-none"
                   >
                     <ChevronDown className="h-3.5 w-3.5" />
                   </button>
@@ -377,7 +377,7 @@ export function HomeSectionsTab() {
           onClick={resetToDefault}
           disabled={resetting}
           variant="outline"
-          className="gap-2 border-[oklch(0.78_0.14_82/20%)] text-[oklch(0.78_0.14_82)] hover:bg-[oklch(0.78_0.14_82/8%)] rounded-xl"
+          className="gap-2 border-[oklch(0.76_0.19_48/20%)] text-[oklch(0.76_0.19_48)] hover:bg-[oklch(0.76_0.19_48/8%)] rounded-xl"
         >
           {resetting ? (
             <Loader2 className="h-4 w-4 animate-spin" />

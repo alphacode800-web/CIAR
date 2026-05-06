@@ -57,15 +57,15 @@ function GlassCard({
     <motion.div
       {...fadeInUp}
       className={`
-        relative rounded-2xl border border-[oklch(0.78_0.14_82/12%)]
+        relative rounded-2xl border border-[oklch(0.76_0.19_48/12%)]
         bg-[oklch(0.14_0.028_265/45%)] backdrop-blur-xl p-6
         dark:bg-[oklch(0.12_0.03_265/55%)]
-        [html:not(.dark)_&]:bg-white/70 [html:not(.dark)_&]:border-[oklch(0.78_0.14_82/18%)]
+        [html:not(.dark)_&]:bg-white/70 [html:not(.dark)_&]:border-[oklch(0.76_0.19_48/18%)]
         ${className}
       `}
     >
-      <span className="absolute top-0 start-0 w-5 h-5 border-t border-s border-[oklch(0.78_0.14_82/30%)] rounded-tl-2xl pointer-events-none" />
-      <span className="absolute bottom-0 end-0 w-5 h-5 border-b border-e border-[oklch(0.78_0.14_82/30%)] rounded-br-2xl pointer-events-none" />
+      <span className="absolute top-0 start-0 w-5 h-5 border-t border-s border-[oklch(0.76_0.19_48/30%)] rounded-tl-2xl pointer-events-none" />
+      <span className="absolute bottom-0 end-0 w-5 h-5 border-b border-e border-[oklch(0.76_0.19_48/30%)] rounded-br-2xl pointer-events-none" />
       {children}
     </motion.div>
   )
@@ -82,8 +82,8 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center gap-3 mb-5">
-      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/10%)] flex items-center justify-center">
-        <Icon className="h-4.5 w-4.5 text-[oklch(0.78_0.14_82)]" />
+      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[oklch(0.76_0.19_48/20%)] to-[oklch(0.58_0.17_38/10%)] flex items-center justify-center">
+        <Icon className="h-4.5 w-4.5 text-[oklch(0.76_0.19_48)]" />
       </div>
       <div>
         <h3 className="text-lg font-semibold text-foreground">{title}</h3>
@@ -222,7 +222,7 @@ export function SeoTab() {
         transition={{ duration: 0.4 }}
       >
         <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
-          <SearchCode className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+          <SearchCode className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           {t("admin.seo_settings") || "SEO & Meta Tags"}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -233,24 +233,24 @@ export function SeoTab() {
       <div className="glow-line-gold" />
 
       <Tabs defaultValue="page-seo" className="space-y-6">
-        <TabsList className="bg-[oklch(0.14_0.028_265/60%)] border border-[oklch(0.78_0.14_82/12%)] rounded-xl h-auto p-1 flex-wrap">
+        <TabsList className="bg-[oklch(0.14_0.028_265/60%)] border border-[oklch(0.76_0.19_48/12%)] rounded-xl h-auto p-1 flex-wrap">
           <TabsTrigger
             value="page-seo"
-            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.78_0.14_82/15%)] data-[state=active]:text-[oklch(0.78_0.14_82)]"
+            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.76_0.19_48/15%)] data-[state=active]:text-[oklch(0.76_0.19_48)]"
           >
             <SearchCode className="h-3.5 w-3.5" />
             Page SEO
           </TabsTrigger>
           <TabsTrigger
             value="social"
-            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.78_0.14_82/15%)] data-[state=active]:text-[oklch(0.78_0.14_82)]"
+            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.76_0.19_48/15%)] data-[state=active]:text-[oklch(0.76_0.19_48)]"
           >
             <Share2 className="h-3.5 w-3.5" />
             Social Cards
           </TabsTrigger>
           <TabsTrigger
             value="sitemap"
-            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.78_0.14_82/15%)] data-[state=active]:text-[oklch(0.78_0.14_82)]"
+            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.76_0.19_48/15%)] data-[state=active]:text-[oklch(0.76_0.19_48)]"
           >
             <Map className="h-3.5 w-3.5" />
             Sitemap
@@ -297,7 +297,7 @@ export function SeoTab() {
                   value={settings.seo_meta_title || ""}
                   onChange={(e) => update("seo_meta_title", e.target.value)}
                   placeholder="CIAR — Premium Digital Services Platform"
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
                 />
                 <p className="text-xs text-muted-foreground">
                   Optimal length: 50-60 characters. Currently shown in search results.
@@ -330,7 +330,7 @@ export function SeoTab() {
                   onChange={(e) => update("seo_meta_description", e.target.value)}
                   placeholder="CIAR delivers world-class digital services across real estate, logistics, education, and more..."
                   rows={3}
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] resize-none"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] resize-none"
                 />
                 <p className="text-xs text-muted-foreground">
                   Optimal length: 150-160 characters.
@@ -351,16 +351,16 @@ export function SeoTab() {
                       setOgPreviewUrl(e.target.value)
                     }}
                     placeholder="https://ciar.com/images/og-banner.png"
-                    className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] flex-1"
+                    className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] flex-1"
                   />
                 </div>
                 {ogPreviewUrl && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
-                    className="mt-3 rounded-xl overflow-hidden border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/30%)]"
+                    className="mt-3 rounded-xl overflow-hidden border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/30%)]"
                   >
-                    <div className="relative aspect-[1.91/1] bg-gradient-to-br from-[oklch(0.78_0.14_82/10%)] to-[oklch(0.14_0.028_265/60%)] flex items-center justify-center">
+                    <div className="relative aspect-[1.91/1] bg-gradient-to-br from-[oklch(0.76_0.19_48/10%)] to-[oklch(0.14_0.028_265/60%)] flex items-center justify-center">
                       <img
                         src={ogPreviewUrl}
                         alt="OG Preview"
@@ -370,7 +370,7 @@ export function SeoTab() {
                         }}
                       />
                     </div>
-                    <div className="px-3 py-2 border-t border-[oklch(0.78_0.14_82/8%)] flex items-center gap-2">
+                    <div className="px-3 py-2 border-t border-[oklch(0.76_0.19_48/8%)] flex items-center gap-2">
                       <Eye className="h-3 w-3 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground">Recommended: 1200×630px (1.91:1 ratio)</span>
                     </div>
@@ -388,7 +388,7 @@ export function SeoTab() {
                   value={settings.seo_canonical || ""}
                   onChange={(e) => update("seo_canonical", e.target.value)}
                   placeholder="https://ciar.com"
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
                 />
               </motion.div>
 
@@ -402,7 +402,7 @@ export function SeoTab() {
                     value={settings.seo_robots_index || "index"}
                     onValueChange={(v) => update("seo_robots_index", v)}
                   >
-                    <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]">
+                    <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -414,7 +414,7 @@ export function SeoTab() {
                     value={settings.seo_robots_follow || "follow"}
                     onValueChange={(v) => update("seo_robots_follow", v)}
                   >
-                    <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]">
+                    <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -428,7 +428,7 @@ export function SeoTab() {
               {/* Search Preview */}
               <motion.div
                 {...fadeInUp}
-                className="p-4 rounded-xl bg-[oklch(0.14_0.028_265/30%)] border border-[oklch(0.78_0.14_82/8%)]"
+                className="p-4 rounded-xl bg-[oklch(0.14_0.028_265/30%)] border border-[oklch(0.76_0.19_48/8%)]"
               >
                 <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wider">
                   {t("admin.search_preview") || "Google Search Preview"}
@@ -447,7 +447,7 @@ export function SeoTab() {
               </motion.div>
             </motion.div>
 
-            <motion.div className="flex justify-end mt-5 pt-4 border-t border-[oklch(0.78_0.14_82/8%)]">
+            <motion.div className="flex justify-end mt-5 pt-4 border-t border-[oklch(0.76_0.19_48/8%)]">
               <Button
                 onClick={() =>
                   saveSection(
@@ -499,7 +499,7 @@ export function SeoTab() {
                   value={settings.seo_og_title || ""}
                   onChange={(e) => update("seo_og_title", e.target.value)}
                   placeholder="CIAR — Premium Digital Services"
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
                 />
                 <p className="text-xs text-muted-foreground">
                   Shown when page is shared on Facebook, LinkedIn, etc.
@@ -515,7 +515,7 @@ export function SeoTab() {
                   onChange={(e) => update("seo_og_description", e.target.value)}
                   placeholder="Discover CIAR's comprehensive suite of digital services..."
                   rows={3}
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] resize-none"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] resize-none"
                 />
               </motion.div>
 
@@ -527,7 +527,7 @@ export function SeoTab() {
                   value={settings.seo_twitter_card || "summary_large_image"}
                   onValueChange={(v) => update("seo_twitter_card", v)}
                 >
-                  <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]">
+                  <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -543,14 +543,14 @@ export function SeoTab() {
               {/* Social Card Preview */}
               <motion.div
                 {...fadeInUp}
-                className="p-4 rounded-xl bg-[oklch(0.14_0.028_265/30%)] border border-[oklch(0.78_0.14_82/8%)]"
+                className="p-4 rounded-xl bg-[oklch(0.14_0.028_265/30%)] border border-[oklch(0.76_0.19_48/8%)]"
               >
                 <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wider">
                   Social Share Preview
                 </p>
-                <div className="rounded-xl border border-[oklch(0.78_0.14_82/12%)] overflow-hidden max-w-md bg-[oklch(0.14_0.028_265/60%)]">
+                <div className="rounded-xl border border-[oklch(0.76_0.19_48/12%)] overflow-hidden max-w-md bg-[oklch(0.14_0.028_265/60%)]">
                   {ogPreviewUrl && (
-                    <div className="aspect-[1.91/1] bg-gradient-to-br from-[oklch(0.78_0.14_82/10%)] to-[oklch(0.14_0.028_265/80%)] relative">
+                    <div className="aspect-[1.91/1] bg-gradient-to-br from-[oklch(0.76_0.19_48/10%)] to-[oklch(0.14_0.028_265/80%)] relative">
                       <img
                         src={ogPreviewUrl}
                         alt="Social Preview"
@@ -576,7 +576,7 @@ export function SeoTab() {
               </motion.div>
             </motion.div>
 
-            <motion.div className="flex justify-end mt-5 pt-4 border-t border-[oklch(0.78_0.14_82/8%)]">
+            <motion.div className="flex justify-end mt-5 pt-4 border-t border-[oklch(0.76_0.19_48/8%)]">
               <Button
                 onClick={() =>
                   saveSection(
@@ -613,8 +613,8 @@ export function SeoTab() {
             <motion.div {...fadeInUp}>
               <div className="relative">
                 <div className="absolute top-3 end-3">
-                  <Badge variant="outline" className="text-[10px] gap-1 bg-[oklch(0.78_0.14_82/8%)] border-[oklch(0.78_0.14_82/15%)]">
-                    <Code2 className="h-3 w-3 text-[oklch(0.78_0.14_82)]" />
+                  <Badge variant="outline" className="text-[10px] gap-1 bg-[oklch(0.76_0.19_48/8%)] border-[oklch(0.76_0.19_48/15%)]">
+                    <Code2 className="h-3 w-3 text-[oklch(0.76_0.19_48)]" />
                     XML
                   </Badge>
                 </div>
@@ -622,7 +622,7 @@ export function SeoTab() {
                   readOnly
                   value={generateSitemapPreview()}
                   rows={18}
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] font-mono text-xs leading-relaxed resize-none text-[oklch(0.78_0.14_82/80%)]"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] font-mono text-xs leading-relaxed resize-none text-[oklch(0.76_0.19_48/80%)]"
                 />
               </div>
               <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">

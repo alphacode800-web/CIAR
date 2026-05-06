@@ -95,7 +95,7 @@ export function NewsTickerTab() {
     <div className="space-y-5">
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Newspaper className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+          <Newspaper className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           {t("admin.news_ticker") || "News Ticker"}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">

@@ -502,7 +502,7 @@ export function ProjectsTab() {
           loading="lazy"
         />
       ) : (
-        <div className="h-full w-full bg-gradient-to-br from-[oklch(0.55_0.12_82)] to-[oklch(0.40_0.10_260)] flex items-center justify-center">
+        <div className="h-full w-full bg-gradient-to-br from-[oklch(0.50_0.14_42)] to-[oklch(0.40_0.10_260)] flex items-center justify-center">
           <ImageIcon className="h-3.5 w-3.5 text-white/70" />
         </div>
       )}
@@ -524,7 +524,7 @@ export function ProjectsTab() {
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm px-3 py-1.5 text-xs"
+      className="flex items-center gap-2 rounded-full border border-primary/15 bg-muted/50 px-3 py-1.5 text-xs backdrop-blur-sm"
     >
       <Icon className={`h-3.5 w-3.5 ${color}`} />
       <span className="text-muted-foreground">{label}</span>
@@ -559,91 +559,85 @@ export function ProjectsTab() {
               exit="exit"
               layout
               whileHover="hover"
-              className="group relative rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl overflow-hidden cursor-default"
+              className="admin-3d-panel group glass-strong relative flex cursor-default flex-col overflow-hidden rounded-2xl border border-primary/18 transition-colors hover:border-primary/35"
             >
-              {/* Image area */}
-              <div className="relative aspect-[4/3] overflow-hidden">
-                {p.imageUrl ? (
-                  <img
-                    src={p.imageUrl}
-                    alt={tr?.name || p.slug}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-full w-full bg-gradient-to-br from-[oklch(0.45_0.10_82)] to-[oklch(0.25_0.08_260)] flex items-center justify-center">
-                    <ImageIcon className="h-10 w-10 text-white/30" />
-                  </div>
-                )}
-                {/* Gradient overlay at bottom */}
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
-
-                {/* Top-right badges */}
-                <div className="absolute top-2.5 end-2.5 flex items-center gap-1.5">
-                  {p.featured && (
-                    <Badge className="bg-[oklch(0.78_0.14_82)] text-black border-0 text-[10px] gap-1 px-2 py-0.5 font-semibold">
-                      <Star className="h-3 w-3" />
-                      Featured
-                    </Badge>
+              <div className="flex gap-4 p-4">
+                <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-xl border border-primary/15 bg-muted/40 shadow-inner">
+                  {p.imageUrl ? (
+                    <img
+                      src={p.imageUrl}
+                      alt={tr?.name || p.slug}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/60">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                    </div>
                   )}
-                  <Badge
-                    className={`text-[10px] gap-1 px-2 py-0.5 border-0 font-medium ${
-                      p.published
-                        ? "bg-emerald-500/90 text-white"
-                        : "bg-white/20 text-white backdrop-blur-sm"
-                    }`}
-                  >
-                    {p.published ? (
-                      <Eye className="h-3 w-3" />
-                    ) : (
-                      <EyeOff className="h-3 w-3" />
-                    )}
-                    {p.published
-                      ? (t("admin.project_published") || "Published")
-                      : (t("admin.project_draft") || "Draft")}
-                  </Badge>
                 </div>
 
-                {/* Hover actions overlay */}
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    onClick={(e) => { e.stopPropagation(); openEdit(p) }}
-                    className="h-9 w-9 rounded-full bg-white/20 text-white hover:bg-white/30 border-0 backdrop-blur-sm"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(p) }}
-                    className="h-9 w-9 rounded-full bg-red-500/30 text-red-200 hover:bg-red-500/50 border-0 backdrop-blur-sm"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* View count */}
-                <div className="absolute bottom-2.5 start-2.5 flex items-center gap-1 text-[11px] text-white/80">
-                  <Eye className="h-3 w-3" />
-                  {p.views.toLocaleString()}
-                </div>
-              </div>
-
-              {/* Card body */}
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-semibold text-sm leading-tight line-clamp-1 text-foreground">
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
                     {tr?.name || p.slug}
                   </h3>
+
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {p.featured && (
+                      <Badge className="gap-1 border-0 bg-[oklch(0.76_0.19_48)] px-2 py-0.5 text-[10px] font-semibold text-black">
+                        <Star className="h-3 w-3" />
+                        Featured
+                      </Badge>
+                    )}
+                    <Badge
+                      variant="outline"
+                      className={`gap-1 px-2 py-0.5 text-[10px] font-medium ${
+                        p.published
+                          ? "border-emerald-300 bg-emerald-50 text-emerald-900"
+                          : "border-amber-200 bg-amber-50 text-amber-900"
+                      }`}
+                    >
+                      {p.published ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                      {p.published
+                        ? (t("admin.project_published") || "Published")
+                        : (t("admin.project_draft") || "Draft")}
+                    </Badge>
+                    <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">
+                      {p.category}
+                    </Badge>
+                  </div>
+
+                  <div className="mt-auto flex items-center justify-between gap-2 border-t border-primary/10 pt-3">
+                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <Eye className="h-3.5 w-3.5 shrink-0" />
+                      {p.views.toLocaleString()}
+                    </span>
+                    <div className="flex shrink-0 gap-1">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8 border-primary/20"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openEdit(p)
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8 border-destructive/25 text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDeleteTarget(p)
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] border-[oklch(0.78_0.14_82)]/30 text-[oklch(0.78_0.14_82)] bg-[oklch(0.78_0.14_82)]/5"
-                >
-                  {p.category}
-                </Badge>
               </div>
             </motion.div>
           )
@@ -729,7 +723,7 @@ export function ProjectsTab() {
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className="text-[10px] border-[oklch(0.78_0.14_82)]/30 text-[oklch(0.78_0.14_82)] bg-[oklch(0.78_0.14_82)]/5"
+                      className="text-[10px] border-[oklch(0.76_0.19_48)]/30 text-[oklch(0.76_0.19_48)] bg-[oklch(0.76_0.19_48)]/5"
                     >
                       {p.category}
                     </Badge>
@@ -748,7 +742,7 @@ export function ProjectsTab() {
                             <Star
                               className={`h-4.5 w-4.5 transition-colors ${
                                 p.featured
-                                  ? "fill-[oklch(0.78_0.14_82)] text-[oklch(0.78_0.14_82)]"
+                                  ? "fill-[oklch(0.76_0.19_48)] text-[oklch(0.76_0.19_48)]"
                                   : "text-muted-foreground/40 hover:text-muted-foreground"
                               }`}
                             />
@@ -824,7 +818,7 @@ export function ProjectsTab() {
                         variant="outline"
                         size="sm"
                         onClick={openCreate}
-                        className="mt-4 rounded-full gap-2 border-[oklch(0.78_0.14_82)]/30 text-[oklch(0.78_0.14_82)] hover:bg-[oklch(0.78_0.14_82)]/10"
+                        className="mt-4 rounded-full gap-2 border-[oklch(0.76_0.19_48)]/30 text-[oklch(0.76_0.19_48)] hover:bg-[oklch(0.76_0.19_48)]/10"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         {t("admin.add_project") || "Add Project"}
@@ -854,12 +848,12 @@ export function ProjectsTab() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1.5">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-[oklch(0.88_0.14_82)] via-[oklch(0.78_0.14_82)] to-[oklch(0.65_0.16_82)] bg-clip-text text-transparent">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-[oklch(0.90_0.18_52)] via-[oklch(0.76_0.19_48)] to-[oklch(0.58_0.18_42)] bg-clip-text text-transparent">
                   {t("admin.projects") || "Projects"}
                 </h2>
                 <Badge
                   variant="secondary"
-                  className="bg-[oklch(0.78_0.14_82)]/10 text-[oklch(0.78_0.14_82)] border-[oklch(0.78_0.14_82)]/20 text-xs font-semibold tabular-nums"
+                  className="bg-[oklch(0.76_0.19_48)]/10 text-[oklch(0.76_0.19_48)] border-[oklch(0.76_0.19_48)]/20 text-xs font-semibold tabular-nums"
                 >
                   {stats.total}
                 </Badge>
@@ -870,7 +864,7 @@ export function ProjectsTab() {
             </div>
             <Button
               onClick={openCreate}
-              className="gap-2 rounded-full bg-gradient-to-r from-[oklch(0.75_0.14_82)] to-[oklch(0.65_0.16_82)] text-black font-semibold hover:shadow-lg hover:shadow-[oklch(0.78_0.14_82)]/20 transition-shadow"
+              className="gap-2 rounded-full bg-gradient-to-r from-[oklch(0.72_0.19_48)] to-[oklch(0.58_0.18_42)] text-black font-semibold hover:shadow-lg hover:shadow-[oklch(0.76_0.19_48)]/20 transition-shadow"
             >
               <Plus className="h-4 w-4" />
               {t("admin.add_project") || "Add Project"}
@@ -878,7 +872,7 @@ export function ProjectsTab() {
           </div>
 
           {/* Gold glow divider */}
-          <div className="h-px bg-gradient-to-r from-transparent via-[oklch(0.78_0.14_82)]/40 to-transparent" />
+          <div className="h-px bg-gradient-to-r from-transparent via-[oklch(0.76_0.19_48)]/40 to-transparent" />
         </motion.div>
 
         {/* ── Stats Summary Row ── */}
@@ -911,7 +905,7 @@ export function ProjectsTab() {
               icon={Star}
               label={t("admin.project_featured") || "Featured"}
               value={stats.featured}
-              color="text-[oklch(0.78_0.14_82)]"
+              color="text-[oklch(0.76_0.19_48)]"
             />
           </motion.div>
         )}
@@ -924,11 +918,11 @@ export function ProjectsTab() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("common.search") || "Search projects..."}
-              className="ps-9 rounded-xl bg-white/[0.04] border-white/10 backdrop-blur-sm focus-visible:border-[oklch(0.78_0.14_82)]/50 focus-visible:ring-[oklch(0.78_0.14_82)]/20"
+              className="rounded-xl border-border bg-background/80 ps-9 backdrop-blur-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
             />
           </div>
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-48 rounded-xl bg-white/[0.04] border-white/10 backdrop-blur-sm">
+            <SelectTrigger className="w-48 rounded-xl border-border bg-background/80 backdrop-blur-sm">
               <SelectValue placeholder={t("admin.all_categories") || "All Categories"} />
             </SelectTrigger>
             <SelectContent>
@@ -946,14 +940,14 @@ export function ProjectsTab() {
           </Select>
 
           {/* View Toggle */}
-          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.04] p-1 backdrop-blur-sm">
+          <div className="flex items-center gap-1 rounded-xl border border-border bg-background/80 p-1 backdrop-blur-sm">
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setViewMode("card")}
               className={`h-8 gap-1.5 rounded-lg px-3 text-xs ${
                 viewMode === "card"
-                  ? "bg-[oklch(0.78_0.14_82)]/20 text-[oklch(0.78_0.14_82)]"
+                  ? "bg-[oklch(0.76_0.19_48)]/20 text-[oklch(0.76_0.19_48)]"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -966,7 +960,7 @@ export function ProjectsTab() {
               onClick={() => setViewMode("table")}
               className={`h-8 gap-1.5 rounded-lg px-3 text-xs ${
                 viewMode === "table"
-                  ? "bg-[oklch(0.78_0.14_82)]/20 text-[oklch(0.78_0.14_82)]"
+                  ? "bg-[oklch(0.76_0.19_48)]/20 text-[oklch(0.76_0.19_48)]"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -985,11 +979,20 @@ export function ProjectsTab() {
           >
             {viewMode === "card"
               ? Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.04] overflow-hidden">
-                    <Skeleton className="aspect-[4/3] rounded-none" />
-                    <div className="p-4 space-y-2">
-                      <Skeleton className="h-4 w-3/4 rounded" />
-                      <Skeleton className="h-5 w-20 rounded-full" />
+                  <div
+                    key={i}
+                    className="glass-strong overflow-hidden rounded-2xl border border-primary/15"
+                  >
+                    <div className="flex gap-4 p-4">
+                      <Skeleton className="h-24 w-32 shrink-0 rounded-xl" />
+                      <div className="min-w-0 flex-1 space-y-2 py-0.5">
+                        <Skeleton className="h-4 w-full rounded" />
+                        <Skeleton className="h-4 w-[85%] rounded" />
+                        <div className="flex gap-2 pt-2">
+                          <Skeleton className="h-5 w-16 rounded-full" />
+                          <Skeleton className="h-5 w-14 rounded-full" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))

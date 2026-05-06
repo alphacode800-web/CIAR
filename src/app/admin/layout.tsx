@@ -1,6 +1,5 @@
-import { AdminShell } from "@/components/admin-dashboard/admin-shell"
+import { AdminGuard } from "@/components/admin-dashboard/admin-guard"
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <AdminShell>{children}</AdminShell>
+export default function AdminLayoutRoot({ children }: { children: React.ReactNode }) {
+  return <AdminGuard>{children}</AdminGuard>
 }
-

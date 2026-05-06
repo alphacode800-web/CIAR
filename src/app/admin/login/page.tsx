@@ -11,8 +11,8 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const defaultAdminUser = "admin@jomaa.store"
-  const defaultAdminPassword = "Password@123"
+  const defaultAdminUser = "CIAR800"
+  const defaultAdminPassword = "CIAR-8000"
   const hasValues = useMemo(() => identifier.trim().length > 0 && password.trim().length > 0, [identifier, password])
 
   const onSubmit = async (event: FormEvent) => {
@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
         localStorage.removeItem("ciar_token")
         return
       }
-      router.replace("/admin/dashboard")
+      router.replace("/admin/panel/overview")
     } catch {
       setError("حدث خطأ غير متوقع. حاول مرة أخرى.")
     } finally {

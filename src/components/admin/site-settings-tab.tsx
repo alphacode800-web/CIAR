@@ -59,16 +59,16 @@ function GlassCard({
     <motion.div
       {...fadeInUp}
       className={`
-        relative rounded-2xl border border-[oklch(0.78_0.14_82/12%)]
+        relative rounded-2xl border border-[oklch(0.76_0.19_48/12%)]
         bg-[oklch(0.14_0.028_265/45%)] backdrop-blur-xl p-6
         dark:bg-[oklch(0.12_0.03_265/55%)]
-        [html:not(.dark)_&]:bg-white/70 [html:not(.dark)_&]:border-[oklch(0.78_0.14_82/18%)]
+        [html:not(.dark)_&]:bg-white/70 [html:not(.dark)_&]:border-[oklch(0.76_0.19_48/18%)]
         ${className}
       `}
     >
       {/* Gold corner accents */}
-      <span className="absolute top-0 start-0 w-5 h-5 border-t border-s border-[oklch(0.78_0.14_82/30%)] rounded-tl-2xl pointer-events-none" />
-      <span className="absolute bottom-0 end-0 w-5 h-5 border-b border-e border-[oklch(0.78_0.14_82/30%)] rounded-br-2xl pointer-events-none" />
+      <span className="absolute top-0 start-0 w-5 h-5 border-t border-s border-[oklch(0.76_0.19_48/30%)] rounded-tl-2xl pointer-events-none" />
+      <span className="absolute bottom-0 end-0 w-5 h-5 border-b border-e border-[oklch(0.76_0.19_48/30%)] rounded-br-2xl pointer-events-none" />
       {children}
     </motion.div>
   )
@@ -85,8 +85,8 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center gap-3 mb-5">
-      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/10%)] flex items-center justify-center">
-        <Icon className="h-4.5 w-4.5 text-[oklch(0.78_0.14_82)]" />
+      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[oklch(0.76_0.19_48/20%)] to-[oklch(0.58_0.17_38/10%)] flex items-center justify-center">
+        <Icon className="h-4.5 w-4.5 text-[oklch(0.76_0.19_48)]" />
       </div>
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
     </div>
@@ -103,7 +103,7 @@ function SaveSectionButton({
   onClick: () => void
 }) {
   return (
-    <motion.div className="flex justify-end mt-5 pt-4 border-t border-[oklch(0.78_0.14_82/8%)]">
+    <motion.div className="flex justify-end mt-5 pt-4 border-t border-[oklch(0.76_0.19_48/8%)]">
       <Button
         onClick={onClick}
         disabled={loading}
@@ -201,7 +201,7 @@ export function SiteSettingsTab() {
         transition={{ duration: 0.4 }}
       >
         <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
-          <Settings className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+          <Settings className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           {t("admin.site_settings") || "Site Settings"}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -213,31 +213,31 @@ export function SiteSettingsTab() {
 
       {/* ── Tabbed Sections ── */}
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="bg-[oklch(0.14_0.028_265/60%)] border border-[oklch(0.78_0.14_82/12%)] rounded-xl h-auto p-1 flex-wrap">
+        <TabsList className="bg-[oklch(0.14_0.028_265/60%)] border border-[oklch(0.76_0.19_48/12%)] rounded-xl h-auto p-1 flex-wrap">
           <TabsTrigger
             value="general"
-            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.78_0.14_82/15%)] data-[state=active]:text-[oklch(0.78_0.14_82)]"
+            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.76_0.19_48/15%)] data-[state=active]:text-[oklch(0.76_0.19_48)]"
           >
             <Globe className="h-3.5 w-3.5" />
             General
           </TabsTrigger>
           <TabsTrigger
             value="theme"
-            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.78_0.14_82/15%)] data-[state=active]:text-[oklch(0.78_0.14_82)]"
+            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.76_0.19_48/15%)] data-[state=active]:text-[oklch(0.76_0.19_48)]"
           >
             <Palette className="h-3.5 w-3.5" />
             Theme
           </TabsTrigger>
           <TabsTrigger
             value="announcement"
-            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.78_0.14_82/15%)] data-[state=active]:text-[oklch(0.78_0.14_82)]"
+            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.76_0.19_48/15%)] data-[state=active]:text-[oklch(0.76_0.19_48)]"
           >
             <Megaphone className="h-3.5 w-3.5" />
             Announcement
           </TabsTrigger>
           <TabsTrigger
             value="footer"
-            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.78_0.14_82/15%)] data-[state=active]:text-[oklch(0.78_0.14_82)]"
+            className="gap-2 rounded-lg data-[state=active]:bg-[oklch(0.76_0.19_48/15%)] data-[state=active]:text-[oklch(0.76_0.19_48)]"
           >
             <Footprints className="h-3.5 w-3.5" />
             Footer
@@ -266,7 +266,7 @@ export function SiteSettingsTab() {
                   value={settings.site_name || ""}
                   onChange={(e) => update("site_name", e.target.value)}
                   placeholder="CIAR"
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
                 />
               </motion.div>
 
@@ -279,7 +279,7 @@ export function SiteSettingsTab() {
                   onChange={(e) => update("site_description", e.target.value)}
                   placeholder="A brief description of your company..."
                   rows={3}
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] resize-none"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] resize-none"
                 />
               </motion.div>
 
@@ -292,7 +292,7 @@ export function SiteSettingsTab() {
                   value={settings.default_locale || "en"}
                   onValueChange={(v) => update("default_locale", v)}
                 >
-                  <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]">
+                  <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -316,7 +316,7 @@ export function SiteSettingsTab() {
                     onChange={(e) => update("company_email", e.target.value)}
                     type="email"
                     placeholder="info@ciar.com"
-                    className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                    className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
                   />
                 </motion.div>
 
@@ -330,7 +330,7 @@ export function SiteSettingsTab() {
                     onChange={(e) => update("company_phone", e.target.value)}
                     type="tel"
                     placeholder="+1 (555) 000-0000"
-                    className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                    className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
                   />
                 </motion.div>
               </div>
@@ -345,7 +345,7 @@ export function SiteSettingsTab() {
                   onChange={(e) => update("company_address", e.target.value)}
                   placeholder="123 Business Ave, Suite 100, City, Country"
                   rows={2}
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] resize-none"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] resize-none"
                 />
               </motion.div>
             </motion.div>
@@ -388,30 +388,30 @@ export function SiteSettingsTab() {
                 </Label>
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-xl border-2 border-[oklch(0.78_0.14_82/20%)] shadow-lg"
+                    className="w-10 h-10 rounded-xl border-2 border-[oklch(0.76_0.19_48/20%)] shadow-lg"
                     style={{ backgroundColor: settings.primary_color || "#d4af37" }}
                   />
                   <Input
                     value={settings.primary_color || "#d4af37"}
                     onChange={(e) => update("primary_color", e.target.value)}
                     type="color"
-                    className="w-20 h-10 rounded-xl cursor-pointer bg-transparent border-[oklch(0.78_0.14_82/10%)]"
+                    className="w-20 h-10 rounded-xl cursor-pointer bg-transparent border-[oklch(0.76_0.19_48/10%)]"
                   />
                   <Input
                     value={settings.primary_color || "#d4af37"}
                     onChange={(e) => update("primary_color", e.target.value)}
                     placeholder="#d4af37"
-                    className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] flex-1"
+                    className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] flex-1"
                   />
                 </div>
               </motion.div>
 
               <motion.div
                 {...fadeInUp}
-                className="flex items-center justify-between p-4 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.78_0.14_82/8%)]"
+                className="flex items-center justify-between p-4 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]"
               >
                 <div className="flex items-center gap-3">
-                  <Moon className="h-4.5 w-4.5 text-[oklch(0.78_0.14_82)]" />
+                  <Moon className="h-4.5 w-4.5 text-[oklch(0.76_0.19_48)]" />
                   <div>
                     <Label className="text-sm font-medium">
                       {t("admin.enable_dark_mode") || "Enable Dark Mode"}
@@ -429,10 +429,10 @@ export function SiteSettingsTab() {
 
               <motion.div
                 {...fadeInUp}
-                className="flex items-center justify-between p-4 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.78_0.14_82/8%)]"
+                className="flex items-center justify-between p-4 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]"
               >
                 <div className="flex items-center gap-3">
-                  <Languages className="h-4.5 w-4.5 text-[oklch(0.78_0.14_82)]" />
+                  <Languages className="h-4.5 w-4.5 text-[oklch(0.76_0.19_48)]" />
                   <div>
                     <Label className="text-sm font-medium">
                       {t("admin.enable_rtl") || "Enable RTL for Arabic"}
@@ -476,10 +476,10 @@ export function SiteSettingsTab() {
             >
               <motion.div
                 {...fadeInUp}
-                className="flex items-center justify-between p-4 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.78_0.14_82/8%)]"
+                className="flex items-center justify-between p-4 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]"
               >
                 <div className="flex items-center gap-3">
-                  <Megaphone className="h-4.5 w-4.5 text-[oklch(0.78_0.14_82)]" />
+                  <Megaphone className="h-4.5 w-4.5 text-[oklch(0.76_0.19_48)]" />
                   <div>
                     <Label className="text-sm font-medium">
                       {t("admin.enable_announcement") || "Enable Announcement Bar"}
@@ -503,7 +503,7 @@ export function SiteSettingsTab() {
                   value={settings.announcement_text || ""}
                   onChange={(e) => update("announcement_text", e.target.value)}
                   placeholder="Special offer — 20% off all services this month!"
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
                 />
               </motion.div>
 
@@ -515,7 +515,7 @@ export function SiteSettingsTab() {
                   value={settings.announcement_link || ""}
                   onChange={(e) => update("announcement_link", e.target.value)}
                   placeholder="https://example.com/offer"
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
                 />
               </motion.div>
 
@@ -527,13 +527,13 @@ export function SiteSettingsTab() {
                   value={settings.announcement_color || "gold"}
                   onValueChange={(v) => update("announcement_color", v)}
                 >
-                  <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]">
+                  <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="gold">
                       <span className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-[oklch(0.78_0.14_82)]" />
+                        <span className="w-3 h-3 rounded-full bg-[oklch(0.76_0.19_48)]" />
                         Gold
                       </span>
                     </SelectItem>
@@ -562,7 +562,7 @@ export function SiteSettingsTab() {
               {/* Preview */}
               <motion.div
                 {...fadeInUp}
-                className="p-3 rounded-xl bg-[oklch(0.14_0.028_265/30%)] border border-[oklch(0.78_0.14_82/6%)]"
+                className="p-3 rounded-xl bg-[oklch(0.14_0.028_265/30%)] border border-[oklch(0.76_0.19_48/6%)]"
               >
                 <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wider">
                   Preview
@@ -573,7 +573,7 @@ export function SiteSettingsTab() {
                     ${settings.announcement_color === "emerald" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : ""}
                     ${settings.announcement_color === "red" ? "bg-red-500/20 text-red-400 border border-red-500/30" : ""}
                     ${settings.announcement_color === "blue" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : ""}
-                    ${(!settings.announcement_color || settings.announcement_color === "gold") ? "bg-[oklch(0.78_0.14_82/15%)] text-[oklch(0.78_0.14_82)] border border-[oklch(0.78_0.14_82/25%)]" : ""}
+                    ${(!settings.announcement_color || settings.announcement_color === "gold") ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] border border-[oklch(0.76_0.19_48/25%)]" : ""}
                   `}
                 >
                   {settings.announcement_text || "Your announcement will appear here..."}
@@ -619,7 +619,7 @@ export function SiteSettingsTab() {
                   value={settings.footer_copyright || ""}
                   onChange={(e) => update("footer_copyright", e.target.value)}
                   placeholder="© 2024 CIAR. All rights reserved."
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
                 />
               </motion.div>
 
@@ -632,7 +632,7 @@ export function SiteSettingsTab() {
                   onChange={(e) => update("footer_social_links", e.target.value)}
                   placeholder='{"twitter": "https://twitter.com/ciar", "linkedin": "https://linkedin.com/company/ciar", "facebook": "https://facebook.com/ciar"}'
                   rows={4}
-                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] font-mono text-sm resize-none"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] font-mono text-sm resize-none"
                 />
                 <p className="text-xs text-muted-foreground">
                   Enter social links as valid JSON with keys: twitter, linkedin, facebook, instagram, youtube
@@ -641,7 +641,7 @@ export function SiteSettingsTab() {
 
               <motion.div
                 {...fadeInUp}
-                className="flex items-center justify-between p-4 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.78_0.14_82/8%)]"
+                className="flex items-center justify-between p-4 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]"
               >
                 <div>
                   <Label className="text-sm font-medium">

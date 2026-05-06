@@ -25,6 +25,31 @@ const RouterContext = createContext<RouterContextType>({
   back: () => {},
 })
 
+function parseLocationToRoute(): PageRoute {
+  if (typeof window === "undefined") return { page: "home" }
+
+  const path = window.location.pathname
+  if (path.startsWith("/admin/panel")) {
+    const seg = path.replace("/admin/panel/", "").split("/").filter(Boolean)[0] || "overview"
+    return { page: "admin", tab: seg }
+  }
+
+  const hash = window.location.hash.slice(1)
+  if (!hash || hash === "/") return { page: "home" }
+  if (hash === "/projects") return { page: "projects" }
+  if (hash.startsWith("/project/")) return { page: "project", slug: hash.slice(9) }
+  if (hash.startsWith("/platform/")) return { page: "platform", slug: hash.slice(10) }
+  if (hash === "/about") return { page: "about" }
+  if (hash === "/contact") return { page: "contact" }
+  if (hash === "/login") return { page: "user-auth" }
+  if (hash === "/admin-login") return { page: "admin-login" }
+  if (hash.startsWith("/admin")) {
+    const parts = hash.split("/")
+    return { page: "admin", tab: parts[2] || "overview" }
+  }
+  return { page: "home" }
+}
+
 export function RouterProvider({ children }: { children: React.ReactNode }) {
   const [route, setRoute] = useState<PageRoute>({ page: "home" })
   const historyRef = useRef<PageRoute[]>([{ page: "home" }])
@@ -45,26 +70,8 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Hash-based routing for bookmarkability
   useEffect(() => {
-    const parseHash = (): PageRoute => {
-      const hash = window.location.hash.slice(1) // remove #
-      if (!hash || hash === "/") return { page: "home" }
-      if (hash === "/projects") return { page: "projects" }
-      if (hash.startsWith("/project/")) return { page: "project", slug: hash.slice(9) }
-      if (hash.startsWith("/platform/")) return { page: "platform", slug: hash.slice(10) }
-      if (hash === "/about") return { page: "about" }
-      if (hash === "/contact") return { page: "contact" }
-      if (hash === "/login") return { page: "user-auth" }
-      if (hash === "/admin-login") return { page: "admin-login" }
-      if (hash.startsWith("/admin")) {
-        const parts = hash.split("/")
-        return { page: "admin", tab: parts[2] || "overview" }
-      }
-      return { page: "home" }
-    }
-
-    const initialRoute = parseHash()
+    const initialRoute = parseLocationToRoute()
     historyRef.current = [initialRoute]
 
     const syncRoute = (r: PageRoute) => {
@@ -74,7 +81,7 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
     syncRoute(initialRoute)
 
     const onHashChange = () => {
-      const r = parseHash()
+      const r = parseLocationToRoute()
       historyRef.current.push(r)
       syncRoute(r)
     }
@@ -83,19 +90,41 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("hashchange", onHashChange)
   }, [])
 
-  // Sync route to hash
   useEffect(() => {
+    if (typeof window === "undefined") return
+    if (window.location.pathname.startsWith("/admin/panel")) {
+      return
+    }
+
     let hash = "/"
     switch (route.page) {
-      case "home": hash = "/"; break
-      case "projects": hash = "/projects"; break
-      case "project": hash = `/project/${route.slug}`; break
-      case "platform": hash = `/platform/${route.slug}`; break
-      case "about": hash = "/about"; break
-      case "contact": hash = "/contact"; break
-      case "user-auth": hash = "/login"; break
-      case "admin-login": hash = "/admin-login"; break
-      case "admin": hash = `/admin/${route.tab || "overview"}`; break
+      case "home":
+        hash = "/"
+        break
+      case "projects":
+        hash = "/projects"
+        break
+      case "project":
+        hash = `/project/${route.slug}`
+        break
+      case "platform":
+        hash = `/platform/${route.slug}`
+        break
+      case "about":
+        hash = "/about"
+        break
+      case "contact":
+        hash = "/contact"
+        break
+      case "user-auth":
+        hash = "/login"
+        break
+      case "admin-login":
+        hash = "/admin-login"
+        break
+      case "admin":
+        hash = `/admin/${route.tab || "overview"}`
+        break
     }
     if (window.location.hash !== hash) {
       window.history.replaceState(null, "", `#${hash}`)

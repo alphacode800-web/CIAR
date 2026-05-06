@@ -75,13 +75,13 @@ function isAnalyticsData(value: unknown): value is AnalyticsData {
 /* ─── Activity Type Config ──────────────────────────────────────────────── */
 
 const ACTIVITY_ICONS: Record<string, { icon: React.ElementType; color: string; bgColor: string }> = {
-  project: { icon: FolderOpen, color: "text-[oklch(0.78_0.14_82)]", bgColor: "bg-[oklch(0.78_0.14_82/12%)]" },
-  translation: { icon: Languages, color: "text-violet-400", bgColor: "bg-violet-500/12%" },
-  contact: { icon: Mail, color: "text-emerald-400", bgColor: "bg-emerald-500/12%" },
-  setting: { icon: Cog, color: "text-amber-400", bgColor: "bg-amber-500/12%" },
-  settings: { icon: Cog, color: "text-amber-400", bgColor: "bg-amber-500/12%" },
-  user: { icon: FolderOpen, color: "text-sky-400", bgColor: "bg-sky-500/12%" },
-  media: { icon: FolderOpen, color: "text-rose-400", bgColor: "bg-rose-500/12%" },
+  project: { icon: FolderOpen, color: "text-[#c2410c]", bgColor: "bg-orange-100" },
+  translation: { icon: Languages, color: "text-violet-700", bgColor: "bg-violet-100" },
+  contact: { icon: Mail, color: "text-emerald-800", bgColor: "bg-emerald-100" },
+  setting: { icon: Cog, color: "text-amber-800", bgColor: "bg-amber-100" },
+  settings: { icon: Cog, color: "text-amber-800", bgColor: "bg-amber-100" },
+  user: { icon: FolderOpen, color: "text-sky-800", bgColor: "bg-sky-100" },
+  media: { icon: FolderOpen, color: "text-rose-800", bgColor: "bg-rose-100" },
 }
 
 const ACTION_BADGES: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
@@ -116,8 +116,8 @@ const QUICK_ACTIONS = [
     label: "Add Project",
     description: "Create a new platform listing",
     tab: "projects",
-    gradient: "from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/8%)]",
-    iconColor: "text-[oklch(0.78_0.14_82)]",
+    gradient: "from-orange-100 to-orange-50",
+    iconColor: "text-[#c2410c]",
     badge: null,
   },
   {
@@ -125,8 +125,8 @@ const QUICK_ACTIONS = [
     label: "Translations",
     description: "Manage localization strings",
     tab: "translations",
-    gradient: "from-violet-500/16% to-fuchsia-500/8%",
-    iconColor: "text-violet-400",
+    gradient: "from-violet-100 to-violet-50",
+    iconColor: "text-violet-800",
     badge: null,
   },
   {
@@ -134,8 +134,8 @@ const QUICK_ACTIONS = [
     label: "Contacts",
     description: "Review incoming messages",
     tab: "contacts",
-    gradient: "from-emerald-500/16% to-teal-500/8%",
-    iconColor: "text-emerald-400",
+    gradient: "from-emerald-100 to-emerald-50",
+    iconColor: "text-emerald-800",
     badge: null,
   },
   {
@@ -143,8 +143,8 @@ const QUICK_ACTIONS = [
     label: "Settings",
     description: "Configure site preferences",
     tab: "settings",
-    gradient: "from-amber-500/16% to-orange-500/8%",
-    iconColor: "text-amber-400",
+    gradient: "from-amber-100 to-amber-50",
+    iconColor: "text-amber-900",
     badge: null,
   },
 ]
@@ -162,11 +162,11 @@ function GlassCard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.45, ease: "easeOut" }}
+      transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        "rounded-2xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-xl dark:bg-[oklch(0.12_0.03_265/50%)]",
+        "admin-3d-panel glass-strong rounded-2xl border border-primary/20 transition-shadow duration-300 hover:border-primary/40",
         className
       )}
     >
@@ -195,24 +195,24 @@ function PerformanceRing({ score, animated }: { score: number; animated: boolean
   }, [score, animated])
 
   const getStatus = (s: number) => {
-    if (s >= 80) return { text: "Excellent", color: "text-emerald-400", dotColor: "bg-emerald-400" }
-    if (s >= 60) return { text: "Good", color: "text-[oklch(0.78_0.14_82)]", dotColor: "bg-[oklch(0.78_0.14_82)]" }
-    if (s >= 40) return { text: "Fair", color: "text-amber-400", dotColor: "bg-amber-400" }
-    return { text: "Needs Attention", color: "text-red-400", dotColor: "bg-red-400" }
+    if (s >= 80) return { text: "Excellent", color: "text-emerald-800", dotColor: "bg-emerald-600" }
+    if (s >= 60) return { text: "Good", color: "text-[#9a3412]", dotColor: "bg-[#ea580c]" }
+    if (s >= 40) return { text: "Fair", color: "text-amber-800", dotColor: "bg-amber-500" }
+    return { text: "Needs Attention", color: "text-red-700", dotColor: "bg-red-600" }
   }
 
   const status = getStatus(score)
 
   // Build conic gradient: filled portion + track
   const gradientStop = `${score / 100}%`
-  const trackColor = "oklch(0.78_0.14_82/10%)"
+  const trackColor = "#e7e5e4"
   const fillColor = score >= 80
-    ? "oklch(0.72_0.18_155)"    // emerald-ish
+    ? "#059669"
     : score >= 60
-      ? "oklch(0.78_0.14_82)"    // gold
+      ? "#ea580c"
       : score >= 40
-        ? "oklch(0.82_0.16_80)"  // amber
-        : "oklch(0.65_0.2_25)"   // red-ish
+        ? "#d97706"
+        : "#dc2626"
 
   const ringSize = 160
   const strokeWidth = 14
@@ -236,7 +236,7 @@ function PerformanceRing({ score, animated }: { score: number; animated: boolean
         />
         {/* Inner hole */}
         <div
-          className="absolute rounded-full bg-[oklch(0.14_0.028_265/90%)] dark:bg-[oklch(0.12_0.03_265/95%)]"
+          className="absolute rounded-full border border-stone-200/90 bg-[#fafaf9] shadow-[inset_0_2px_6px_rgba(0,0,0,0.04)]"
           style={{
             width: innerSize,
             height: innerSize,
@@ -246,17 +246,17 @@ function PerformanceRing({ score, animated }: { score: number; animated: boolean
         />
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold tracking-tight text-foreground">
+          <span className="gradient-text text-3xl font-bold tracking-tight">
             {displayScore}%
           </span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
+          <span className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-stone-500">
             Health
           </span>
         </div>
       </div>
       {/* Status label */}
       <div className="flex items-center gap-2">
-        <div className={cn("h-2 w-2 rounded-full", status.dotColor)} />
+        <div className={cn("h-2 w-2 shrink-0 rounded-full ring-2 ring-white", status.dotColor)} />
         <span className={cn("text-sm font-medium", status.color)}>{status.text}</span>
       </div>
     </div>
@@ -298,50 +298,46 @@ function WelcomeBanner({ analytics }: { analytics: AnalyticsData | null }) {
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative overflow-hidden rounded-2xl border border-[oklch(0.78_0.14_82/15%)] p-6 sm:p-8"
-      style={{
-        background: "linear-gradient(135deg, oklch(0.78_0.14_82/12%) 0%, oklch(0.72_0.13_75/6%) 40%, oklch(0.14_0.028_265/50%) 100%)",
-        backdropFilter: "blur(24px)",
-      }}
+      className="glass-strong noise-overlay relative overflow-hidden rounded-3xl border border-primary/18 p-6 sm:p-8"
     >
-      {/* Decorative orbs */}
-      <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-[oklch(0.78_0.14_82/8%)] blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-[oklch(0.72_0.13_75/6%)] blur-3xl pointer-events-none" />
+      {/* Decorative wash — site hero tone */}
+      <div className="pointer-events-none absolute -right-16 -top-24 h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-primary/10 blur-3xl" />
 
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Left: Greeting */}
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)] flex items-center justify-center shadow-[0_0_16px_oklch(0.78_0.14_82/20%)]">
-              <Sparkles className="h-4 w-4 text-[oklch(0.12_0.03_265)]" />
+            <div className="glow-gold flex h-9 w-9 items-center justify-center rounded-xl border border-primary/35 bg-gradient-to-b from-primary to-[oklch(0.62_0.14_72)] shadow-md ring-1 ring-white/50">
+              <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+            <h2 className="gradient-text-warm text-xl font-bold tracking-tight sm:text-2xl">
               {greeting}
             </h2>
           </div>
-          <p className="text-sm text-muted-foreground max-w-md">
+          <p className="max-w-md text-sm text-muted-foreground">
             {t("admin.dashboard_subtitle") || "Welcome back! Here's what's happening with your platforms."}
           </p>
           {analytics && (
             <div className="flex items-center gap-3 mt-2">
-              <Badge variant="outline" className="text-[10px] border-[oklch(0.78_0.14_82/20%)] text-[oklch(0.78_0.14_82)] bg-[oklch(0.78_0.14_82/6%)]">
-                <Zap className="h-3 w-3 mr-1" />
-                {analytics.projects.total} {t("admin.total_projects") || "platforms"} active
+              <Badge variant="outline" className="border-orange-200 bg-orange-50 text-[10px] text-[#9a3412]">
+                <Zap className="me-1 h-3 w-3 shrink-0" />
+                {analytics.projects.total} {t("admin.overview_active_platforms") || "active digital platforms"}
               </Badge>
-              <Badge variant="outline" className="text-[10px] border-emerald-500/20% text-emerald-400 bg-emerald-500/6%">
-                <Activity className="h-3 w-3 mr-1" />
-                {analytics.activeLocales} languages
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-[10px] text-emerald-800">
+                <Activity className="h-3 w-3 me-1 shrink-0" />
+                {analytics.activeLocales} {t("admin.overview_languages") || "languages"}
               </Badge>
             </div>
           )}
         </div>
 
         {/* Right: Clock */}
-        <div className="sm:text-end flex flex-col sm:items-end shrink-0">
-          <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground tabular-nums">
+        <div className="flex shrink-0 flex-col sm:items-end sm:text-end">
+          <div className="gradient-text text-2xl font-bold tabular-nums tracking-tight sm:text-3xl">
             {timeStr}
           </div>
-          <div className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5 sm:justify-end">
+          <div className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground sm:justify-end">
             <Calendar className="h-3.5 w-3.5" />
             {dateStr}
           </div>
@@ -387,15 +383,15 @@ function SystemStatusSection({
   ]
 
   const statusConfig = {
-    operational: { dot: "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]", text: "text-emerald-400", label: "Operational" },
-    warning: { dot: "bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]", text: "text-amber-400", label: "Attention" },
-    error: { dot: "bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.5)]", text: "text-red-400", label: "Down" },
+    operational: { dot: "bg-emerald-600", text: "text-emerald-800", label: "Operational" },
+    warning: { dot: "bg-amber-500", text: "text-amber-900", label: "Attention" },
+    error: { dot: "bg-red-600", text: "text-red-800", label: "Down" },
   }
 
   return (
     <GlassCard className="p-5" delay={0.7}>
       <div className="flex items-center gap-2 mb-4">
-        <ShieldCheck className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+        <ShieldCheck className="h-4 w-4 text-[#ea580c]" />
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
           {t("admin.system_status") || "System Status"}
         </h3>
@@ -410,9 +406,9 @@ function SystemStatusSection({
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.75 + index * 0.06 }}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[oklch(0.78_0.14_82/4%)] transition-colors"
+              className="flex items-center gap-3 rounded-md p-2.5 transition-colors hover:bg-stone-50"
             >
-              <div className="w-8 h-8 rounded-lg bg-[oklch(0.78_0.14_82/8%)] flex items-center justify-center shrink-0">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-orange-50 ring-1 ring-orange-100">
                 <Icon className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
@@ -484,43 +480,43 @@ export function OverviewTab() {
           icon: FolderOpen,
           label: t("admin.total_projects") || "Total Projects",
           value: analytics.projects.total,
-          color: "bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/8%)]",
-          iconColor: "text-[oklch(0.78_0.14_82)]",
+          color: "bg-[#1f2937]",
+          iconColor: "text-white",
         },
         {
           icon: Eye,
           label: t("admin.total_views") || "Total Views",
           value: analytics.totalViews,
-          color: "bg-gradient-to-br from-violet-500/16% to-fuchsia-500/8%",
-          iconColor: "text-violet-400",
+          color: "bg-[#00b8b8]",
+          iconColor: "text-white",
         },
         {
           icon: MessageSquare,
           label: t("admin.contact_messages") || "Contact Messages",
           value: analytics.contactMessages ?? analytics.contacts,
-          color: "bg-gradient-to-br from-emerald-500/16% to-teal-500/8%",
-          iconColor: "text-emerald-400",
+          color: "bg-[#f43f5e]",
+          iconColor: "text-white",
         },
         {
           icon: Globe,
           label: t("admin.active_languages") || "Active Languages",
           value: analytics.activeLocales,
-          color: "bg-gradient-to-br from-amber-500/16% to-orange-500/8%",
-          iconColor: "text-amber-400",
+          color: "bg-[#6366f1]",
+          iconColor: "text-white",
         },
         {
           icon: FileEdit,
           label: t("admin.draft_projects") || "Draft Projects",
           value: analytics.projects.draft,
-          color: "bg-gradient-to-br from-slate-500/16% to-slate-400/8%",
-          iconColor: "text-slate-400",
+          color: "bg-[#0ea5e9]",
+          iconColor: "text-white",
         },
         {
           icon: Star,
           label: t("admin.featured_projects") || "Featured Projects",
           value: analytics.projects.featured,
-          color: "bg-gradient-to-br from-[oklch(0.82_0.145_85/20%)] to-[oklch(0.75_0.14_80/8%)]",
-          iconColor: "text-[oklch(0.82_0.145_85)]",
+          color: "bg-[#a855f7]",
+          iconColor: "text-white",
         },
       ]
     : []
@@ -539,7 +535,7 @@ export function OverviewTab() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="admin-overview-vivid space-y-6">
       {/* ── Welcome Banner ── */}
       <WelcomeBanner analytics={loading ? null : analytics} />
 
@@ -548,7 +544,7 @@ export function OverviewTab() {
         {/* Performance Score Card */}
         <GlassCard className="p-6 lg:col-span-4 flex flex-col items-center justify-center" delay={0.15}>
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Activity className="h-3.5 w-3.5 text-[oklch(0.78_0.14_82)]" />
+            <Activity className="h-3.5 w-3.5 text-primary" />
             {t("admin.platform_health") || "Platform Health"}
           </h3>
           {loading ? (
@@ -561,20 +557,20 @@ export function OverviewTab() {
               <PerformanceRing score={healthScore} animated={!loading} />
               <div className="mt-2 w-full space-y-1.5 px-2">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-muted-foreground">Published</span>
-                  <span className="text-foreground font-medium">
+                  <span className="text-stone-600">Published</span>
+                  <span className="font-medium text-stone-900">
                     {analytics?.projects.published}/{analytics?.projects.total}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-muted-foreground">Translations</span>
-                  <span className="text-foreground font-medium">
+                  <span className="text-stone-600">Translations</span>
+                  <span className="font-medium text-stone-900">
                     {analytics?.translationCoverage || 0}%
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-muted-foreground">Messages</span>
-                  <span className="text-foreground font-medium">
+                  <span className="text-stone-600">Messages</span>
+                  <span className="font-medium text-stone-900">
                     {analytics?.contactMessages ?? 0}
                   </span>
                 </div>
@@ -588,7 +584,7 @@ export function OverviewTab() {
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-[120px] rounded-2xl" />
+                <Skeleton key={i} className="h-[120px] rounded-lg" />
               ))}
             </div>
           ) : (
@@ -604,7 +600,7 @@ export function OverviewTab() {
         transition={{ delay: 0.35, duration: 0.5 }}
       >
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Zap className="h-3.5 w-3.5 text-[oklch(0.78_0.14_82)]" />
+          <Zap className="h-3.5 w-3.5 text-primary" />
           {t("admin.quick_actions") || "Quick Actions"}
         </h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -614,33 +610,33 @@ export function OverviewTab() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 + index * 0.06 }}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.015, y: -1 }}
+              whileTap={{ scale: 0.99 }}
               className={cn(
-                "group relative flex flex-col items-start gap-2.5 rounded-2xl border border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 text-start transition-all duration-300 hover:border-[oklch(0.78_0.14_82/25%)] hover:shadow-[0_0_24px_oklch(0.78_0.14_82/6%)] dark:bg-[oklch(0.12_0.03_265/50%)]"
+                "admin-3d-panel glass-strong group relative flex flex-col items-start gap-2.5 rounded-2xl border border-primary/18 p-5 text-start transition-all duration-300 hover:border-primary/40"
               )}
             >
-              <div className="flex items-center justify-between w-full">
+              <div className="flex w-full items-center justify-between">
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
+                    "flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br transition-transform duration-300 group-hover:scale-105",
                     action.gradient
                   )}
                 >
                   <action.icon className={cn("h-5 w-5", action.iconColor)} />
                 </div>
                 {action.badge && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 border-[oklch(0.78_0.14_82/15%)] text-[oklch(0.78_0.14_82)] bg-[oklch(0.78_0.14_82/6%)]">
+                  <Badge variant="outline" className="h-5 border-orange-200 bg-orange-50 px-1.5 py-0 text-[10px] text-[#9a3412]">
                     {action.badge}
                   </Badge>
                 )}
-                <ArrowRight className="absolute top-3 right-3 h-3.5 w-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                <ArrowRight className="absolute end-3 top-3 h-3.5 w-3.5 text-stone-400 opacity-0 transition-opacity group-hover:opacity-100" />
               </div>
               <div>
                 <span className="text-sm font-medium text-foreground block">
                   {action.label}
                 </span>
-                <span className="text-xs text-muted-foreground mt-0.5 block leading-relaxed">
+                <span className="mt-0.5 block text-xs leading-relaxed text-stone-600">
                   {action.description}
                 </span>
               </div>
@@ -683,7 +679,7 @@ export function OverviewTab() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 + index * 0.04 }}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-[oklch(0.78_0.14_82/4%)] transition-colors"
+                    className="flex items-center gap-2.5 rounded-md p-2.5 transition-colors hover:bg-stone-50"
                   >
                     <div
                       className={cn(
@@ -719,7 +715,7 @@ export function OverviewTab() {
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               {t("admin.top_projects") || "Top Projects"}
             </h3>
-            <button className="flex items-center gap-1 text-[11px] text-[oklch(0.78_0.14_82)] hover:underline font-medium">
+            <button type="button" className="flex items-center gap-1 text-[11px] font-medium text-[#c2410c] hover:underline">
               {t("admin.view_all") || "View All"}
               <ArrowRight className="h-3 w-3" />
             </button>
@@ -739,19 +735,19 @@ export function OverviewTab() {
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.55 + index * 0.05 }}
-                  className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-[oklch(0.78_0.14_82/4%)] transition-colors"
+                  className="flex items-center gap-2.5 rounded-md p-2.5 transition-colors hover:bg-stone-50"
                 >
                   {/* Rank */}
                   <div
                     className={cn(
-                      "w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0",
+                      "flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold",
                       index === 0
-                        ? "bg-[oklch(0.78_0.14_82/20%)] text-[oklch(0.78_0.14_82)]"
+                        ? "bg-orange-100 text-[#c2410c]"
                         : index === 1
-                          ? "bg-[oklch(0.72_0.13_75/15%)] text-[oklch(0.72_0.13_75)]"
+                          ? "bg-orange-50 text-[#9a3412]"
                           : index === 2
-                            ? "bg-[oklch(0.82_0.145_85/12%)] text-[oklch(0.82_0.145_85)]"
-                            : "bg-muted text-muted-foreground"
+                            ? "bg-amber-100 text-amber-900"
+                            : "bg-stone-100 text-stone-600"
                     )}
                   >
                     {index + 1}
@@ -764,7 +760,7 @@ export function OverviewTab() {
                         {project.name}
                       </p>
                       {project.featured && (
-                        <Star className="h-2.5 w-2.5 text-[oklch(0.78_0.14_82)] fill-[oklch(0.78_0.14_82)] shrink-0" />
+                        <Star className="h-2.5 w-2.5 shrink-0 fill-[#ea580c] text-[#ea580c]" />
                       )}
                     </div>
                     <p className="text-[10px] text-muted-foreground truncate">
@@ -848,7 +844,7 @@ export function OverviewTab() {
                       <div className="w-16 shrink-0 text-xs text-muted-foreground">
                         {item.month}
                       </div>
-                      <div className="flex-1 h-8 rounded-lg overflow-hidden bg-[oklch(0.78_0.14_82/6%)] dark:bg-[oklch(0.78_0.14_82/8%)]">
+                      <div className="h-8 flex-1 overflow-hidden rounded-md bg-stone-100 ring-1 ring-stone-200/80">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${Math.max(pct, 4)}%` }}
@@ -857,7 +853,7 @@ export function OverviewTab() {
                             delay: 0.75 + index * 0.08,
                             ease: "easeOut",
                           }}
-                          className="h-full rounded-lg bg-gradient-to-r from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)] relative overflow-hidden"
+                          className="relative h-full overflow-hidden rounded-md bg-gradient-to-r from-[#fb923c] to-[#ea580c]"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0" />
                         </motion.div>

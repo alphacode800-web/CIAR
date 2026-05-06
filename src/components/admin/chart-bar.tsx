@@ -69,7 +69,7 @@ export function ChartBar({
 
             {/* Bar container */}
             <div
-              className="flex-1 rounded-full overflow-hidden bg-[oklch(0.78_0.14_82/6%)] dark:bg-[oklch(0.78_0.14_82/8%)]"
+              className="flex-1 overflow-hidden rounded-none border border-primary/10 bg-primary/[0.06] ring-1 ring-primary/5"
               style={{ height: `${barHeight}px` }}
             >
               {animated ? (
@@ -81,7 +81,7 @@ export function ChartBar({
                     delay: index * 0.06,
                     ease: "easeOut",
                   }}
-                  className="h-full rounded-full relative overflow-hidden"
+                  className="relative h-full overflow-hidden rounded-md"
                   style={{ backgroundColor: barColor }}
                 >
                   {/* Subtle shine effect */}
@@ -89,7 +89,7 @@ export function ChartBar({
                 </motion.div>
               ) : (
                 <div
-                  className="h-full rounded-full transition-all duration-500 relative overflow-hidden"
+                  className="relative h-full overflow-hidden rounded-md transition-all duration-500"
                   style={{ width: `${pct}%`, backgroundColor: barColor }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0" />
@@ -164,7 +164,7 @@ export function DonutChart({
           style={{
             background: total > 0
               ? `conic-gradient(${gradientStops})`
-              : `oklch(0.78_0.14_82/10%)`,
+              : `oklch(0.76_0.19_48/10%)`,
           }}
         />
         {/* Inner hole */}

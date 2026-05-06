@@ -86,13 +86,13 @@ function GlassCard({
     <div
       className={cn(
         "rounded-2xl border backdrop-blur-xl overflow-hidden",
-        "border-[oklch(0.78_0.14_82/10%)] bg-[oklch(0.14_0.028_265/40%)]",
-        "[html:not(.dark)_&]:bg-white/70 [html:not(.dark)_&]:border-[oklch(0.78_0.14_82/18%)]",
+        "border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)]",
+        "[html:not(.dark)_&]:bg-white/70 [html:not(.dark)_&]:border-[oklch(0.76_0.19_48/18%)]",
         className
       )}
     >
-      <span className="absolute top-0 start-0 w-5 h-5 border-t border-s border-[oklch(0.78_0.14_82/30%)] rounded-tl-2xl pointer-events-none" />
-      <span className="absolute bottom-0 end-0 w-5 h-5 border-b border-e border-[oklch(0.78_0.14_82/30%)] rounded-br-2xl pointer-events-none" />
+      <span className="absolute top-0 start-0 w-5 h-5 border-t border-s border-[oklch(0.76_0.19_48/30%)] rounded-tl-2xl pointer-events-none" />
+      <span className="absolute bottom-0 end-0 w-5 h-5 border-b border-e border-[oklch(0.76_0.19_48/30%)] rounded-br-2xl pointer-events-none" />
       {children}
     </div>
   )
@@ -361,7 +361,7 @@ export function SettingsTab() {
         transition={{ duration: 0.4 }}
       >
         <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
-          <Settings className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+          <Settings className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           {t("admin.settings") || "Settings"}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -398,9 +398,9 @@ export function SettingsTab() {
                     onOpenChange={() => toggleSection(section.id)}
                   >
                     {/* Section Header / Trigger */}
-                    <CollapsibleTrigger className="flex items-center gap-4 w-full p-5 text-start hover:bg-[oklch(0.78_0.14_82/3%)] transition-colors">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/10%)] flex items-center justify-center shrink-0">
-                        <Icon className="h-5 w-5 text-[oklch(0.78_0.14_82)]" />
+                    <CollapsibleTrigger className="flex items-center gap-4 w-full p-5 text-start hover:bg-[oklch(0.76_0.19_48/3%)] transition-colors">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[oklch(0.76_0.19_48/20%)] to-[oklch(0.58_0.17_38/10%)] flex items-center justify-center shrink-0">
+                        <Icon className="h-5 w-5 text-[oklch(0.76_0.19_48)]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-semibold text-foreground">
@@ -429,7 +429,7 @@ export function SettingsTab() {
                             transition={{ duration: 0.3, ease: "easeInOut" }}
                           >
                             <div className="px-5 pb-5">
-                              <Separator className="mb-5 bg-[oklch(0.78_0.14_82/10%)]" />
+                              <Separator className="mb-5 bg-[oklch(0.76_0.19_48/10%)]" />
                               <div className="space-y-5">
                                 {section.fields.map((field, fieldIndex) => (
                                   <motion.div
@@ -458,7 +458,7 @@ export function SettingsTab() {
                                               checked ? "true" : "false"
                                             )
                                           }
-                                          className="data-[state=checked]:bg-[oklch(0.78_0.14_82)]"
+                                          className="data-[state=checked]:bg-[oklch(0.76_0.19_48)]"
                                         />
                                       )}
                                     </div>
@@ -474,7 +474,7 @@ export function SettingsTab() {
                                           updateSetting(field.key, e.target.value)
                                         }
                                         placeholder={field.placeholder}
-                                        className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] focus:border-[oklch(0.78_0.14_82/30%)]"
+                                        className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] focus:border-[oklch(0.76_0.19_48/30%)]"
                                       />
                                     )}
                                     {field.type === "textarea" && (
@@ -485,7 +485,7 @@ export function SettingsTab() {
                                         }
                                         placeholder={field.placeholder}
                                         rows={3}
-                                        className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)] focus:border-[oklch(0.78_0.14_82/30%)] resize-none"
+                                        className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] focus:border-[oklch(0.76_0.19_48/30%)] resize-none"
                                       />
                                     )}
                                     {field.type === "select" && (
@@ -495,7 +495,7 @@ export function SettingsTab() {
                                           updateSetting(field.key, v)
                                         }
                                       >
-                                        <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]">
+                                        <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]">
                                           <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -534,9 +534,9 @@ export function SettingsTab() {
               size="lg"
               className={cn(
                 "gap-2 rounded-xl px-8 font-medium",
-                "bg-gradient-to-r from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)]",
+                "bg-gradient-to-r from-[oklch(0.76_0.19_48)] to-[oklch(0.58_0.17_38)]",
                 "text-[oklch(0.15_0.04_80)] hover:opacity-90",
-                "shadow-[0_4px_20px_oklch(0.78_0.14_82/25%)]"
+                "shadow-[0_4px_20px_oklch(0.76_0.19_48/25%)]"
               )}
             >
               {saving ? (

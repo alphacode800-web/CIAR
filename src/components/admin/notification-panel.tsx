@@ -172,16 +172,16 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={cn(
               "absolute end-0 top-full mt-2 z-50 w-[380px] max-w-[calc(100vw-2rem)]",
-              "rounded-2xl border border-[oklch(0.78_0.14_82/12%)]",
+              "rounded-2xl border border-[oklch(0.76_0.19_48/12%)]",
               "bg-[oklch(0.12_0.028_265/95%)] backdrop-blur-xl",
-              "shadow-[0_16px_48px_-8px_rgba(0,0,0,0.5)] shadow-[0_0_0_1px_oklch(0.78_0.14_82/5%)]"
+              "shadow-[0_16px_48px_-8px_rgba(0,0,0,0.5)] shadow-[0_0_0_1px_oklch(0.76_0.19_48/5%)]"
             )}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[oklch(0.78_0.14_82/8%)]">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[oklch(0.76_0.19_48/8%)]">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-[oklch(0.78_0.14_82/15%)] flex items-center justify-center">
-                  <Bell className="h-3.5 w-3.5 text-[oklch(0.78_0.14_82)]" />
+                <div className="w-7 h-7 rounded-lg bg-[oklch(0.76_0.19_48/15%)] flex items-center justify-center">
+                  <Bell className="h-3.5 w-3.5 text-[oklch(0.76_0.19_48)]" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">
@@ -200,7 +200,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                     variant="ghost"
                     size="sm"
                     onClick={markAllRead}
-                    className="h-7 px-2 text-[10px] text-[oklch(0.78_0.14_82)] hover:bg-[oklch(0.78_0.14_82/8%)] gap-1"
+                    className="h-7 px-2 text-[10px] text-[oklch(0.76_0.19_48)] hover:bg-[oklch(0.76_0.19_48/8%)] gap-1"
                   >
                     <CheckCheck className="h-3 w-3" />
                     {t("admin.mark_all_read") || "Mark all read"}
@@ -233,8 +233,8 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-14 px-4">
-                  <div className="w-12 h-12 rounded-full bg-[oklch(0.78_0.14_82/8%)] flex items-center justify-center mb-3">
-                    <Bell className="h-5 w-5 text-[oklch(0.78_0.14_82/30%)]" />
+                  <div className="w-12 h-12 rounded-full bg-[oklch(0.76_0.19_48/8%)] flex items-center justify-center mb-3">
+                    <Bell className="h-5 w-5 text-[oklch(0.76_0.19_48/30%)]" />
                   </div>
                   <p className="text-sm font-medium text-muted-foreground">
                     {t("admin.no_notifications") || "No notifications"}
@@ -260,8 +260,8 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                           className={cn(
                             "flex items-start gap-3 rounded-xl px-3 py-3 transition-colors duration-150",
                             notification.read
-                              ? "hover:bg-[oklch(0.78_0.14_82/4%)]"
-                              : "bg-[oklch(0.78_0.14_82/5%)] hover:bg-[oklch(0.78_0.14_82/8%)]"
+                              ? "hover:bg-[oklch(0.76_0.19_48/4%)]"
+                              : "bg-[oklch(0.76_0.19_48/5%)] hover:bg-[oklch(0.76_0.19_48/8%)]"
                           )}
                         >
                           {/* Icon */}
@@ -316,11 +316,11 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
 
             {/* Footer */}
             {notifications.length > 0 && (
-              <div className="border-t border-[oklch(0.78_0.14_82/8%)] px-5 py-3">
+              <div className="border-t border-[oklch(0.76_0.19_48/8%)] px-5 py-3">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full h-8 text-[11px] text-muted-foreground hover:text-foreground hover:bg-[oklch(0.78_0.14_82/8%)]"
+                  className="w-full h-8 text-[11px] text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/8%)]"
                 >
                   {t("admin.view_all_notifications") || "View All Notifications"}
                 </Button>

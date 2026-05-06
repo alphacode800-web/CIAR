@@ -114,7 +114,7 @@ function getRoleBadge(role: string) {
     case "admin":
       return {
         label: "Admin",
-        className: "bg-[oklch(0.78_0.14_82/15%)] text-[oklch(0.78_0.14_82)] border-[oklch(0.78_0.14_82/25%)]",
+        className: "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] border-[oklch(0.76_0.19_48/25%)]",
         icon: Crown,
       }
     case "editor":
@@ -304,8 +304,8 @@ export function UsersTab() {
       label: t("admin.total_users") || "Total Users",
       value: users.length,
       icon: Users,
-      gradient: "from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/10%)]",
-      iconColor: "text-[oklch(0.78_0.14_82)]",
+      gradient: "from-[oklch(0.76_0.19_48/20%)] to-[oklch(0.58_0.17_38/10%)]",
+      iconColor: "text-[oklch(0.76_0.19_48)]",
     },
     {
       label: t("admin.admin_users") || "Admins",
@@ -335,7 +335,7 @@ export function UsersTab() {
           transition={{ duration: 0.4 }}
         >
           <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
-            <Users className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+            <Users className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
             {t("admin.user_management") || "User Management"}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -344,7 +344,7 @@ export function UsersTab() {
         </motion.div>
         <Button
           onClick={() => setAddDialogOpen(true)}
-          className="gap-2 bg-gradient-to-r from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)] text-[oklch(0.15_0.04_80)] hover:opacity-90 rounded-xl"
+          className="gap-2 bg-gradient-to-r from-[oklch(0.76_0.19_48)] to-[oklch(0.58_0.17_38)] text-[oklch(0.15_0.04_80)] hover:opacity-90 rounded-xl"
         >
           <UserPlus className="h-4 w-4" />
           {t("admin.add_user") || "Add User"}
@@ -365,7 +365,7 @@ export function UsersTab() {
             key={card.label}
             variants={fadeInUp}
             transition={{ delay: index * 0.08 }}
-            className="rounded-2xl border border-[oklch(0.78_0.14_82/12%)] bg-[oklch(0.14_0.028_265/45%)] backdrop-blur-xl p-5 dark:bg-[oklch(0.12_0.03_265/55%)]"
+            className="rounded-2xl border border-[oklch(0.76_0.19_48/12%)] bg-[oklch(0.14_0.028_265/45%)] backdrop-blur-xl p-5 dark:bg-[oklch(0.12_0.03_265/55%)]"
           >
             <div className="flex items-center gap-3">
               <div
@@ -402,10 +402,10 @@ export function UsersTab() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("admin.search_users") || "Search by name or email..."}
-            className="ps-10 rounded-xl bg-[oklch(0.14_0.028_265/45%)] border-[oklch(0.78_0.14_82/10%)]"
+            className="ps-10 rounded-xl bg-[oklch(0.14_0.028_265/45%)] border-[oklch(0.76_0.19_48/10%)]"
           />
         </div>
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.78_0.14_82/8%)]">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]">
           {rolePills.map((pill) => (
             <button
               key={pill.value}
@@ -413,15 +413,15 @@ export function UsersTab() {
               className={cn(
                 "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5",
                 roleFilter === pill.value
-                  ? "bg-[oklch(0.78_0.14_82/15%)] text-[oklch(0.78_0.14_82)] shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.78_0.14_82/5%)]"
+                  ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/5%)]"
               )}
             >
               {pill.label}
               <span className={cn(
                 "text-[10px] px-1.5 py-0.5 rounded-full",
                 roleFilter === pill.value
-                  ? "bg-[oklch(0.78_0.14_82/20%)]"
+                  ? "bg-[oklch(0.76_0.19_48/20%)]"
                   : "bg-muted/50"
               )}>
                 {pill.count}
@@ -442,10 +442,10 @@ export function UsersTab() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-20 rounded-2xl border border-dashed border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/20%)]"
+          className="flex flex-col items-center justify-center py-20 rounded-2xl border border-dashed border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/20%)]"
         >
-          <div className="w-20 h-20 rounded-full bg-[oklch(0.78_0.14_82/8%)] flex items-center justify-center mb-6">
-            <Users className="h-10 w-10 text-[oklch(0.78_0.14_82/30%)]" />
+          <div className="w-20 h-20 rounded-full bg-[oklch(0.76_0.19_48/8%)] flex items-center justify-center mb-6">
+            <Users className="h-10 w-10 text-[oklch(0.76_0.19_48/30%)]" />
           </div>
           <h3 className="text-lg font-semibold text-muted-foreground mb-2">
             {search || roleFilter !== "all"
@@ -460,7 +460,7 @@ export function UsersTab() {
           {!search && roleFilter === "all" && (
             <Button
               variant="outline"
-              className="mt-4 gap-2 border-[oklch(0.78_0.14_82/30%)] text-[oklch(0.78_0.14_82)] hover:bg-[oklch(0.78_0.14_82/10%)]"
+              className="mt-4 gap-2 border-[oklch(0.76_0.19_48/30%)] text-[oklch(0.76_0.19_48)] hover:bg-[oklch(0.76_0.19_48/10%)]"
               onClick={() => setAddDialogOpen(true)}
             >
               <UserPlus className="h-4 w-4" />
@@ -500,7 +500,7 @@ export function UsersTab() {
                 key={user.id}
                 variants={fadeInUp}
                 transition={{ delay: 0.1 + index * 0.04 }}
-                className="group relative flex lg:grid lg:grid-cols-[auto_1fr_1fr_auto_auto_auto_auto] items-center gap-3 lg:gap-4 p-4 rounded-xl border border-[oklch(0.78_0.14_82/8%)] bg-[oklch(0.14_0.028_265/35%)] backdrop-blur-lg dark:bg-[oklch(0.12_0.03_265/45%)] hover:border-[oklch(0.78_0.14_82/18%)] hover:bg-[oklch(0.78_0.14_82/3%)] transition-all"
+                className="group relative flex lg:grid lg:grid-cols-[auto_1fr_1fr_auto_auto_auto_auto] items-center gap-3 lg:gap-4 p-4 rounded-xl border border-[oklch(0.76_0.19_48/8%)] bg-[oklch(0.14_0.028_265/35%)] backdrop-blur-lg dark:bg-[oklch(0.12_0.03_265/45%)] hover:border-[oklch(0.76_0.19_48/18%)] hover:bg-[oklch(0.76_0.19_48/3%)] transition-all"
               >
                 {/* Avatar */}
                 <div className="shrink-0">
@@ -508,7 +508,7 @@ export function UsersTab() {
                     className={cn(
                       "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold overflow-hidden",
                       user.role === "admin"
-                        ? "bg-gradient-to-br from-[oklch(0.78_0.14_82/25%)] to-[oklch(0.72_0.13_75/15%)] text-[oklch(0.78_0.14_82)]"
+                        ? "bg-gradient-to-br from-[oklch(0.76_0.19_48/25%)] to-[oklch(0.58_0.17_38/15%)] text-[oklch(0.76_0.19_48)]"
                         : user.role === "editor"
                           ? "bg-gradient-to-br from-sky-500/20% to-sky-400/10% text-sky-300"
                           : "bg-gradient-to-br from-slate-600/20% to-slate-500/10% text-slate-300"
@@ -606,11 +606,11 @@ export function UsersTab() {
                         )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-52 rounded-xl border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/95%)]">
+                    <DropdownMenuContent align="end" className="w-52 rounded-xl border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/95%)]">
                       {user.role !== "admin" && (
                         <DropdownMenuItem
                           onClick={() => changeRole(user.id, "admin")}
-                          className="gap-2 text-[oklch(0.78_0.14_82)] cursor-pointer"
+                          className="gap-2 text-[oklch(0.76_0.19_48)] cursor-pointer"
                         >
                           <Crown className="h-4 w-4" />
                           {t("admin.promote_admin") || "Promote to Admin"}
@@ -682,10 +682,10 @@ export function UsersTab() {
 
       {/* ── Add User Dialog ── */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="rounded-2xl border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/95%)] dark:bg-[oklch(0.12_0.03_265/98%)] backdrop-blur-xl">
+        <DialogContent className="rounded-2xl border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/95%)] dark:bg-[oklch(0.12_0.03_265/98%)] backdrop-blur-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-[oklch(0.78_0.14_82)]" />
+              <UserPlus className="h-5 w-5 text-[oklch(0.76_0.19_48)]" />
               {t("admin.add_new_user") || "Add New User"}
             </DialogTitle>
             <DialogDescription>
@@ -700,7 +700,7 @@ export function UsersTab() {
                 value={newUser.name}
                 onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                 placeholder={t("admin.enter_name") || "Enter full name"}
-                className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
               />
             </div>
             <div className="space-y-2">
@@ -710,7 +710,7 @@ export function UsersTab() {
                 value={newUser.email}
                 onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                 placeholder={t("admin.enter_email") || "Enter email address"}
-                className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]"
+                className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
               />
             </div>
             <div className="space-y-2">
@@ -719,13 +719,13 @@ export function UsersTab() {
                 value={newUser.role}
                 onValueChange={(v) => setNewUser({ ...newUser, role: v })}
               >
-                <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.78_0.14_82/10%)]">
+                <SelectTrigger className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">
                     <span className="flex items-center gap-2">
-                      <Crown className="h-3.5 w-3.5 text-[oklch(0.78_0.14_82)]" />
+                      <Crown className="h-3.5 w-3.5 text-[oklch(0.76_0.19_48)]" />
                       Admin
                     </span>
                   </SelectItem>
@@ -757,7 +757,7 @@ export function UsersTab() {
             <Button
               onClick={handleAddUser}
               disabled={adding}
-              className="gap-2 rounded-xl bg-gradient-to-r from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)] text-[oklch(0.15_0.04_80)] hover:opacity-90"
+              className="gap-2 rounded-xl bg-gradient-to-r from-[oklch(0.76_0.19_48)] to-[oklch(0.58_0.17_38)] text-[oklch(0.15_0.04_80)] hover:opacity-90"
             >
               {adding ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -772,7 +772,7 @@ export function UsersTab() {
 
       {/* ── Delete Confirmation ── */}
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <AlertDialogContent className="rounded-2xl border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/95%)]">
+        <AlertDialogContent className="rounded-2xl border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/95%)]">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t("admin.delete_user") || "Delete User"}

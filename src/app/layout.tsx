@@ -9,6 +9,7 @@ import { AuthProvider } from "@/lib/auth-context"
 import { CurrencyProvider } from "@/lib/currency-context"
 import { AuthModalProvider } from "@/lib/auth-modal-context"
 import { AuthModalWrapper } from "@/components/layout/auth-modal-wrapper"
+import { ThemeSettingsApplier } from "@/components/theme-settings-applier"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -96,6 +97,7 @@ export default function RootLayout({
               <I18nProvider>
                 <RouterProvider>
                   <AuthModalProvider>
+                    <ThemeSettingsApplier />
                     <AuthModalWrapper />
                     {children}
                     <Toaster position="bottom-right" richColors />

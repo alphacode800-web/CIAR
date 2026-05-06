@@ -8,13 +8,24 @@ export async function GET(request: NextRequest) {
   try {
     await ensureSuperPlatformSeed()
 
-    const modules = await prisma.platformModule.findMany({
+    let modules = await prisma.platformModule.findMany({
       where: includeHidden ? {} : { visibility: "VISIBLE" },
       orderBy: { order: "asc" },
       include: {
         banner: true,
       },
     })
+    if (modules.length === 0) {
+      await ensureSuperPlatformSeed()
+      modules = await prisma.platformModule.findMany({
+        where: includeHidden ? {} : { visibility: "VISIBLE" },
+        orderBy: { order: "asc" },
+        include: { banner: true },
+      })
+    }
+    if (modules.length === 0) {
+      return NextResponse.json({ modules: getFallbackModules(includeHidden), fallback: true })
+    }
     return NextResponse.json({ modules })
   } catch {
     const modules = getFallbackModules(includeHidden)

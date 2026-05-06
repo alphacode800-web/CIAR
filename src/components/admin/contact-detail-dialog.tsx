@@ -96,8 +96,8 @@ export function ContactDetailDialog({
         <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[oklch(0.78_0.14_82)]/15 flex items-center justify-center">
-                <User className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+              <div className="w-8 h-8 rounded-full bg-[oklch(0.76_0.19_48)]/15 flex items-center justify-center">
+                <User className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
               </div>
               {contact.name}
             </DialogTitle>
@@ -110,10 +110,10 @@ export function ContactDetailDialog({
           <div className="space-y-3">
             {/* Email */}
             <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/20 p-3">
-              <Mail className="h-4 w-4 text-[oklch(0.78_0.14_82)] shrink-0" />
+              <Mail className="h-4 w-4 text-[oklch(0.76_0.19_48)] shrink-0" />
               <a
                 href={`mailto:${contact.email}`}
-                className="text-sm text-[oklch(0.78_0.14_82)] hover:underline truncate"
+                className="text-sm text-[oklch(0.76_0.19_48)] hover:underline truncate"
               >
                 {contact.email}
               </a>
@@ -166,7 +166,7 @@ export function ContactDetailDialog({
             <Button
               size="sm"
               onClick={handleReply}
-              className="gap-2 bg-[oklch(0.78_0.14_82)] text-[oklch(0.15_0.04_80)] hover:bg-[oklch(0.75_0.14_82)]"
+              className="gap-2 bg-[oklch(0.76_0.19_48)] text-[oklch(0.15_0.04_80)] hover:bg-[oklch(0.70_0.19_48)]"
             >
               <Reply className="h-3.5 w-3.5" />
               {t("admin.reply") || "Reply"}

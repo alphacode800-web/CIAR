@@ -12,6 +12,7 @@ import { SuperPlatformHome } from "@/components/super-platform/super-platform-ho
 import { PlatformDetailsPage } from "@/components/super-platform/platform-details-page"
 import { AdminLoginPage } from "@/components/pages/admin-login-page"
 import { UserAuthPage } from "@/components/pages/user-auth-page"
+import type { HomeBannersConfig } from "@/lib/home-banners"
 
 const HomePage = lazy(() => import("@/components/pages/home-page").then(m => ({ default: m.HomePage })))
 const ProjectsPage = lazy(() => import("@/components/pages/projects-page").then(m => ({ default: m.ProjectsPage })))
@@ -19,6 +20,28 @@ const ProjectDetailsPage = lazy(() => import("@/components/pages/project-details
 const AboutPage = lazy(() => import("@/components/pages/about-page").then(m => ({ default: m.AboutPage })))
 const ContactPage = lazy(() => import("@/components/pages/contact-page").then(m => ({ default: m.ContactPage })))
 const AdminPage = lazy(() => import("@/components/pages/admin-page").then(m => ({ default: m.AdminPage })))
+
+const DEFAULT_HOME_BANNERS: HomeBannersConfig = {
+  nav: {
+    logoType: "image",
+    logoUrl: "/logo.png",
+    logoVideoUrl: "",
+    logoAlt: { ar: "CIAR", en: "CIAR" },
+  },
+  hero: {
+    title: { ar: "", en: "" },
+    subtitle: { ar: "", en: "" },
+    ctaPrimary: { ar: "", en: "" },
+    ctaPrimaryHref: "projects",
+    ctaSecondary: { ar: "", en: "" },
+    ctaSecondaryHref: "about",
+    backgroundType: "image",
+    backgroundVideoUrl: "",
+    backgroundVideoPoster: "",
+    imageSlides: [],
+  },
+  newsTickerItems: [],
+}
 
 interface Project {
   id: string
@@ -55,7 +78,7 @@ export default function Page() {
   const [projects, setProjects] = useState<Project[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [newsTickerItems, setNewsTickerItems] = useState<string[]>([])
+  const [homeBanners, setHomeBanners] = useState<HomeBannersConfig>(DEFAULT_HOME_BANNERS)
 
   const fetchData = useCallback(async () => {
     try {
@@ -79,13 +102,15 @@ export default function Page() {
       })
 
       try {
-        const tickerRes = await fetch("/api/admin/news-ticker")
-        const tickerData = await tickerRes.json()
-        const items = Array.isArray(tickerData.items) ? tickerData.items : []
-        setNewsTickerItems(items)
+        const bannersRes = await fetch("/api/home/banners")
+        const bannersData = bannersRes.ok ? await bannersRes.json() : {}
+        if (bannersData?.config) {
+          setHomeBanners(bannersData.config as HomeBannersConfig)
+        }
       } catch {
-        setNewsTickerItems([])
+        setHomeBanners(DEFAULT_HOME_BANNERS)
       }
+
     } catch {
       // ignore
     } finally {
@@ -119,7 +144,13 @@ export default function Page() {
 
   return (
     <div className="min-h-screen flex flex-col" dir={dir}>
-      {!isAdmin && <Navbar />}
+      {!isAdmin && (
+        <Navbar
+          homeConfig={homeBanners}
+          newsTickerItems={homeBanners.newsTickerItems}
+          showNewsTickerStrip={route.page === "home"}
+        />
+      )}
 
       <main className="flex-1">
         <AnimatePresence mode="wait">
@@ -132,7 +163,7 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <HomePage featuredProjects={homeProjects} newsTickerItems={newsTickerItems} />
+                <HomePage featuredProjects={homeProjects} homeConfig={homeBanners} />
               </Suspense>
             </motion.div>
           )}

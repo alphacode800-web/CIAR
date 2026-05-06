@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react"
 import { DEFAULT_TRANSLATIONS } from "@/lib/default-translations"
+import { ADMIN_LOCALE_FALLBACK } from "@/lib/admin-locale-fallback"
 
 type Locale = "en" | "ar" | "fr" | "es" | "de"
 
@@ -129,6 +130,18 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       const bundledEnglishValue = DEFAULT_TRANSLATIONS.en?.[key]
       if (typeof bundledEnglishValue === "string" && bundledEnglishValue.trim().length > 0) {
         return stripEmojis(normalizeBrand(bundledEnglishValue))
+      }
+
+      const adminBucket = locale === "ar" ? ADMIN_LOCALE_FALLBACK.ar : ADMIN_LOCALE_FALLBACK.en
+      const adminPrimary = adminBucket[key]
+      if (typeof adminPrimary === "string" && adminPrimary.trim().length > 0) {
+        return stripEmojis(normalizeBrand(adminPrimary))
+      }
+      if (locale === "ar") {
+        const adminEn = ADMIN_LOCALE_FALLBACK.en[key]
+        if (typeof adminEn === "string" && adminEn.trim().length > 0) {
+          return stripEmojis(normalizeBrand(adminEn))
+        }
       }
 
       // Last-resort readable fallback instead of raw key.

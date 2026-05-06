@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, ChevronDown, Globe, LogIn, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/auth-context"
 import { useCurrency, CURRENCIES } from "@/lib/currency-context"
 import { ThemeSwitcher } from "@/components/layout/theme-switcher"
 import { cn } from "@/lib/utils"
+import type { HomeBannersConfig } from "@/lib/home-banners"
 
 const NAV_ITEMS: { key: string; route: PageRoute }[] = [
   { key: "nav.home", route: { page: "home" } },
@@ -25,7 +26,27 @@ const NAV_ITEMS: { key: string; route: PageRoute }[] = [
   { key: "nav.contact", route: { page: "contact" } },
 ]
 
-export function Navbar() {
+const DEFAULT_NEWS_TICKER_ITEMS = [
+  "Launching new enterprise platforms this quarter",
+  "24/7 technical support now available for all clients",
+  "New AI-powered modules added to our ecosystem",
+  "International expansion across multiple industries",
+]
+
+const NEWS_TICKER_STRIP_HEIGHT = "2.875rem"
+
+type NavbarProps = {
+  homeConfig?: HomeBannersConfig
+  newsTickerItems?: string[]
+  /** Home: show strip immediately under the nav links row (inside the fixed header) */
+  showNewsTickerStrip?: boolean
+}
+
+export function Navbar({
+  homeConfig,
+  newsTickerItems = [],
+  showNewsTickerStrip = false,
+}: NavbarProps) {
   const { t, locale, setLocale, dir } = useI18n()
   const { route, navigate } = useRouter()
   const { user, logout } = useAuth()
@@ -54,6 +75,26 @@ export function Navbar() {
 
   const currentPage = route.page === "project" ? "projects" : route.page
 
+  const tickerItems = useMemo(
+    () => (newsTickerItems.length > 0 ? newsTickerItems : DEFAULT_NEWS_TICKER_ITEMS),
+    [newsTickerItems]
+  )
+  const tickerLoopItems = useMemo(() => [...tickerItems, ...tickerItems], [tickerItems])
+  const logoType = homeConfig?.nav?.logoType === "video" ? "video" : "image"
+  const logoAlt = locale === "ar" ? homeConfig?.nav?.logoAlt?.ar : homeConfig?.nav?.logoAlt?.en
+  const logoImage = homeConfig?.nav?.logoUrl || "/logo.png"
+  const logoVideo = homeConfig?.nav?.logoVideoUrl || ""
+
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--news-ticker-visible-height",
+      showNewsTickerStrip ? NEWS_TICKER_STRIP_HEIGHT : "0px"
+    )
+    return () => {
+      document.documentElement.style.setProperty("--news-ticker-visible-height", "0px")
+    }
+  }, [showNewsTickerStrip])
+
   return (
     <motion.header
       initial={{ y: -24, opacity: 0 }}
@@ -72,7 +113,7 @@ export function Navbar() {
 
       <nav
         dir={dir}
-        className="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 h-18"
+        className="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 h-[var(--navbar-height)] min-h-[var(--navbar-height)]"
       >
         {/* Logo */}
         <button
@@ -80,15 +121,26 @@ export function Navbar() {
           className="flex items-center gap-3 group"
         >
           <div className="relative h-16 w-16 flex items-center justify-center">
-            <img
-              src="/logo.png"
-              alt="CIAR"
-              className="h-16 w-16 object-contain transition-transform duration-500 group-hover:scale-110"
-              onError={(e) => {
-                const img = e.currentTarget
-                if (!img.src.endsWith("/logo.svg")) img.src = "/logo.svg"
-              }}
-            />
+            {logoType === "video" && logoVideo ? (
+              <video
+                src={logoVideo}
+                className="h-16 w-16 rounded-md object-cover transition-transform duration-500 group-hover:scale-110"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+            ) : (
+              <img
+                src={logoImage}
+                alt={logoAlt || "CIAR"}
+                className="h-16 w-16 object-contain transition-transform duration-500 group-hover:scale-110"
+                onError={(e) => {
+                  const img = e.currentTarget
+                  if (!img.src.endsWith("/logo.svg")) img.src = "/logo.svg"
+                }}
+              />
+            )}
           </div>
         </button>
 
@@ -284,6 +336,40 @@ export function Navbar() {
         </div>
       </nav>
 
+      {showNewsTickerStrip ? (
+        <div
+          dir={dir}
+          className="relative z-40 w-full border-t border-[oklch(0.78_0.14_82/24%)] bg-black/65 backdrop-blur-md"
+          style={{ minHeight: NEWS_TICKER_STRIP_HEIGHT }}
+          aria-label={locale === "ar" ? "الشريط الإخباري" : "News ticker"}
+        >
+          <div className="mx-auto flex h-full min-h-[inherit] max-w-7xl items-center">
+            <div className="shrink-0 border-e border-white/20 bg-[oklch(0.78_0.14_82/22%)] px-3 py-2.5 sm:px-4">
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-white sm:text-[11px]">
+                {locale === "ar" ? "أخبار" : "News"}
+              </span>
+            </div>
+            <div className="relative flex-1 overflow-hidden py-2.5">
+              <motion.div
+                className="flex w-max whitespace-nowrap text-[12px] font-medium tracking-wide text-white/95 sm:text-[13px]"
+                animate={{ x: dir === "rtl" ? ["-50%", "0%"] : ["0%", "-50%"] }}
+                transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+              >
+                {tickerLoopItems.map((item, index) => (
+                  <span
+                    key={`${item}-${index}`}
+                    className="inline-flex items-center gap-4 px-6 sm:px-8"
+                  >
+                    <span className="text-white/95">{item}</span>
+                    <span className="text-[oklch(0.82_0.145_85)]">•</span>
+                  </span>
+                ))}
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
@@ -293,7 +379,7 @@ export function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 top-18 bg-background/60 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 top-[var(--site-header-offset)] bg-background/60 backdrop-blur-sm md:hidden"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
@@ -303,7 +389,7 @@ export function Navbar() {
               exit={{ opacity: 0, x: dir === "rtl" ? -18 : 18 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className={cn(
-                "md:hidden fixed top-18 bottom-0 z-50 w-[88%] max-w-sm glass-strong border-[oklch(0.78_0.14_82/24%)] overflow-hidden",
+                "md:hidden fixed bottom-0 top-[var(--site-header-offset)] z-50 w-[88%] max-w-sm glass-strong border-[oklch(0.78_0.14_82/24%)] overflow-hidden",
                 "border-s border-y shadow-2xl shadow-black/30",
                 dir === "rtl" ? "left-0 rounded-e-2xl" : "right-0 rounded-s-2xl"
               )}
@@ -312,7 +398,11 @@ export function Navbar() {
               <div className="relative px-4 py-4 h-full overflow-y-auto">
                 <div className="mb-4 flex items-center justify-between rounded-2xl border border-[oklch(0.78_0.14_82/18%)] bg-[oklch(0.12_0.03_265/55%)] px-3 py-2.5">
                   <div className="flex items-center gap-2.5">
-                    <img src="/logo.png" alt="CIAR" className="h-8 w-8 object-contain" />
+                    {logoType === "video" && logoVideo ? (
+                      <video src={logoVideo} className="h-8 w-8 rounded object-cover" autoPlay muted loop playsInline />
+                    ) : (
+                      <img src={logoImage} alt={logoAlt || "CIAR"} className="h-8 w-8 object-contain" />
+                    )}
                     <div>
                       <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Menu</p>
                       <p className="text-sm font-semibold">{locale === "ar" ? "التنقل السريع" : "Quick Navigation"}</p>

@@ -134,8 +134,8 @@ export function TranslationEditor({
       className={cn(
         "group flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-all duration-200",
         editing
-          ? "border-[oklch(0.78_0.14_82/30%)] bg-[oklch(0.14_0.028_265/50%)] shadow-[0_0_12px_oklch(0.78_0.14_82/5%)]"
-          : "border-[oklch(0.78_0.14_82/8%)] bg-[oklch(0.14_0.028_265/20%)] hover:border-[oklch(0.78_0.14_82/18%)] hover:bg-[oklch(0.14_0.028_265/35%)]"
+          ? "border-[oklch(0.76_0.19_48/30%)] bg-[oklch(0.14_0.028_265/50%)] shadow-[0_0_12px_oklch(0.76_0.19_48/5%)]"
+          : "border-[oklch(0.76_0.19_48/8%)] bg-[oklch(0.14_0.028_265/20%)] hover:border-[oklch(0.76_0.19_48/18%)] hover:bg-[oklch(0.14_0.028_265/35%)]"
       )}
     >
       {/* Locale Badge */}
@@ -177,7 +177,7 @@ export function TranslationEditor({
         {/* Edit mode */}
         {editing && (
           <div className="space-y-1">
-            <p className="text-[10px] font-mono text-[oklch(0.78_0.14_82/50%)] mb-1">
+            <p className="text-[10px] font-mono text-[oklch(0.76_0.19_48/50%)] mb-1">
               {translationKey}
             </p>
             <textarea
@@ -189,7 +189,7 @@ export function TranslationEditor({
               rows={Math.max(1, Math.min(4, Math.ceil(localValue.length / 60) + 1))}
               className={cn(
                 "w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/30 outline-none",
-                "border-b border-[oklch(0.78_0.14_82/20%)] focus:border-[oklch(0.78_0.14_82/40%)] pb-1 transition-colors"
+                "border-b border-[oklch(0.76_0.19_48/20%)] focus:border-[oklch(0.76_0.19_48/40%)] pb-1 transition-colors"
               )}
               placeholder={t("admin.type_translation") || "Type translation..."}
             />
@@ -214,7 +214,7 @@ export function TranslationEditor({
               className="flex items-center gap-1"
             >
               {saveStatus === "saving" && (
-                <Loader2 className="h-3 w-3 text-[oklch(0.78_0.14_82)] animate-spin" />
+                <Loader2 className="h-3 w-3 text-[oklch(0.76_0.19_48)] animate-spin" />
               )}
               {saveStatus === "saved" && (
                 <Check className="h-3 w-3 text-emerald-400" />
@@ -225,7 +225,7 @@ export function TranslationEditor({
               <span
                 className={cn(
                   "text-[10px] font-medium",
-                  saveStatus === "saving" && "text-[oklch(0.78_0.14_82)]",
+                  saveStatus === "saving" && "text-[oklch(0.76_0.19_48)]",
                   saveStatus === "saved" && "text-emerald-400",
                   saveStatus === "error" && "text-red-400"
                 )}

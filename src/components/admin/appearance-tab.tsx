@@ -27,6 +27,7 @@ import {
 import { useI18n } from "@/lib/i18n-context"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { applyThemeSettings } from "@/lib/theme-settings"
 
 /* ─── Glassmorphism Card Wrapper ──────────────────────────────────────────── */
 
@@ -45,7 +46,7 @@ function GlassCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.35 }}
       className={cn(
-        "rounded-2xl border border-[oklch(0.78_0.14_82/8%)] bg-[oklch(0.14_0.028_265/30%)] backdrop-blur-lg p-6 transition-all duration-200 hover:border-[oklch(0.78_0.14_82/18%)]",
+        "rounded-2xl border border-[oklch(0.76_0.19_48/8%)] bg-[oklch(0.14_0.028_265/30%)] backdrop-blur-lg p-6 transition-all duration-200 hover:border-[oklch(0.76_0.19_48/18%)]",
         "dark:bg-[oklch(0.12_0.03_265/40%)]",
         className
       )}
@@ -77,7 +78,7 @@ function ColorInput({
             type="color"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-9 h-9 rounded-lg border border-[oklch(0.78_0.14_82/20%)] cursor-pointer bg-transparent appearance-none [&::-webkit-color-swatch-wrapper]:p-0.5 [&::-webkit-color-swatch]:rounded-md [&::-webkit-color-swatch]:border-none"
+            className="w-9 h-9 rounded-lg border border-[oklch(0.76_0.19_48/20%)] cursor-pointer bg-transparent appearance-none [&::-webkit-color-swatch-wrapper]:p-0.5 [&::-webkit-color-swatch]:rounded-md [&::-webkit-color-swatch]:border-none"
           />
         </div>
         <span className="text-xs font-mono text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-md min-w-[72px] text-center">
@@ -118,7 +119,7 @@ function RangeField({
             {label}
           </Label>
         </div>
-        <span className="text-xs font-mono text-[oklch(0.78_0.14_82)] bg-[oklch(0.78_0.14_82/8%)] px-2 py-0.5 rounded-md">
+        <span className="text-xs font-mono text-[oklch(0.76_0.19_48)] bg-[oklch(0.76_0.19_48/8%)] px-2 py-0.5 rounded-md">
           {value}{unit}
         </span>
       </div>
@@ -128,7 +129,7 @@ function RangeField({
         min={min}
         max={max}
         step={step}
-        className="w-full [&_[data-slot=slider-range]]:bg-[oklch(0.78_0.14_82)] [&_[data-slot=slider-thumb]]:border-[oklch(0.78_0.14_82)]"
+        className="w-full [&_[data-slot=slider-range]]:bg-[oklch(0.76_0.19_48)] [&_[data-slot=slider-thumb]]:border-[oklch(0.76_0.19_48)]"
       />
     </div>
   )
@@ -191,6 +192,10 @@ export function AppearanceTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
       })
+      applyThemeSettings(settings)
+      window.dispatchEvent(
+        new CustomEvent("ciar:settings-updated", { detail: settings })
+      )
       toast.success(t("admin.settings_saved") || "Appearance settings saved successfully")
     } catch {
       toast.error(t("admin.settings_save_failed") || "Failed to save appearance settings")
@@ -251,7 +256,7 @@ export function AppearanceTab() {
             variant="outline"
             size="sm"
             onClick={handleReset}
-            className="gap-2 border-[oklch(0.78_0.14_82/20%)] hover:bg-[oklch(0.78_0.14_82/8%)]"
+            className="gap-2 border-[oklch(0.76_0.19_48/20%)] hover:bg-[oklch(0.76_0.19_48/8%)]"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             {t("admin.reset") || "Reset"}
@@ -260,7 +265,7 @@ export function AppearanceTab() {
             size="sm"
             onClick={handleSave}
             disabled={saving}
-            className="gap-2 bg-[oklch(0.78_0.14_82)] text-[oklch(0.14_0.028_265)] hover:bg-[oklch(0.73_0.14_82)] font-semibold"
+            className="gap-2 bg-[oklch(0.76_0.19_48)] text-[oklch(0.14_0.028_265)] hover:bg-[oklch(0.68_0.18_48)] font-semibold"
           >
             {saving ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -279,8 +284,8 @@ export function AppearanceTab() {
         {/* ── Color Palette ── */}
         <GlassCard delay={0.1}>
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.78_0.14_82/15%)] flex items-center justify-center">
-              <Palette className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+            <div className="w-8 h-8 rounded-lg bg-[oklch(0.76_0.19_48/15%)] flex items-center justify-center">
+              <Palette className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
             </div>
             <h3 className="text-base font-semibold">
               {t("admin.color_palette") || "Color Palette"}
@@ -329,8 +334,8 @@ export function AppearanceTab() {
         {/* ── Typography ── */}
         <GlassCard delay={0.15}>
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.78_0.14_82/15%)] flex items-center justify-center">
-              <Type className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+            <div className="w-8 h-8 rounded-lg bg-[oklch(0.76_0.19_48/15%)] flex items-center justify-center">
+              <Type className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
             </div>
             <h3 className="text-base font-semibold">
               {t("admin.typography") || "Typography"}
@@ -346,7 +351,7 @@ export function AppearanceTab() {
                 value={get("theme_heading_font")}
                 onValueChange={(v) => updateSetting("theme_heading_font", v)}
               >
-                <SelectTrigger className="w-full rounded-xl border-[oklch(0.78_0.14_82/15%)]">
+                <SelectTrigger className="w-full rounded-xl border-[oklch(0.76_0.19_48/15%)]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -367,7 +372,7 @@ export function AppearanceTab() {
                 value={get("theme_body_font")}
                 onValueChange={(v) => updateSetting("theme_body_font", v)}
               >
-                <SelectTrigger className="w-full rounded-xl border-[oklch(0.78_0.14_82/15%)]">
+                <SelectTrigger className="w-full rounded-xl border-[oklch(0.76_0.19_48/15%)]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -407,8 +412,8 @@ export function AppearanceTab() {
         {/* ── Layout ── */}
         <GlassCard delay={0.2}>
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.78_0.14_82/15%)] flex items-center justify-center">
-              <Layout className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+            <div className="w-8 h-8 rounded-lg bg-[oklch(0.76_0.19_48/15%)] flex items-center justify-center">
+              <Layout className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
             </div>
             <h3 className="text-base font-semibold">
               {t("admin.layout") || "Layout"}
@@ -424,7 +429,7 @@ export function AppearanceTab() {
                 value={get("theme_max_content_width")}
                 onValueChange={(v) => updateSetting("theme_max_content_width", v)}
               >
-                <SelectTrigger className="w-full rounded-xl border-[oklch(0.78_0.14_82/15%)]">
+                <SelectTrigger className="w-full rounded-xl border-[oklch(0.76_0.19_48/15%)]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -468,8 +473,8 @@ export function AppearanceTab() {
         {/* ── Effects ── */}
         <GlassCard delay={0.25}>
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.78_0.14_82/15%)] flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+            <div className="w-8 h-8 rounded-lg bg-[oklch(0.76_0.19_48/15%)] flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
             </div>
             <h3 className="text-base font-semibold">
               {t("admin.effects") || "Effects"}
@@ -491,7 +496,7 @@ export function AppearanceTab() {
                 onCheckedChange={(checked) =>
                   updateSetting("theme_glassmorphism", String(checked))
                 }
-                className="data-[state=checked]:bg-[oklch(0.78_0.14_82)]"
+                className="data-[state=checked]:bg-[oklch(0.76_0.19_48)]"
               />
             </div>
 
@@ -509,7 +514,7 @@ export function AppearanceTab() {
                 onCheckedChange={(checked) =>
                   updateSetting("theme_animations", String(checked))
                 }
-                className="data-[state=checked]:bg-[oklch(0.78_0.14_82)]"
+                className="data-[state=checked]:bg-[oklch(0.76_0.19_48)]"
               />
             </div>
 
@@ -528,8 +533,8 @@ export function AppearanceTab() {
       {/* ── Live Preview Panel ── */}
       <GlassCard delay={0.3}>
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-8 h-8 rounded-lg bg-[oklch(0.78_0.14_82/15%)] flex items-center justify-center">
-            <Eye className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+          <div className="w-8 h-8 rounded-lg bg-[oklch(0.76_0.19_48/15%)] flex items-center justify-center">
+            <Eye className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
           </div>
           <h3 className="text-base font-semibold">
             {t("admin.live_preview") || "Live Preview"}

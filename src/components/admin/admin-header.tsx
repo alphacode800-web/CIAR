@@ -35,7 +35,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useI18n, ALL_LOCALES, LOCALE_NAMES } from "@/lib/i18n-context"
 import { useAuth } from "@/lib/auth-context"
-import { useRouter } from "@/lib/router-context"
+import { useRouter as useHashRouter } from "@/lib/router-context"
+import { usePathname as useNextPathname, useRouter as useNextRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
@@ -44,6 +45,8 @@ interface AdminHeaderProps {
   activeTab: string
   setTab: (tab: string) => void
   onMobileMenuToggle: () => void
+  /** Opens the command palette owned by `AdminLayout` */
+  onOpenSearch: () => void
 }
 
 /* ─── Tab Label Map ──────────────────────────────────────────────────────── */
@@ -60,6 +63,7 @@ const TAB_LABELS: Record<string, string> = {
   users: "admin.users",
   media: "admin.media",
   backgrounds: "admin.backgrounds",
+  "home-banners": "admin.home_banners",
   "home-sections": "admin.home_sections",
   "news-ticker": "admin.news_ticker",
   seo: "admin.seo",
@@ -76,6 +80,7 @@ const TAB_DESCRIPTIONS: Record<string, { key: string; fallback: string }> = {
   translations: { key: "admin.tab_desc_translations", fallback: "Edit UI strings across all languages" },
   media: { key: "admin.tab_desc_media", fallback: "Upload and manage images, documents, and files" },
   backgrounds: { key: "admin.tab_desc_backgrounds", fallback: "Manage page background images and visual themes" },
+  "home-banners": { key: "admin.tab_desc_home_banners", fallback: "Control homepage banners, logo, hero text, and media" },
   contacts: { key: "admin.tab_desc_contacts", fallback: "Review and respond to submitted messages" },
   users: { key: "admin.tab_desc_users", fallback: "Manage user accounts, roles, and permissions" },
   "home-sections": { key: "admin.tab_desc_home_sections", fallback: "Customize homepage section order and visibility" },
@@ -114,17 +119,23 @@ export function AdminHeader({
   activeTab,
   setTab,
   onMobileMenuToggle,
+  onOpenSearch,
 }: AdminHeaderProps) {
   const { t, locale, setLocale } = useI18n()
-  const { logout } = useAuth()
-  const { navigate } = useRouter()
+  const { user, logout } = useAuth()
+  const { navigate } = useHashRouter()
+  const nextPathname = useNextPathname()
+  const nextRouter = useNextRouter()
   const [notifOpen, setNotifOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
   const [notifCount, setNotifCount] = useState(3)
   const time = useLiveClock()
 
   const handleLogout = () => {
     logout()
+    if (nextPathname?.startsWith("/admin/panel")) {
+      nextRouter.replace("/admin/login")
+      return
+    }
     navigate({ page: "admin-login" })
   }
 
@@ -157,18 +168,6 @@ export function AdminHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [notifOpen])
 
-  // Keyboard shortcut for search
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault()
-        setSearchOpen(true)
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [])
-
   const currentTabLabel =
     t(TAB_LABELS[activeTab] || "") ||
     t(`admin.${activeTab}`) ||
@@ -178,15 +177,15 @@ export function AdminHeader({
   const tabDescriptionText = tabDesc ? t(tabDesc.key) || tabDesc.fallback : ""
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[oklch(0.78_0.14_82/18%)] bg-[linear-gradient(135deg,oklch(0.15_0.035_270/96%),oklch(0.11_0.03_255/96%))] text-slate-100 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)] backdrop-blur-xl [&_.text-muted-foreground]:text-slate-300/85 [&_.text-foreground]:text-slate-100">
-      <div className="flex items-center justify-between gap-4 px-4 sm:px-6 h-14">
+    <header className="admin-vivid-header admin-vivid-header-image sticky top-0 z-30 border-b border-[#e5e7eb] bg-white text-foreground shadow-sm">
+      <div className="flex h-14 items-center justify-between gap-4 px-4 sm:h-16 sm:px-6">
         {/* ── Left Section ── */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
           {/* Mobile menu toggle */}
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 lg:hidden shrink-0 hover:bg-[oklch(0.78_0.14_82/8%)]"
+            className="h-8 w-8 shrink-0 rounded-lg hover:bg-[#fff7ed] hover:text-[#c2410c] lg:hidden"
             onClick={onMobileMenuToggle}
           >
             <Menu className="h-4 w-4" />
@@ -198,16 +197,16 @@ export function AdminHeader({
               <BreadcrumbItem>
                 <BreadcrumbLink
                   onClick={() => setTab("overview")}
-                  className="cursor-pointer text-slate-300 transition-colors hover:text-[oklch(0.86_0.09_85)]"
+                  className="cursor-pointer text-[#78716c] transition-colors hover:text-[#ea580c]"
                 >
                   {t("admin.title") || "Admin"}
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator>
-                <ChevronRight className="h-3 w-3" />
+                <ChevronRight className="h-3 w-3 text-[#d6d3d1]" />
               </BreadcrumbSeparator>
               <BreadcrumbItem>
-                <BreadcrumbPage className="font-medium text-[oklch(0.93_0.03_90)]">
+                <BreadcrumbPage className="font-semibold tracking-tight text-[#1c1917] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">
                   {currentTabLabel}
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -215,31 +214,31 @@ export function AdminHeader({
           </Breadcrumb>
 
           {/* Mobile tab label */}
-          <span className="truncate text-sm font-medium text-slate-100 sm:hidden">
+          <span className="truncate text-sm font-medium text-[#1c1917] sm:hidden">
             {currentTabLabel}
           </span>
         </div>
 
         {/* ── Center Section ── */}
-        <div className="hidden md:flex items-center justify-center flex-1 max-w-sm">
+        <div className="hidden max-w-sm flex-1 items-center justify-center md:flex">
           <button
-            onClick={() => setSearchOpen(true)}
+            type="button"
+            onClick={onOpenSearch}
             className={cn(
-              "group flex items-center gap-2 w-full max-w-xs px-3.5 py-2 rounded-lg",
-              "border border-[oklch(0.78_0.14_82/24%)] bg-[oklch(0.16_0.03_270/85%)]",
-              "text-slate-300 text-sm transition-all duration-200",
-              "hover:border-[oklch(0.78_0.14_82/40%)] hover:bg-[oklch(0.18_0.03_270/90%)] hover:shadow-[0_0_18px_oklch(0.78_0.14_82/12%)]",
-              "cursor-pointer"
+              "group flex w-full max-w-xs cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm",
+              "border border-[#d6d3d1] bg-white shadow-sm",
+              "text-[#57534e] transition-all duration-300 ease-out",
+              "hover:border-[#ea580c]/40 hover:bg-[#fffdfb]"
             )}
           >
-            <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60 group-hover:text-[oklch(0.78_0.14_82)] transition-colors" />
-            <span className="flex-1 text-left text-xs text-muted-foreground/50">
+            <Search className="h-3.5 w-3.5 shrink-0 text-[#a8a29e] transition-colors group-hover:text-[#ea580c]" />
+            <span className="flex-1 text-start text-xs text-[#a8a29e]">
               {t("admin.search_placeholder") || "Search pages, actions..."}
             </span>
             <motion.kbd
-              animate={{ opacity: [0.5, 1, 0.5] }}
+              animate={{ opacity: [0.55, 1, 0.55] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono text-muted-foreground/40 bg-muted/50 border border-border/50"
+              className="hidden items-center gap-0.5 rounded-md border border-[#d6d3d1] bg-[#fafaf9] px-1.5 py-0.5 font-mono text-[10px] text-[#78716c] shadow-[inset_0_1px_0_rgba(255,255,255,1)] sm:inline-flex"
             >
               <span className="text-[9px]">⌘</span>K
             </motion.kbd>
@@ -247,35 +246,33 @@ export function AdminHeader({
         </div>
 
         {/* ── Right Section ── */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           {/* Language switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 hover:bg-[oklch(0.78_0.14_82/8%)]"
+                className="h-8 w-8 rounded-lg hover:bg-[#fff7ed] hover:text-[#c2410c]"
                 aria-label={t("common.language") || "Change language"}
               >
-                <Globe className="h-4 w-4 text-muted-foreground" />
+                <Globe className="h-4 w-4 text-[#78716c]" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-44 rounded-xl border-[oklch(0.78_0.14_82/12%)] bg-[oklch(0.12_0.028_265/95%)] backdrop-blur-xl"
+              className="w-44 rounded-xl border border-[#d6d3d1] bg-[#fffdfb] shadow-md"
             >
               {ALL_LOCALES.map((loc) => (
                 <DropdownMenuItem
                   key={loc}
                   onClick={() => setLocale(loc)}
                   className={cn(
-                    "cursor-pointer text-sm",
-                    locale === loc
-                      ? "bg-[oklch(0.78_0.14_82/10%)] text-[oklch(0.78_0.14_82)] font-medium"
-                      : ""
+                    "cursor-pointer text-sm text-[#44403c]",
+                    locale === loc ? "bg-[#fff7ed] font-medium text-[#c2410c]" : ""
                   )}
                 >
-                  <span className="font-mono text-xs uppercase w-7">{loc}</span>
+                  <span className="w-7 font-mono text-xs uppercase">{loc}</span>
                   <span className="ms-2">{LOCALE_NAMES[loc]}</span>
                 </DropdownMenuItem>
               ))}
@@ -283,22 +280,22 @@ export function AdminHeader({
           </DropdownMenu>
 
           {/* Live Clock */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md text-muted-foreground/60">
+          <div className="hidden items-center gap-1.5 rounded-lg px-2 py-1 text-[#a8a29e] lg:flex">
             <Clock className="h-3 w-3" />
-            <span className="text-xs font-mono tabular-nums tracking-wide">{time}</span>
+            <span className="font-mono text-xs tabular-nums tracking-wide">{time}</span>
           </div>
 
           {/* Divider */}
-          <div className="w-px h-5 bg-border/40 mx-0.5 hidden lg:block" />
+          <div className="mx-0.5 hidden h-5 w-px bg-[#e7e5e4] lg:block" />
 
           {/* Mobile search button */}
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 md:hidden hover:bg-[oklch(0.78_0.14_82/8%)]"
-            onClick={() => setSearchOpen(true)}
+            className="h-8 w-8 rounded-lg hover:bg-[#fff7ed] hover:text-[#c2410c] md:hidden"
+            onClick={onOpenSearch}
           >
-            <Search className="h-4 w-4 text-muted-foreground" />
+            <Search className="h-4 w-4 text-[#78716c]" />
           </Button>
 
           {/* Notification bell */}
@@ -306,16 +303,16 @@ export function AdminHeader({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-[oklch(0.78_0.14_82/8%)] relative"
+              className="relative h-8 w-8 hover:bg-[#fff7ed] hover:text-[#c2410c]"
               onClick={() => setNotifOpen(!notifOpen)}
             >
-              <Bell className="h-4 w-4 text-slate-300" />
+              <Bell className="h-4 w-4 text-[#57534e]" />
               {notifCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                  className="absolute top-1 end-1 w-4 h-4 rounded-full bg-[oklch(0.78_0.14_82)] text-[oklch(0.14_0.028_265)] text-[9px] font-bold flex items-center justify-center"
+                  className="absolute end-1 top-1 flex h-4 w-4 items-center justify-center rounded-none border border-[#7c2d12]/40 bg-gradient-to-b from-[#fb923c] to-[#ea580c] text-[9px] font-bold text-white shadow-[0_2px_0_0_rgba(124,45,12,0.55)]"
                 >
                   {notifCount}
                 </motion.span>
@@ -333,57 +330,54 @@ export function AdminHeader({
           </div>
 
           {/* Separator */}
-          <div className="w-px h-6 bg-border/50 mx-1 hidden sm:block" />
+          <div className="mx-1 hidden h-6 w-px bg-[#e7e5e4] sm:block" />
 
           {/* User avatar dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="h-8 gap-2 px-2 hover:bg-[oklch(0.78_0.14_82/8%)]"
-              >
-                <Avatar className="h-7 w-7">
+              <Button variant="ghost" className="h-8 gap-2 rounded-lg px-2 hover:bg-[#fff7ed]">
+                <Avatar className="h-7 w-7 rounded-lg border border-[#fed7aa] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                   <AvatarImage src="/logo.png" alt={t("admin.title") || "Admin"} />
-                  <AvatarFallback className="bg-[oklch(0.78_0.14_82/15%)] text-[oklch(0.78_0.14_82)] text-[11px] font-bold">
+                  <AvatarFallback className="rounded-lg bg-gradient-to-b from-[#fff7ed] to-[#ffedd5] text-[11px] font-bold text-[#c2410c]">
                     AD
                   </AvatarFallback>
                 </Avatar>
-                  <span className="hidden text-xs font-medium text-[oklch(0.93_0.03_90)] sm:inline">
+                <span className="hidden text-xs font-medium text-[#44403c] sm:inline">
                   {t("admin.title") || "Admin"}
                 </span>
-                <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block" />
+                <ChevronDown className="hidden h-3 w-3 text-[#a8a29e] sm:block" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-56 rounded-xl border-[oklch(0.78_0.14_82/12%)] bg-[oklch(0.12_0.028_265/95%)] backdrop-blur-xl"
+              className="w-56 rounded-xl border border-[#d6d3d1] bg-[#fffdfb] shadow-md"
             >
-              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground">{t("admin.admin_user") || "Admin User"}</span>
-                  <span>admin@jomaa.store</span>
+              <DropdownMenuLabel className="text-xs font-normal text-[#78716c]">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm font-semibold text-[#1c1917]">{t("admin.admin_user") || "Admin User"}</span>
+                  <span className="truncate">{user?.email || user?.phone || "—"}</span>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-[oklch(0.78_0.14_82/8%)]" />
+              <DropdownMenuSeparator className="bg-[#fed7aa]/60" />
               <DropdownMenuGroup>
-                <DropdownMenuItem className="gap-2.5 cursor-pointer focus:bg-[oklch(0.78_0.14_82/8%)]">
-                  <User className="h-4 w-4 text-muted-foreground" />
+                <DropdownMenuItem className="cursor-pointer gap-2.5 text-[#44403c] focus:bg-[#fff7ed]">
+                  <User className="h-4 w-4 text-[#a8a29e]" />
                   {t("admin.profile") || "Profile"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="gap-2.5 cursor-pointer focus:bg-[oklch(0.78_0.14_82/8%)]"
+                  className="cursor-pointer gap-2.5 text-[#44403c] focus:bg-[#fff7ed]"
                   onClick={() => setTab("settings")}
                 >
-                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  <Settings className="h-4 w-4 text-[#a8a29e]" />
                   {t("admin.settings") || "Settings"}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-[oklch(0.78_0.14_82/8%)]" />
+              <DropdownMenuSeparator className="bg-[#fed7aa]/60" />
               <DropdownMenuItem
-                className="gap-2.5 cursor-pointer focus:bg-red-500/10 focus:text-red-400"
+                className="cursor-pointer gap-2.5 text-red-600 focus:bg-red-50 focus:text-red-700"
                 onClick={handleLogout}
               >
-                <LogOut className="h-4 w-4 text-muted-foreground" />
+                <LogOut className="h-4 w-4" />
                 {t("admin.logout") || "Log out"}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -395,14 +389,14 @@ export function AdminHeader({
       {tabDescriptionText && (
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: -4 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="px-4 sm:px-6 pb-2 hidden sm:block"
+          transition={{ type: "spring", stiffness: 380, damping: 28 }}
+          className="hidden px-4 pb-3 sm:block sm:px-6"
         >
-          <p className="text-[11px] text-muted-foreground/60">
-            {tabDescriptionText}
-          </p>
+          <div className="rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 py-2 shadow-sm">
+            <p className="text-[11px] leading-relaxed text-[#57534e]">{tabDescriptionText}</p>
+          </div>
         </motion.div>
       )}
     </header>
@@ -429,27 +423,27 @@ function NotificationDropdown({
       exit={{ opacity: 0, y: -4 }}
       transition={{ duration: 0.15 }}
       className={cn(
-        "absolute end-0 top-full mt-1.5 z-50 w-72 rounded-xl border border-[oklch(0.78_0.14_82/12%)]",
-        "bg-[oklch(0.12_0.028_265/95%)] backdrop-blur-xl",
-        "shadow-[0_8px_32px_-4px_rgba(0,0,0,0.4)]"
+        "absolute end-0 top-full z-50 mt-1.5 w-72 rounded-xl border border-[#d6d3d1]",
+        "bg-[#fffdfb]",
+        "shadow-md"
       )}
       data-notif-area
     >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[oklch(0.78_0.14_82/8%)]">
-        <span className="text-xs font-semibold text-foreground">
+      <div className="flex items-center justify-between border-b border-[#fed7aa]/60 px-4 py-3">
+        <span className="text-xs font-semibold text-[#1c1917]">
           {t("admin.notifications") || "Notifications"}
         </span>
         {count > 0 && (
           <button
             onClick={onMarkAllRead}
-            className="text-[10px] text-[oklch(0.78_0.14_82)] hover:underline cursor-pointer"
+            className="cursor-pointer text-[10px] font-medium text-[#c2410c] hover:underline"
           >
             {t("admin.mark_all_read") || "Mark all read"}
           </button>
         )}
       </div>
       <div className="p-3 text-center">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-[#78716c]">
           {t("admin.notification_hint") || "Open notification panel for details"}
         </p>
       </div>

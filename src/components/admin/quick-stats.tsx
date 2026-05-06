@@ -69,34 +69,26 @@ export function QuickStats({ stats, columns = 4 }: QuickStatsProps) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.08, duration: 0.45, ease: "easeOut" }}
-            className="group relative rounded-2xl border border-[oklch(0.78_0.14_82/12%)] bg-[oklch(0.14_0.028_265/50%)] backdrop-blur-xl p-5 overflow-hidden transition-all duration-300 hover:border-[oklch(0.78_0.14_82/25%)] hover:shadow-[0_0_30px_oklch(0.78_0.14_82/8%)] dark:bg-[oklch(0.12_0.03_265/60%)]"
+            className={cn(
+              "admin-vivid-stat admin-vivid-stat-image group relative overflow-hidden rounded-md border-0 p-5 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
+              stat.color
+            )}
           >
-            {/* Subtle gradient accent at top-left */}
-            <div
-              className={cn(
-                "absolute -top-12 -left-12 w-32 h-32 rounded-full opacity-20 blur-3xl transition-opacity duration-300 group-hover:opacity-35",
-                stat.color
-              )}
-            />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-black/10" />
 
             <div className="relative z-10">
               {/* Icon & Trend */}
               <div className="flex items-center justify-between mb-4">
-                <div
-                  className={cn(
-                    "w-11 h-11 rounded-xl flex items-center justify-center",
-                    stat.color
-                  )}
-                >
+                <div className="flex h-11 w-11 items-center justify-center rounded bg-black/15 ring-1 ring-white/20">
                   <Icon className={cn("h-5 w-5", stat.iconColor)} />
                 </div>
                 {stat.trend && (
                   <div
                     className={cn(
-                      "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full",
+                      "flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium",
                       stat.trend.positive
-                        ? "text-emerald-400 bg-emerald-500/10"
-                        : "text-red-400 bg-red-500/10"
+                        ? "bg-white/20 text-white"
+                        : "bg-black/20 text-white"
                     )}
                   >
                     {stat.trend.positive ? (
@@ -110,21 +102,21 @@ export function QuickStats({ stats, columns = 4 }: QuickStatsProps) {
               </div>
 
               {/* Value */}
-              <div className="text-2xl font-bold tracking-tight text-foreground">
+              <div className="text-4xl font-bold tracking-tight text-white">
                 {isNumber ? (
                   <CountUp target={stat.value as number} />
                 ) : (
                   stat.value
                 )}
                 {stat.suffix && (
-                  <span className="text-lg font-normal text-muted-foreground ml-1">
+                  <span className="ml-1 text-lg font-normal text-white/90">
                     {stat.suffix}
                   </span>
                 )}
               </div>
 
               {/* Label */}
-              <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+              <p className="mt-1 text-base font-semibold text-white/95">{stat.label}</p>
             </div>
           </motion.div>
         )

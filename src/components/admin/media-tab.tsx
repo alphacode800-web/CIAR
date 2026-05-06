@@ -82,16 +82,21 @@ function formatDate(dateStr: string): string {
   })
 }
 
-function isImageType(mimeType: string): boolean {
-  return mimeType.startsWith("image/")
+function normalizeMimeType(mimeType: unknown): string {
+  return typeof mimeType === "string" ? mimeType.toLowerCase() : ""
 }
 
-function isDocumentType(mimeType: string): boolean {
-  return mimeType.includes("pdf") || mimeType.includes("document") || mimeType.includes("text")
+function isImageType(mimeType: unknown): boolean {
+  return normalizeMimeType(mimeType).startsWith("image/")
 }
 
-function isVideoType(mimeType: string): boolean {
-  return mimeType.startsWith("video/")
+function isDocumentType(mimeType: unknown): boolean {
+  const safeType = normalizeMimeType(mimeType)
+  return safeType.includes("pdf") || safeType.includes("document") || safeType.includes("text")
+}
+
+function isVideoType(mimeType: unknown): boolean {
+  return normalizeMimeType(mimeType).startsWith("video/")
 }
 
 const ACCEPTED_TYPES = [
@@ -346,7 +351,7 @@ export function MediaTab() {
 
   // ── Stats ──
 
-  const imageCount = media.filter(isImageType).length
+  const imageCount = media.filter((item) => isImageType(item.mimeType)).length
   const totalSize = media.reduce((sum, m) => sum + m.size, 0)
 
   // ── Render ──────────────────────────────────────────────────────────────
@@ -356,11 +361,11 @@ export function MediaTab() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
-          <ImageIcon className="h-6 w-6 text-[oklch(0.78_0.14_82)]" />
+          <ImageIcon className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           {t("admin.media_library") || "Media Library"}
         </h2>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="gap-1.5 text-xs border-[oklch(0.78_0.14_82/30%)] text-[oklch(0.78_0.14_82)]">
+          <Badge variant="outline" className="gap-1.5 text-xs border-[oklch(0.76_0.19_48/30%)] text-[oklch(0.76_0.19_48)]">
             <HardDrive className="h-3 w-3" />
             {media.length} {t("admin.files") || "files"}
           </Badge>
@@ -403,18 +408,18 @@ export function MediaTab() {
         className={cn(
           "relative rounded-2xl border-2 border-dashed transition-all duration-200 overflow-hidden",
           dragging
-            ? "border-[oklch(0.78_0.14_82)] bg-[oklch(0.78_0.14_82/5%)] scale-[1.005]"
-            : "border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/20%)] hover:border-[oklch(0.78_0.14_82/30%)]",
+            ? "border-[oklch(0.76_0.19_48)] bg-[oklch(0.76_0.19_48/5%)] scale-[1.005]"
+            : "border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/20%)] hover:border-[oklch(0.76_0.19_48/30%)]",
           uploading && "pointer-events-none opacity-60"
         )}
       >
         <div className="p-6">
           <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-[oklch(0.78_0.14_82/10%)] flex items-center justify-center shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-[oklch(0.76_0.19_48/10%)] flex items-center justify-center shrink-0">
               {dragging ? (
-                <UploadCloud className="h-7 w-7 text-[oklch(0.78_0.14_82)] animate-bounce" />
+                <UploadCloud className="h-7 w-7 text-[oklch(0.76_0.19_48)] animate-bounce" />
               ) : (
-                <Upload className="h-7 w-7 text-[oklch(0.78_0.14_82/50%)]" />
+                <Upload className="h-7 w-7 text-[oklch(0.76_0.19_48/50%)]" />
               )}
             </div>
             <div className="flex-1 text-center sm:text-start">
@@ -438,7 +443,7 @@ export function MediaTab() {
             <Button
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="gap-2 bg-gradient-to-r from-[oklch(0.78_0.14_82)] to-[oklch(0.72_0.13_75)] text-[oklch(0.15_0.04_80)] hover:opacity-90 rounded-xl shrink-0"
+              className="gap-2 bg-gradient-to-r from-[oklch(0.76_0.19_48)] to-[oklch(0.58_0.17_38)] text-[oklch(0.15_0.04_80)] hover:opacity-90 rounded-xl shrink-0"
             >
               {uploading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -459,11 +464,11 @@ export function MediaTab() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[oklch(0.78_0.14_82/5%)] flex items-center justify-center pointer-events-none"
+              className="absolute inset-0 bg-[oklch(0.76_0.19_48/5%)] flex items-center justify-center pointer-events-none"
             >
               <div className="flex flex-col items-center gap-2">
-                <UploadCloud className="h-10 w-10 text-[oklch(0.78_0.14_82)] animate-bounce" />
-                <span className="text-sm font-medium text-[oklch(0.78_0.14_82)]">
+                <UploadCloud className="h-10 w-10 text-[oklch(0.76_0.19_48)] animate-bounce" />
+                <span className="text-sm font-medium text-[oklch(0.76_0.19_48)]">
                   {t("admin.drop_files") || "Drop files here"}
                 </span>
               </div>
@@ -474,7 +479,7 @@ export function MediaTab() {
 
       {/* Filter bar - File type pills + Category */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.78_0.14_82/8%)]">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]">
           {FILE_TYPE_FILTERS.map((filter) => {
             const Icon = filter.icon
             return (
@@ -484,8 +489,8 @@ export function MediaTab() {
                 className={cn(
                   "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5",
                   fileTypeFilter === filter.value
-                    ? "bg-[oklch(0.78_0.14_82/15%)] text-[oklch(0.78_0.14_82)] shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.78_0.14_82/5%)]"
+                    ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/5%)]"
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -498,7 +503,7 @@ export function MediaTab() {
         <div className="flex items-center gap-2">
           <Filter className="h-3.5 w-3.5 text-muted-foreground" />
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-40 rounded-xl h-8 text-xs bg-[oklch(0.14_0.028_265/40%)] border-[oklch(0.78_0.14_82/8%)]">
+            <SelectTrigger className="w-40 rounded-xl h-8 text-xs bg-[oklch(0.14_0.028_265/40%)] border-[oklch(0.76_0.19_48/8%)]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -518,8 +523,8 @@ export function MediaTab() {
             className={cn(
               "ms-auto flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
               selectedIds.size === filteredMedia.length
-                ? "bg-[oklch(0.78_0.14_82/15%)] text-[oklch(0.78_0.14_82)]"
-                : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.78_0.14_82/5%)]"
+                ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)]"
+                : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/5%)]"
             )}
           >
             <Check className="h-3.5 w-3.5" />
@@ -539,10 +544,10 @@ export function MediaTab() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-dashed border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/20%)]"
+          className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-dashed border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/20%)]"
         >
-          <div className="w-20 h-20 rounded-full bg-[oklch(0.78_0.14_82/8%)] flex items-center justify-center mb-6">
-            <ImageIcon className="h-10 w-10 text-[oklch(0.78_0.14_82/30%)]" />
+          <div className="w-20 h-20 rounded-full bg-[oklch(0.76_0.19_48/8%)] flex items-center justify-center mb-6">
+            <ImageIcon className="h-10 w-10 text-[oklch(0.76_0.19_48/30%)]" />
           </div>
           <h3 className="text-lg font-semibold text-muted-foreground mb-2">
             {fileTypeFilter !== "all" || category !== "all"
@@ -557,7 +562,7 @@ export function MediaTab() {
           {fileTypeFilter === "all" && category === "all" && (
             <Button
               variant="outline"
-              className="mt-4 gap-2 border-[oklch(0.78_0.14_82/30%)] text-[oklch(0.78_0.14_82)] hover:bg-[oklch(0.78_0.14_82/10%)]"
+              className="mt-4 gap-2 border-[oklch(0.76_0.19_48/30%)] text-[oklch(0.76_0.19_48)] hover:bg-[oklch(0.76_0.19_48/10%)]"
               onClick={() => inputRef.current?.click()}
             >
               <Upload className="h-4 w-4" />
@@ -577,10 +582,10 @@ export function MediaTab() {
                 transition={{ delay: index * 0.03 }}
                 className={cn(
                   "group relative rounded-xl border overflow-hidden transition-all duration-200 cursor-pointer",
-                  "border-[oklch(0.78_0.14_82/8%)] bg-[oklch(0.14_0.028_265/35%)]",
-                  "hover:border-[oklch(0.78_0.14_82/20%)] hover:shadow-lg hover:shadow-[oklch(0.78_0.14_82/5%)]",
+                  "border-[oklch(0.76_0.19_48/8%)] bg-[oklch(0.14_0.028_265/35%)]",
+                  "hover:border-[oklch(0.76_0.19_48/20%)] hover:shadow-lg hover:shadow-[oklch(0.76_0.19_48/5%)]",
                   selectedIds.has(item.id) &&
-                    "ring-2 ring-[oklch(0.78_0.14_82)] border-[oklch(0.78_0.14_82/50%)]"
+                    "ring-2 ring-[oklch(0.76_0.19_48)] border-[oklch(0.76_0.19_48/50%)]"
                 )}
                 onClick={() => toggleSelect(item.id)}
               >
@@ -595,7 +600,7 @@ export function MediaTab() {
                     className={cn(
                       "h-5 w-5 rounded-md border-2 flex items-center justify-center transition-colors",
                       selectedIds.has(item.id)
-                        ? "bg-[oklch(0.78_0.14_82)] border-[oklch(0.78_0.14_82)]"
+                        ? "bg-[oklch(0.76_0.19_48)] border-[oklch(0.76_0.19_48)]"
                         : "bg-background/80 border-border"
                     )}
                   >
@@ -710,7 +715,7 @@ export function MediaTab() {
                     {item.originalName}
                   </p>
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>{item.mimeType.split("/")[1]?.toUpperCase() || "File"}</span>
+                    <span>{normalizeMimeType(item.mimeType).split("/")[1]?.toUpperCase() || "FILE"}</span>
                     <span>{formatFileSize(item.size)}</span>
                   </div>
                 </div>
@@ -722,7 +727,7 @@ export function MediaTab() {
 
       {/* ── Image Preview Lightbox ── */}
       <Dialog open={!!lightboxItem} onOpenChange={() => setLightboxItem(null)}>
-        <DialogContent className="max-w-4xl p-0 border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/98%)] dark:bg-[oklch(0.08_0.02_265/98%)] overflow-hidden rounded-2xl">
+        <DialogContent className="max-w-4xl p-0 border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/98%)] dark:bg-[oklch(0.08_0.02_265/98%)] overflow-hidden rounded-2xl">
           <DialogTitle className="sr-only">
             {t("admin.image_preview") || "Image Preview"}
           </DialogTitle>
@@ -737,7 +742,7 @@ export function MediaTab() {
                 />
               </div>
               {/* Lightbox info bar */}
-              <div className="flex items-center justify-between p-4 border-t border-[oklch(0.78_0.14_82/10%)]">
+              <div className="flex items-center justify-between p-4 border-t border-[oklch(0.76_0.19_48/10%)]">
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">
                     {lightboxItem.originalName}
@@ -758,7 +763,7 @@ export function MediaTab() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="gap-1.5 rounded-lg text-xs border-[oklch(0.78_0.14_82/20%)]"
+                    className="gap-1.5 rounded-lg text-xs border-[oklch(0.76_0.19_48/20%)]"
                     onClick={() => handleCopyUrl(lightboxItem.url)}
                   >
                     <Copy className="h-3 w-3" />
@@ -793,7 +798,7 @@ export function MediaTab() {
 
       {/* Delete single confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <AlertDialogContent className="rounded-2xl border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/95%)]">
+        <AlertDialogContent className="rounded-2xl border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/95%)]">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t("admin.delete_media") || "Delete Media"}
@@ -822,7 +827,7 @@ export function MediaTab() {
 
       {/* Delete multiple confirmation */}
       <AlertDialog open={deleteMultiple} onOpenChange={setDeleteMultiple}>
-        <AlertDialogContent className="rounded-2xl border-[oklch(0.78_0.14_82/15%)] bg-[oklch(0.14_0.028_265/95%)]">
+        <AlertDialogContent className="rounded-2xl border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/95%)]">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t("admin.delete_media_plural") || "Delete Media Files"}
