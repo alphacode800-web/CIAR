@@ -16,10 +16,10 @@ interface I18nContextType {
 }
 
 const I18nContext = createContext<I18nContextType>({
-  locale: "en",
+  locale: "ar",
   setLocale: () => {},
   t: (key: string) => key,
-  dir: "ltr",
+  dir: "rtl",
   translations: {},
   loading: true,
 })
@@ -81,7 +81,7 @@ function isPlaceholderValue(value: string): boolean {
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en")
+  const [locale, setLocaleState] = useState<Locale>("ar")
   const [translations, setTranslations] = useState<Record<string, string>>({})
   const [englishFallback, setEnglishFallback] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
@@ -105,6 +105,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const setLocale = useCallback(
     (l: Locale) => {
       setLocaleState(l)
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("ciar_locale", l)
+      }
       fetchTranslations(l)
     },
     [fetchTranslations]
@@ -157,8 +160,36 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const dir = RTL_LOCALES.includes(locale) ? "rtl" : "ltr"
 
   useEffect(() => {
-    fetchTranslations(locale).then(() => setLoading(false))
-  }, [locale, fetchTranslations])
+    const bootstrapLocale = async () => {
+      let nextLocale: Locale = "ar"
+
+      if (typeof window !== "undefined") {
+        const saved = window.localStorage.getItem("ciar_locale")
+        if (saved && ALL_LOCALES.includes(saved as Locale)) {
+          nextLocale = saved as Locale
+        } else {
+          try {
+            const res = await fetch("/api/settings")
+            if (res.ok) {
+              const data = await res.json()
+              const configured = String(data?.default_locale || "").trim().toLowerCase()
+              if (ALL_LOCALES.includes(configured as Locale)) {
+                nextLocale = configured as Locale
+              }
+            }
+          } catch {
+            // keep Arabic as hard default
+          }
+        }
+      }
+
+      setLocaleState(nextLocale)
+      await fetchTranslations(nextLocale)
+      setLoading(false)
+    }
+
+    void bootstrapLocale()
+  }, [fetchTranslations])
 
   useEffect(() => {
     const bootstrapEnglishFallback = async () => {
