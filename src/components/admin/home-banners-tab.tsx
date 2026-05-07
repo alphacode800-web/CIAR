@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Clapperboard, Loader2, Save } from "lucide-react"
+import { useEffect, useState, type ChangeEvent } from "react"
+import { Clapperboard, Loader2, Save, Pencil, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 type FormState = {
   nav: {
@@ -70,6 +71,10 @@ export function HomeBannersTab() {
   const [state, setState] = useState<FormState>(DEFAULT_STATE)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingField, setUploadingField] = useState<string | null>(null)
+  const [editingSlideIndex, setEditingSlideIndex] = useState<number | null>(null)
+  const [slideDraftUrl, setSlideDraftUrl] = useState("")
+  const [slideDraftSource, setSlideDraftSource] = useState<"link" | "upload">("link")
   const tickerItems = state.newsTickerItemsText
     .split("\n")
     .map((item) => item.trim())
@@ -124,6 +129,37 @@ export function HomeBannersTab() {
     }
     void load()
   }, [])
+
+  const uploadMediaFile = async (file: File) => {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("category", "hero")
+    const res = await fetch("/api/media", { method: "POST", body: formData })
+    if (!res.ok) throw new Error("upload failed")
+    const result = await res.json()
+    return String(result?.url || "")
+  }
+
+  const uploadIntoField = async (
+    event: ChangeEvent<HTMLInputElement>,
+    fieldId: string,
+    updater: (url: string) => void
+  ) => {
+    const file = event.target.files?.[0]
+    event.currentTarget.value = ""
+    if (!file) return
+    setUploadingField(fieldId)
+    try {
+      const url = await uploadMediaFile(file)
+      if (!url) throw new Error("empty url")
+      updater(url)
+      toast.success("تم رفع الملف بنجاح")
+    } catch {
+      toast.error("فشل رفع الملف")
+    } finally {
+      setUploadingField(null)
+    }
+  }
 
   const save = async () => {
     const tickerItems = state.newsTickerItemsText
@@ -265,6 +301,20 @@ export function HomeBannersTab() {
               value={state.nav.logoUrl}
               onChange={(e) => setState((prev) => ({ ...prev, nav: { ...prev.nav, logoUrl: e.target.value } }))}
             />
+            <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) =>
+                  uploadIntoField(e, "nav.logoUrl", (url) =>
+                    setState((prev) => ({ ...prev, nav: { ...prev.nav, logoUrl: url } }))
+                  )
+                }
+              />
+              {uploadingField === "nav.logoUrl" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              رفع صورة
+            </label>
           </div>
           <div className="space-y-1">
             <Label>رابط فيديو اللوجو</Label>
@@ -274,6 +324,20 @@ export function HomeBannersTab() {
                 setState((prev) => ({ ...prev, nav: { ...prev.nav, logoVideoUrl: e.target.value } }))
               }
             />
+            <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <input
+                type="file"
+                className="hidden"
+                accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v"
+                onChange={(e) =>
+                  uploadIntoField(e, "nav.logoVideoUrl", (url) =>
+                    setState((prev) => ({ ...prev, nav: { ...prev.nav, logoVideoUrl: url } }))
+                  )
+                }
+              />
+              {uploadingField === "nav.logoVideoUrl" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              رفع فيديو
+            </label>
           </div>
           <div className="space-y-1">
             <Label>Alt عربي</Label>
@@ -387,6 +451,20 @@ export function HomeBannersTab() {
               value={state.hero.videoUrl}
               onChange={(e) => setState((prev) => ({ ...prev, hero: { ...prev.hero, videoUrl: e.target.value } }))}
             />
+            <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <input
+                type="file"
+                className="hidden"
+                accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v"
+                onChange={(e) =>
+                  uploadIntoField(e, "hero.videoUrl", (url) =>
+                    setState((prev) => ({ ...prev, hero: { ...prev.hero, videoUrl: url } }))
+                  )
+                }
+              />
+              {uploadingField === "hero.videoUrl" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              رفع فيديو
+            </label>
           </div>
           <div className="space-y-1 md:col-span-2">
             <Label>Poster للفيديو (اختياري)</Label>
@@ -396,41 +474,56 @@ export function HomeBannersTab() {
                 setState((prev) => ({ ...prev, hero: { ...prev.hero, videoPoster: e.target.value } }))
               }
             />
+            <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) =>
+                  uploadIntoField(e, "hero.videoPoster", (url) =>
+                    setState((prev) => ({ ...prev, hero: { ...prev.hero, videoPoster: url } }))
+                  )
+                }
+              />
+              {uploadingField === "hero.videoPoster" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              رفع صورة
+            </label>
           </div>
         </div>
       </section>
 
       <section className="space-y-4 rounded-xl border border-border/40 bg-card/30 p-4">
         <h3 className="text-sm font-semibold">صور Hero (20 صورة)</h3>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {state.hero.imageSlides.map((item, index) => (
-            <Input
-              key={`hero-slide-${index + 1}`}
-              value={item}
-              onChange={(e) =>
-                setState((prev) => {
-                  const next = [...prev.hero.imageSlides]
-                  next[index] = e.target.value
-                  return { ...prev, hero: { ...prev.hero, imageSlides: next } }
-                })
-              }
-              placeholder={`Hero image ${index + 1}`}
-            />
-          ))}
-        </div>
+        <p className="text-xs text-muted-foreground">كل بنر يدعم صورة أو فيديو، والتعديل يتم عبر رابط مباشر أو رفع من الهاتف/الجهاز.</p>
         {configuredHeroSlides.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border/50 bg-background/40 p-4 text-center text-sm text-muted-foreground">
             لا توجد بنرات Hero مضبوطة حاليًا. أضف روابط الصور أعلاه ثم احفظ.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {configuredHeroSlides.map((slide) => (
-              <div key={`hero-preview-${slide.index}`} className="rounded-lg border border-border/40 bg-background/40 p-2">
-                <p className="mb-1 text-[11px] text-muted-foreground">Banner {slide.index}</p>
+              <div key={`hero-preview-${slide.index}`} className="rounded-lg border border-border/40 bg-background/40 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-[11px] text-muted-foreground">Banner {slide.index}</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => {
+                      setEditingSlideIndex(slide.index - 1)
+                      setSlideDraftUrl(slide.url)
+                      setSlideDraftSource("link")
+                    }}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    تعديل
+                  </Button>
+                </div>
                 {isVideoUrl(slide.url) ? (
-                  <video src={slide.url} className="h-20 w-full rounded object-cover" controls muted playsInline />
+                  <video src={slide.url} className="h-44 w-full rounded object-cover" controls muted playsInline />
                 ) : (
-                  <img src={slide.url} alt={`hero-${slide.index}`} className="h-20 w-full rounded object-cover" />
+                  <img src={slide.url} alt={`hero-${slide.index}`} className="h-44 w-full rounded object-cover" />
                 )}
               </div>
             ))}
@@ -454,6 +547,69 @@ export function HomeBannersTab() {
           حفظ كل بنرات الصفحة الرئيسية
         </Button>
       </div>
+
+      <Dialog open={editingSlideIndex !== null} onOpenChange={(open) => !open && setEditingSlideIndex(null)}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>تعديل بنر Hero</DialogTitle>
+            <DialogDescription>اختر التعديل عبر رابط أو رفع ملف صورة/فيديو من الجهاز.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Button type="button" size="sm" variant={slideDraftSource === "link" ? "default" : "outline"} onClick={() => setSlideDraftSource("link")}>
+                رابط
+              </Button>
+              <Button type="button" size="sm" variant={slideDraftSource === "upload" ? "default" : "outline"} onClick={() => setSlideDraftSource("upload")}>
+                رفع من الهاتف/الجهاز
+              </Button>
+            </div>
+            {slideDraftSource === "link" ? (
+              <Input value={slideDraftUrl} onChange={(e) => setSlideDraftUrl(e.target.value)} placeholder="https://example.com/banner.mp4 أو .jpg" />
+            ) : (
+              <label className="flex h-24 cursor-pointer items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 text-xs text-muted-foreground hover:border-primary/50">
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v"
+                  onChange={(e) =>
+                    uploadIntoField(e, "hero.slide", (url) => {
+                      setSlideDraftUrl(url)
+                    })
+                  }
+                />
+                {uploadingField === "hero.slide" ? (
+                  <span className="inline-flex items-center gap-1.5"><Loader2 className="h-4 w-4 animate-spin" /> جاري الرفع...</span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5"><Upload className="h-4 w-4" /> اختر ملف</span>
+                )}
+              </label>
+            )}
+            {slideDraftUrl ? (
+              isVideoUrl(slideDraftUrl) ? (
+                <video src={slideDraftUrl} className="h-44 w-full rounded-md object-cover" controls muted playsInline />
+              ) : (
+                <img src={slideDraftUrl} alt="slide-preview" className="h-44 w-full rounded-md object-cover" />
+              )
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingSlideIndex(null)}>إلغاء</Button>
+            <Button
+              onClick={() => {
+                if (editingSlideIndex === null) return
+                setState((prev) => {
+                  const next = [...prev.hero.imageSlides]
+                  next[editingSlideIndex] = slideDraftUrl.trim()
+                  return { ...prev, hero: { ...prev.hero, imageSlides: next } }
+                })
+                setEditingSlideIndex(null)
+              }}
+            >
+              حفظ التعديل
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

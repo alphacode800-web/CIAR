@@ -12,9 +12,15 @@ const ACCEPTED_MIME_TYPES = [
   'image/gif',
   'image/webp',
   'image/svg+xml',
+  'video/mp4',
+  'video/webm',
+  'video/ogg',
+  'video/quicktime',
+  'video/x-m4v',
 ]
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
 
 const VALID_CATEGORIES = ['hero', 'project', 'about', 'general']
 
@@ -60,10 +66,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const isVideo = file.type.startsWith('video/')
+    const maxAllowedSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE
+
     // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > maxAllowedSize) {
       return NextResponse.json(
-        { error: 'File too large. Maximum 5MB' },
+        { error: `File too large. Maximum ${isVideo ? '50MB' : '5MB'}` },
         { status: 400 },
       )
     }

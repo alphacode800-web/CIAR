@@ -105,9 +105,15 @@ const ACCEPTED_TYPES = [
   "image/gif",
   "image/webp",
   "image/svg+xml",
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/quicktime",
+  "video/x-m4v",
 ]
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
 
 const FILE_TYPE_FILTERS = [
   { value: "all", label: "All Files", icon: HardDrive },
@@ -193,14 +199,15 @@ export function MediaTab() {
       const fileArray = Array.from(files)
       const validFiles = fileArray.filter((f) => {
         if (!ACCEPTED_TYPES.includes(f.type)) return false
-        if (f.size > MAX_FILE_SIZE) return false
+        const maxAllowed = f.type.startsWith("video/") ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE
+        if (f.size > maxAllowed) return false
         return true
       })
 
       if (validFiles.length === 0) {
         toast.error(
           t("admin.upload_invalid_type") ||
-            "Invalid files. Use JPEG, PNG, GIF, WebP, SVG. Max 5MB."
+            "Invalid files. Use images/videos. Max 5MB for images, 50MB for videos."
         )
         return
       }
@@ -429,7 +436,7 @@ export function MediaTab() {
                   : (t("admin.drag_drop_upload") || "Drag & drop files here, or click to browse")}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {t("admin.upload_hint_media") || "JPEG, PNG, GIF, WebP, SVG — Max 5MB each"}
+                {t("admin.upload_hint_media") || "JPEG, PNG, GIF, WebP, SVG, MP4, WEBM, OGG, MOV, M4V — Max 5MB images / 50MB videos"}
               </p>
             </div>
             <input

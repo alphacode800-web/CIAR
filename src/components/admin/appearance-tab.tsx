@@ -142,6 +142,7 @@ const DEFAULTS: Record<string, string> = {
   theme_secondary_color: "#1a2744",
   theme_accent_color: "#c9a227",
   theme_background_color: "#0a0f1e",
+  theme_background_color_dark: "#0a0f1e",
   theme_heading_font: "Geist Sans",
   theme_body_font: "Geist Sans",
   theme_base_font_size: "16",
@@ -181,7 +182,11 @@ export function AppearanceTab() {
   const get = (key: string) => settings[key] || DEFAULTS[key] || ""
 
   const updateSetting = (key: string, value: string) => {
-    setSettings((prev) => ({ ...prev, [key]: value }))
+    setSettings((prev) => {
+      const next = { ...prev, [key]: value }
+      applyThemeSettings(next)
+      return next
+    })
   }
 
   const handleSave = async () => {
@@ -214,6 +219,7 @@ export function AppearanceTab() {
   const secondaryColor = get("theme_secondary_color")
   const accentColor = get("theme_accent_color")
   const bgColor = get("theme_background_color")
+  const bgColorDark = get("theme_background_color_dark")
   const borderRadius = parseInt(get("theme_border_radius")) || 12
   const cardPadding = parseInt(get("theme_card_padding")) || 20
   const blurIntensity = parseInt(get("theme_blur_intensity")) || 12
@@ -309,9 +315,14 @@ export function AppearanceTab() {
               onChange={(v) => updateSetting("theme_accent_color", v)}
             />
             <ColorInput
-              label={t("admin.background_color") || "Background Color"}
+              label={t("admin.background_color") || "Background (Light)"}
               value={bgColor}
               onChange={(v) => updateSetting("theme_background_color", v)}
+            />
+            <ColorInput
+              label={t("admin.background_color_dark") || "Background (Dark)"}
+              value={bgColorDark}
+              onChange={(v) => updateSetting("theme_background_color_dark", v)}
             />
           </div>
 
@@ -389,10 +400,28 @@ export function AppearanceTab() {
               label={t("admin.base_font_size") || "Base Font Size"}
               value={parseInt(get("theme_base_font_size")) || 16}
               onChange={(v) => updateSetting("theme_base_font_size", String(v))}
-              min={14}
-              max={18}
+              min={12}
+              max={22}
               icon={<Type className="h-3.5 w-3.5 text-muted-foreground" />}
             />
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: t("admin.font_small") || "Small", value: "14" },
+                { label: t("admin.font_medium") || "Medium", value: "16" },
+                { label: t("admin.font_large") || "Large", value: "18" },
+                { label: t("admin.font_xlarge") || "XL", value: "20" },
+              ].map((preset) => (
+                <Button
+                  key={preset.value}
+                  type="button"
+                  size="sm"
+                  variant={get("theme_base_font_size") === preset.value ? "default" : "outline"}
+                  onClick={() => updateSetting("theme_base_font_size", preset.value)}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </div>
           </div>
 
           {/* Font preview */}

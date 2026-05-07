@@ -26,6 +26,7 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
+  const [registerMethod, setRegisterMethod] = useState<"phone" | "email" | "both">("phone")
 
   const isLogin = mode === "login"
 
@@ -39,12 +40,14 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
         if (!success) toast.error(t("auth.login_failed") || "Invalid credentials")
       } else {
         if (!name.trim()) { toast.error(t("auth.name_required") || "Name is required"); setLoading(false); return }
-        if (!email.trim() && !phone.trim()) {
+        const finalEmail = registerMethod === "phone" ? "" : email.trim()
+        const finalPhone = registerMethod === "email" ? "" : phone.trim()
+        if (!finalEmail && !finalPhone) {
           toast.error(t("auth.contact_required") || "Email or phone is required")
           setLoading(false)
           return
         }
-        success = await register(name, password, email || undefined, phone || undefined)
+        success = await register(name, password, finalEmail || undefined, finalPhone || undefined)
         if (!success) toast.error(t("auth.register_failed") || "Registration failed")
       }
       if (success) {
@@ -111,17 +114,43 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
             ) : (
               <>
                 <div className="space-y-2">
+                  <Label>{t("auth.register_method") || "Registration Method"}</Label>
+                  <div className="rounded-xl border border-border/60 bg-muted/30 p-1 grid grid-cols-3 gap-1">
+                    <button type="button" onClick={() => setRegisterMethod("phone")} className={`rounded-lg py-1.5 text-xs ${registerMethod === "phone" ? "bg-background text-foreground" : "text-muted-foreground"}`}>
+                      {t("auth.phone") || "Phone"}
+                    </button>
+                    <button type="button" onClick={() => setRegisterMethod("email")} className={`rounded-lg py-1.5 text-xs ${registerMethod === "email" ? "bg-background text-foreground" : "text-muted-foreground"}`}>
+                      {t("auth.email") || "Email"}
+                    </button>
+                    <button type="button" onClick={() => setRegisterMethod("both")} className={`rounded-lg py-1.5 text-xs ${registerMethod === "both" ? "bg-background text-foreground" : "text-muted-foreground"}`}>
+                      {t("auth.both") || "Both"}
+                    </button>
+                  </div>
+                </div>
+                {registerMethod !== "phone" ? (
+                <div className="space-y-2">
                   <Label>{t("auth.email") || "Email"}</Label>
                   <div className="relative">
                     <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                     <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="ps-10 rounded-xl" />
                   </div>
                 </div>
+                ) : null}
+                {registerMethod !== "email" ? (
                 <div className="space-y-2">
                   <Label>{t("auth.phone") || "Phone Number"}</Label>
                   <div className="relative">
                     <Phone className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                     <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+9665..." className="ps-10 rounded-xl" />
+                  </div>
+                </div>
+                ) : null}
+                <div className="space-y-2">
+                  <Label>{t("auth.social_register") || "Social Registration"}</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <a href="https://facebook.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-2 py-1.5 text-[11px] text-center hover:bg-muted/30">Facebook</a>
+                    <a href="https://accounts.google.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-2 py-1.5 text-[11px] text-center hover:bg-muted/30">Google</a>
+                    <a href="https://appleid.apple.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-2 py-1.5 text-[11px] text-center hover:bg-muted/30">Apple</a>
                   </div>
                 </div>
               </>

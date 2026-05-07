@@ -280,6 +280,9 @@ export function ProjectsTab() {
     projectData: Record<string, unknown>,
     translations: Record<string, { name: string; tagline: string; description: string }>
   ) => {
+    const shouldUseLocalFallback = (status: number, idOrSlug?: string) =>
+      status >= 500 || Boolean(idOrSlug && idOrSlug.startsWith("ciar-"))
+
     const fallbackTranslations = Object.entries(translations).map(([locale, tr]) => ({
       locale,
       name: tr.name,
@@ -296,7 +299,7 @@ export function ProjectsTab() {
         })
         if (!updateRes.ok) {
           // DB may be unavailable; keep admin UX usable for CIAR fallback rows.
-          if (editProject.id.startsWith("ciar-")) {
+          if (shouldUseLocalFallback(updateRes.status, editProject.id)) {
             setProjects((prev) =>
               {
                 const next = prev.map((project) =>
@@ -338,7 +341,7 @@ export function ProjectsTab() {
             body: JSON.stringify({ locale: loc, ...tr }),
           })
           if (!translationRes.ok) {
-            if (editProject.id.startsWith("ciar-")) {
+            if (shouldUseLocalFallback(translationRes.status, editProject.id)) {
               setProjects((prev) =>
                 {
                   const next = prev.map((project) =>
@@ -392,7 +395,7 @@ export function ProjectsTab() {
           toast.success(t("admin.project_created") || "Project created")
         } else {
           const fallbackSlug = String(projectData.slug || "").trim()
-          if (fallbackSlug.startsWith("ciar-")) {
+          if (shouldUseLocalFallback(res.status, fallbackSlug)) {
             const fallbackProject: Project = {
               id: fallbackSlug,
               slug: fallbackSlug,

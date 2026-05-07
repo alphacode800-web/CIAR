@@ -5,6 +5,7 @@ const DEFAULTS: ThemeSettingsMap = {
   theme_secondary_color: "#1a2744",
   theme_accent_color: "#c9a227",
   theme_background_color: "#f8fbff",
+  theme_background_color_dark: "#0a0f1e",
   theme_base_font_size: "16",
   theme_border_radius: "12",
   theme_blur_intensity: "12",
@@ -35,7 +36,8 @@ export function applyThemeSettings(settings: ThemeSettingsMap) {
   const primary = get("theme_primary_color")
   const secondary = get("theme_secondary_color")
   const accent = get("theme_accent_color")
-  const background = get("theme_background_color")
+  const backgroundLight = get("theme_background_color")
+  const backgroundDark = get("theme_background_color_dark")
   const baseFont = clampInt(get("theme_base_font_size"), 12, 22, 16)
   const radius = clampInt(get("theme_border_radius"), 0, 32, 12)
   const blur = clampInt(get("theme_blur_intensity"), 0, 32, 12)
@@ -48,11 +50,13 @@ export function applyThemeSettings(settings: ThemeSettingsMap) {
   root.style.setProperty("--chart-1", primary)
   root.style.setProperty("--secondary", secondary)
   root.style.setProperty("--accent", accent)
-  root.style.setProperty("--background", background)
+  root.style.setProperty("--theme-background-light", backgroundLight)
+  root.style.setProperty("--theme-background-dark", backgroundDark || DEFAULTS.theme_background_color_dark)
   root.style.setProperty("--radius", `${radius / 16}rem`)
   root.style.setProperty("--theme-blur-intensity", `${blur}px`)
   root.style.setProperty("--theme-heading-font", headingFont)
   root.style.setProperty("--theme-body-font", bodyFont)
+  root.style.setProperty("--theme-body-font-rtl", bodyFont)
   root.style.fontSize = `${baseFont}px`
   body.style.fontFamily = bodyFont
 

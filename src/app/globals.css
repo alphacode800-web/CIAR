@@ -60,7 +60,9 @@
   --theme-heading-font: var(--font-aref-ruqaa-ink), var(--font-changa), serif;
   --theme-body-font: var(--font-geist-sans), system-ui, sans-serif;
   --radius: 0.75rem;
-  --background: oklch(0.98 0.002 260);
+  --theme-background-light: oklch(0.98 0.002 260);
+  --theme-background-dark: oklch(0.10 0.025 265);
+  --background: var(--theme-background-light);
   --foreground: oklch(0.13 0.02 265);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.13 0.02 265);
@@ -96,7 +98,7 @@
 /* ─── Dark Mode — Deep navy blue with rich gold luxury ─── */
 
 .dark {
-  --background: oklch(0.10 0.025 265);
+  --background: var(--theme-background-dark);
   --foreground: oklch(0.94 0.008 85);
   --card: oklch(0.14 0.028 265);
   --card-foreground: oklch(0.94 0.008 85);
@@ -145,7 +147,7 @@
   /* Use Changa font for Arabic (RTL) content */
   [dir="rtl"] body,
   [dir="rtl"] {
-    font-family: var(--font-changa), var(--font-geist-sans), system-ui, sans-serif;
+    font-family: var(--theme-body-font-rtl, var(--theme-body-font));
   }
 }
 

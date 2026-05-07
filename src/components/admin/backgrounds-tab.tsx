@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { Image as ImageIcon, Save, Loader2, Search, Wand2 } from "lucide-react"
+import { useEffect, useMemo, useState, type ChangeEvent } from "react"
+import { Image as ImageIcon, Save, Loader2, Search, Wand2, Pencil, Upload } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -73,7 +73,9 @@ export function BackgroundsTab() {
   const [query, setQuery] = useState("")
   const [selectedImage, setSelectedImage] = useState<ConfiguredMedia | null>(null)
   const [selectedImageUrl, setSelectedImageUrl] = useState("")
+  const [selectedImageSource, setSelectedImageSource] = useState<"link" | "upload">("link")
   const [savingImageDetails, setSavingImageDetails] = useState(false)
+  const [uploadingImageDetails, setUploadingImageDetails] = useState(false)
   const [brokenPreviews, setBrokenPreviews] = useState<Record<string, boolean>>({})
   const [platformBanners, setPlatformBanners] = useState<BannerRow[]>([])
 
@@ -259,6 +261,37 @@ export function BackgroundsTab() {
   const openImageDialog = (image: ConfiguredMedia) => {
     setSelectedImage(image)
     setSelectedImageUrl(image.value)
+    setSelectedImageSource("link")
+  }
+
+  const uploadMediaFile = async (file: File) => {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("category", "hero")
+    const res = await fetch("/api/media", {
+      method: "POST",
+      body: formData,
+    })
+    if (!res.ok) throw new Error("upload failed")
+    const result = await res.json()
+    return String(result?.url || "")
+  }
+
+  const handleDialogFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.currentTarget.value = ""
+    if (!file) return
+    setUploadingImageDetails(true)
+    try {
+      const uploadedUrl = await uploadMediaFile(file)
+      if (!uploadedUrl) throw new Error("empty upload url")
+      setSelectedImageUrl(uploadedUrl)
+      toast.success("تم رفع الملف بنجاح")
+    } catch {
+      toast.error("فشل رفع الملف")
+    } finally {
+      setUploadingImageDetails(false)
+    }
   }
 
   const saveImageDetails = async () => {
@@ -493,13 +526,24 @@ export function BackgroundsTab() {
                 <p className="mb-2 text-xs text-muted-foreground">
                   {(banner.titleAr || banner.titleEn || banner.moduleId || banner.id).trim()}
                 </p>
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
                   {(["imageUrl1", "imageUrl2", "imageUrl3"] as const).map((field) => {
                     const value = String(banner[field] || "")
                     const fieldKey = `${banner.id}:${field}`
                     return (
-                      <div key={fieldKey} className="space-y-2 rounded-md border border-border/40 p-2">
+                      <div key={fieldKey} className="space-y-2 rounded-lg border border-border/40 p-3">
                         <Label className="text-[11px] text-muted-foreground">{field}</Label>
+                        {value ? (
+                          isLikelyVideo(value) ? (
+                            <video src={value} className="h-44 w-full rounded-md object-cover" controls muted playsInline />
+                          ) : (
+                            <img src={value} className="h-44 w-full rounded-md object-cover" alt={fieldKey} />
+                          )
+                        ) : (
+                          <div className="flex h-44 items-center justify-center rounded-md border border-dashed border-border/50 text-xs text-muted-foreground">
+                            لا يوجد محتوى
+                          </div>
+                        )}
                         <Input
                           value={value}
                           onChange={(e) =>
@@ -511,26 +555,39 @@ export function BackgroundsTab() {
                           }
                           placeholder="https://example.com/banner-image.jpg"
                         />
-                        {value ? (
-                          isLikelyVideo(value) ? (
-                            <video src={value} className="h-20 w-full rounded object-cover" controls muted playsInline />
-                          ) : (
-                            <img src={value} className="h-20 w-full rounded object-cover" alt={fieldKey} />
-                          )
-                        ) : null}
-                        <Button
-                          size="sm"
-                          onClick={() => savePlatformBannerField(banner.id, field, value)}
-                          disabled={savingBannerKey === fieldKey}
-                          className="w-full gap-2"
-                        >
-                          {savingBannerKey === fieldKey ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Save className="h-3.5 w-3.5" />
-                          )}
-                          حفظ
-                        </Button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5"
+                            onClick={() =>
+                              openImageDialog({
+                                key: fieldKey,
+                                value,
+                                sourceType: "platform-banner",
+                                bannerId: banner.id,
+                                bannerField: field,
+                              })
+                            }
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            تعديل
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => savePlatformBannerField(banner.id, field, value)}
+                            disabled={savingBannerKey === fieldKey}
+                            className="gap-2"
+                          >
+                            {savingBannerKey === fieldKey ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Save className="h-3.5 w-3.5" />
+                            )}
+                            حفظ
+                          </Button>
+                        </div>
                       </div>
                     )
                   })}
@@ -638,6 +695,7 @@ export function BackgroundsTab() {
           if (!open) {
             setSelectedImage(null)
             setSelectedImageUrl("")
+            setSelectedImageSource("link")
           }
         }}
       >
@@ -674,9 +732,61 @@ export function BackgroundsTab() {
               </div>
 
               <div className="space-y-1">
-                <Label>رابط الصورة</Label>
-                <Input value={selectedImageUrl} onChange={(e) => setSelectedImageUrl(e.target.value)} />
+                <Label>طريقة التعديل</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={selectedImageSource === "link" ? "default" : "outline"}
+                    onClick={() => setSelectedImageSource("link")}
+                  >
+                    رابط
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={selectedImageSource === "upload" ? "default" : "outline"}
+                    onClick={() => setSelectedImageSource("upload")}
+                  >
+                    رفع من الهاتف/الجهاز
+                  </Button>
+                </div>
               </div>
+
+              {selectedImageSource === "link" ? (
+                <div className="space-y-1">
+                  <Label>رابط الصورة/الفيديو</Label>
+                  <Input value={selectedImageUrl} onChange={(e) => setSelectedImageUrl(e.target.value)} />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label>رفع صورة أو فيديو</Label>
+                  <label className="flex h-24 cursor-pointer items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 text-xs text-muted-foreground transition hover:border-[oklch(0.76_0.19_48/45%)]">
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v"
+                      onChange={handleDialogFileUpload}
+                    />
+                    {uploadingImageDetails ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        جاري الرفع...
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Upload className="h-4 w-4" />
+                        اختر ملف من الجهاز
+                      </span>
+                    )}
+                  </label>
+                  {selectedImageUrl ? (
+                    <p className="truncate rounded-md border border-border bg-muted/30 px-2 py-1 text-[11px] text-muted-foreground">
+                      {selectedImageUrl}
+                    </p>
+                  ) : null}
+                </div>
+              )}
             </div>
           ) : null}
 

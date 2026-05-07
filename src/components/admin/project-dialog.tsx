@@ -43,6 +43,13 @@ interface TranslationFields {
   description: string
 }
 
+const normalizeWebsiteUrl = (value: string) => {
+  const raw = String(value || "").trim()
+  if (!raw) return ""
+  if (/^https?:\/\//i.test(raw)) return raw
+  return `https://${raw}`
+}
+
 /**
  * ProjectDialog accepts a `key` prop from its parent so that React remounts
  * the component each time the dialog opens. This avoids the need for a
@@ -181,7 +188,7 @@ export function ProjectDialog({
         imageUrls: normalizedImageUrls.map((item) => item.trim()).filter(Boolean).slice(0, 5),
         imageUrl: normalizedImageUrls.map((item) => item.trim()).find(Boolean) || "",
         category: form.category,
-        externalUrl: form.externalUrl,
+        externalUrl: normalizeWebsiteUrl(form.externalUrl),
         tags: form.tags,
         featured: form.featured,
         published: form.published,
@@ -222,13 +229,18 @@ export function ProjectDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("admin.project_external_url") || "External URL"}</Label>
+              <Label>
+                {t("admin.project_website_url") || t("admin.project_external_url") || "Website URL"}
+              </Label>
               <Input
                 value={form.externalUrl}
                 onChange={(e) => updateForm("externalUrl", e.target.value)}
-                placeholder="https://example.com"
+                placeholder="https://your-domain.com"
                 className="rounded-xl"
               />
+              <p className="text-[11px] text-muted-foreground">
+                {t("admin.project_website_url_hint") || "ادخل رابط موقع المنصة (سيتم إضافة https:// تلقائياً عند الحاجة)."}
+              </p>
             </div>
             <div className="space-y-2">
               <Label>{t("admin.project_tags") || "Tags (JSON)"}</Label>

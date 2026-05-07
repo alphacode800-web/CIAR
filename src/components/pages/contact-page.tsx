@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
-import { Mail, Phone, MapPin, Clock, Send } from "lucide-react"
+import { Mail, Phone, MapPin, Clock, Send, MessageCircle, SendHorizontal, Facebook, Instagram, Linkedin, Youtube, Music2, Ghost } from "lucide-react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -110,6 +110,42 @@ export function ContactPage() {
     message: "",
   })
   const [errors, setErrors] = useState<FieldErrors>({})
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>({
+    whatsapp: "",
+    telegram: "",
+    facebook: "",
+    instagram: "",
+    linkedin: "",
+    youtube: "",
+    twitter: "",
+    tiktok: "",
+    snapchat: "",
+  })
+
+  useEffect(() => {
+    const loadSocial = async () => {
+      try {
+        const res = await fetch("/api/settings")
+        if (!res.ok) return
+        const data = await res.json()
+        const mapped = {
+          whatsapp: String(data?.social_whatsapp || ""),
+          telegram: String(data?.social_telegram || ""),
+          facebook: String(data?.social_facebook || ""),
+          instagram: String(data?.social_instagram || ""),
+          linkedin: String(data?.social_linkedin || ""),
+          youtube: String(data?.social_youtube || ""),
+          twitter: String(data?.social_twitter || ""),
+          tiktok: String(data?.social_tiktok || ""),
+          snapchat: String(data?.social_snapchat || ""),
+        }
+        setSocialLinks(mapped)
+      } catch {
+        // keep defaults
+      }
+    }
+    void loadSocial()
+  }, [])
 
   const updateField = (field: keyof ContactForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -167,6 +203,37 @@ export function ContactPage() {
       "transition-all duration-200",
       errors[field] && "border-destructive focus:ring-destructive/30 focus:border-destructive/50"
     )
+
+  const buildContactText = () => {
+    const lines = [
+      `${locale === "ar" ? "الاسم" : "Name"}: ${form.name || "-"}`,
+      `${locale === "ar" ? "الموضوع" : "Subject"}: ${form.subject || "-"}`,
+      `${locale === "ar" ? "الرسالة" : "Message"}: ${form.message || "-"}`,
+      `${locale === "ar" ? "الهاتف" : "Phone"}: ${form.phone || "-"}`,
+      `${locale === "ar" ? "البريد" : "Email"}: ${form.email || "-"}`,
+    ]
+    return encodeURIComponent(lines.join("\n"))
+  }
+
+  const whatsappHref = (() => {
+    const base = socialLinks.whatsapp.replace(/[^\d]/g, "")
+    if (!base) return ""
+    return `https://wa.me/${base}?text=${buildContactText()}`
+  })()
+
+  const telegramHref = socialLinks.telegram
+    ? `https://t.me/share/url?url=${encodeURIComponent("https://ciar.sa/contact")}&text=${buildContactText()}`
+    : ""
+
+  const socialItems = [
+    { key: "facebook", label: "Facebook", href: socialLinks.facebook, icon: Facebook },
+    { key: "instagram", label: "Instagram", href: socialLinks.instagram, icon: Instagram },
+    { key: "linkedin", label: "LinkedIn", href: socialLinks.linkedin, icon: Linkedin },
+    { key: "youtube", label: "YouTube", href: socialLinks.youtube, icon: Youtube },
+    { key: "twitter", label: "X / Twitter", href: socialLinks.twitter, icon: SendHorizontal },
+    { key: "tiktok", label: "TikTok", href: socialLinks.tiktok, icon: Music2 },
+    { key: "snapchat", label: "Snapchat", href: socialLinks.snapchat, icon: Ghost },
+  ].filter((item) => item.href)
 
   return (
     <div dir={dir} className="relative overflow-hidden">
@@ -263,6 +330,46 @@ export function ContactPage() {
                   </span>
                 </div>
               </InfoCard>
+
+              <div className="rounded-2xl border border-border/50 glass-subtle p-5 space-y-3">
+                <p className="text-sm font-medium text-foreground">{locale === "ar" ? "إرسال سريع عبر التطبيقات" : "Quick messaging apps"}</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {whatsappHref ? (
+                    <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-background/40 px-3 py-2 text-sm hover:bg-muted/30">
+                      <MessageCircle className="h-4 w-4" />
+                      {locale === "ar" ? "إرسال عبر واتساب" : "Send via WhatsApp"}
+                    </a>
+                  ) : null}
+                  {telegramHref ? (
+                    <a href={telegramHref} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-background/40 px-3 py-2 text-sm hover:bg-muted/30">
+                      <SendHorizontal className="h-4 w-4" />
+                      {locale === "ar" ? "إرسال عبر تلجرام" : "Send via Telegram"}
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border/50 glass-subtle p-5 space-y-3">
+                <p className="text-sm font-medium text-foreground">{locale === "ar" ? "كل مواقع التواصل" : "All social platforms"}</p>
+                {socialItems.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">{locale === "ar" ? "لم يتم إضافة روابط المنصات بعد من الإعدادات." : "No social links configured yet."}</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2">
+                    {socialItems.map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <a key={item.key} href={item.href} target="_blank" rel="noreferrer" className="inline-flex items-center justify-between rounded-xl border border-border/60 bg-background/40 px-3 py-2 text-sm hover:bg-muted/30">
+                          <span className="inline-flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            {item.label}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{locale === "ar" ? "فتح" : "Open"}</span>
+                        </a>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </AnimatedSection>
 

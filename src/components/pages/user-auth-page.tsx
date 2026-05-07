@@ -20,6 +20,7 @@ export function UserAuthPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [registerMethod, setRegisterMethod] = useState<"phone" | "email" | "both">("phone")
 
   const isLogin = mode === "login"
 
@@ -35,11 +36,13 @@ export function UserAuthPage() {
           return
         }
       } else {
-        if (!email.trim() && !phone.trim()) {
+        const finalEmail = registerMethod === "phone" ? "" : email.trim()
+        const finalPhone = registerMethod === "email" ? "" : phone.trim()
+        if (!finalEmail && !finalPhone) {
           setError(locale === "ar" ? "أدخل البريد أو رقم الهاتف" : "Provide email or phone number")
           return
         }
-        const ok = await register(name, password, email || undefined, phone || undefined)
+        const ok = await register(name, password, finalEmail || undefined, finalPhone || undefined)
         if (!ok) {
           setError(locale === "ar" ? "فشل إنشاء الحساب" : "Registration failed")
           return
@@ -152,6 +155,35 @@ export function UserAuthPage() {
         ) : (
           <div className="grid grid-cols-1 gap-3">
             <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {locale === "ar" ? "طريقة التسجيل" : "Registration method"}
+              </label>
+              <div className="rounded-xl border border-border/60 bg-muted/30 p-1 grid grid-cols-3 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setRegisterMethod("phone")}
+                  className={`rounded-lg py-1.5 text-xs transition-colors ${registerMethod === "phone" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {locale === "ar" ? "الهاتف" : "Phone"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRegisterMethod("email")}
+                  className={`rounded-lg py-1.5 text-xs transition-colors ${registerMethod === "email" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {locale === "ar" ? "البريد" : "Email"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRegisterMethod("both")}
+                  className={`rounded-lg py-1.5 text-xs transition-colors ${registerMethod === "both" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {locale === "ar" ? "كلاهما" : "Both"}
+                </button>
+              </div>
+            </div>
+            {registerMethod !== "phone" ? (
+            <div className="space-y-2">
               <label htmlFor="user-email" className="text-sm font-medium">
                 {locale === "ar" ? "البريد الإلكتروني (اختياري)" : "Email (optional)"}
               </label>
@@ -167,6 +199,8 @@ export function UserAuthPage() {
                 />
               </div>
             </div>
+            ) : null}
+            {registerMethod !== "email" ? (
             <div className="space-y-2">
               <label htmlFor="user-phone" className="text-sm font-medium">
                 {locale === "ar" ? "رقم الهاتف (اختياري)" : "Phone Number (optional)"}
@@ -182,6 +216,23 @@ export function UserAuthPage() {
                   autoComplete="tel"
                   className="ps-9"
                 />
+              </div>
+            </div>
+            ) : null}
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-2">
+              <p className="text-xs text-muted-foreground">
+                {locale === "ar" ? "تسجيل سريع عبر المنصات" : "Quick sign up via platforms"}
+              </p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-3 py-2 text-xs text-center hover:bg-muted/40">
+                  {locale === "ar" ? "فيسبوك" : "Facebook"}
+                </a>
+                <a href="https://accounts.google.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-3 py-2 text-xs text-center hover:bg-muted/40">
+                  {locale === "ar" ? "جوجل" : "Google"}
+                </a>
+                <a href="https://appleid.apple.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-3 py-2 text-xs text-center hover:bg-muted/40">
+                  {locale === "ar" ? "آبل" : "Apple"}
+                </a>
               </div>
             </div>
           </div>
