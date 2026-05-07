@@ -10,13 +10,14 @@ const DEFAULTS: ThemeSettingsMap = {
   theme_border_radius: "12",
   theme_blur_intensity: "12",
   theme_animations: "true",
-  theme_heading_font: "Geist Sans",
-  theme_body_font: "Geist Sans",
+  theme_heading_font: "Inter",
+  theme_body_font: "Inter",
 }
 
 const FONT_STACKS: Record<string, string> = {
   "Geist Sans": "var(--font-geist-sans), Inter, system-ui, sans-serif",
   Inter: "Inter, var(--font-geist-sans), system-ui, sans-serif",
+  Changa: "var(--font-changa), var(--font-geist-sans), system-ui, sans-serif",
   "Plus Jakarta Sans": "\"Plus Jakarta Sans\", Inter, system-ui, sans-serif",
   "Space Grotesk": "\"Space Grotesk\", var(--font-geist-sans), system-ui, sans-serif",
 }
@@ -56,7 +57,7 @@ export function applyThemeSettings(settings: ThemeSettingsMap) {
   root.style.setProperty("--theme-blur-intensity", `${blur}px`)
   root.style.setProperty("--theme-heading-font", headingFont)
   root.style.setProperty("--theme-body-font", bodyFont)
-  root.style.setProperty("--theme-body-font-rtl", bodyFont)
+  root.style.setProperty("--theme-body-font-rtl", FONT_STACKS.Changa)
   root.style.fontSize = `${baseFont}px`
   body.style.fontFamily = bodyFont
 

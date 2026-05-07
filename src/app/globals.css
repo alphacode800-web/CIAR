@@ -57,8 +57,9 @@
   --news-ticker-visible-height: 0px;
   --site-header-offset: calc(var(--navbar-height) + var(--news-ticker-visible-height));
   --theme-blur-intensity: 12px;
-  --theme-heading-font: var(--font-aref-ruqaa-ink), var(--font-changa), serif;
-  --theme-body-font: var(--font-geist-sans), system-ui, sans-serif;
+  --theme-heading-font: Inter, var(--font-geist-sans), system-ui, sans-serif;
+  --theme-body-font: Inter, var(--font-geist-sans), system-ui, sans-serif;
+  --theme-body-font-rtl: var(--font-changa), var(--font-geist-sans), system-ui, sans-serif;
   --radius: 0.75rem;
   --theme-background-light: oklch(0.98 0.002 260);
   --theme-background-dark: oklch(0.10 0.025 265);

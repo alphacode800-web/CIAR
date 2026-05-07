@@ -143,8 +143,8 @@ const DEFAULTS: Record<string, string> = {
   theme_accent_color: "#c9a227",
   theme_background_color: "#0a0f1e",
   theme_background_color_dark: "#0a0f1e",
-  theme_heading_font: "Geist Sans",
-  theme_body_font: "Geist Sans",
+  theme_heading_font: "Inter",
+  theme_body_font: "Inter",
   theme_base_font_size: "16",
   theme_max_content_width: "1280",
   theme_sidebar_width: "256",
@@ -366,7 +366,7 @@ export function AppearanceTab() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Geist Sans", "Inter", "Plus Jakarta Sans", "Space Grotesk"].map((font) => (
+                  {["Inter", "Geist Sans", "Changa", "Plus Jakarta Sans", "Space Grotesk"].map((font) => (
                     <SelectItem key={font} value={font}>
                       {font}
                     </SelectItem>
@@ -387,7 +387,7 @@ export function AppearanceTab() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Geist Sans", "Inter", "Plus Jakarta Sans", "Space Grotesk"].map((font) => (
+                  {["Inter", "Geist Sans", "Changa", "Plus Jakarta Sans", "Space Grotesk"].map((font) => (
                     <SelectItem key={font} value={font}>
                       {font}
                     </SelectItem>
