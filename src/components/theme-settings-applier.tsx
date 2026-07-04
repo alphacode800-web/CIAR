@@ -31,11 +31,17 @@ export function ThemeSettingsApplier() {
       }
     }
 
+    const onLocaleChanged = () => {
+      void fetchAndApply()
+    }
+
     void fetchAndApply()
     window.addEventListener("ciar:settings-updated", onSettingsUpdated as EventListener)
+    window.addEventListener("ciar:locale-changed", onLocaleChanged)
     return () => {
       mounted = false
       window.removeEventListener("ciar:settings-updated", onSettingsUpdated as EventListener)
+      window.removeEventListener("ciar:locale-changed", onLocaleChanged)
     }
   }, [])
 

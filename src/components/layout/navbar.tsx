@@ -18,6 +18,9 @@ import { useCurrency, CURRENCIES } from "@/lib/currency-context"
 import { ThemeSwitcher } from "@/components/layout/theme-switcher"
 import { cn } from "@/lib/utils"
 import type { HomeBannersConfig } from "@/lib/home-banners"
+import type { NewsTickerStyle } from "@/lib/news-ticker"
+import { DEFAULT_NEWS_TICKER_STYLE } from "@/lib/news-ticker"
+import { NewsTickerStrip } from "@/components/home/NewsTickerStrip"
 
 const NAV_ITEMS: { key: string; route: PageRoute }[] = [
   { key: "nav.home", route: { page: "home" } },
@@ -27,17 +30,16 @@ const NAV_ITEMS: { key: string; route: PageRoute }[] = [
 ]
 
 const DEFAULT_NEWS_TICKER_ITEMS = [
-  "Launching new enterprise platforms this quarter",
-  "24/7 technical support now available for all clients",
-  "New AI-powered modules added to our ecosystem",
-  "International expansion across multiple industries",
+  "منصة CIAR توفر خدمات سياحة وعقارات وتجارة إلكترونية للأفراد والشركات",
+  "دعم فني على مدار الساعة لجميع منصاتنا الرقمية",
+  "وحدات ذكاء اصطناعي جديدة ضمن منظومتنا المتكاملة",
+  "توسع دولي في عدة قطاعات وخدمات رقمية",
 ]
-
-const NEWS_TICKER_STRIP_HEIGHT = "2.875rem"
 
 type NavbarProps = {
   homeConfig?: HomeBannersConfig
   newsTickerItems?: string[]
+  newsTickerStyle?: NewsTickerStyle
   /** Home: show strip immediately under the nav links row (inside the fixed header) */
   showNewsTickerStrip?: boolean
 }
@@ -45,6 +47,7 @@ type NavbarProps = {
 export function Navbar({
   homeConfig,
   newsTickerItems = [],
+  newsTickerStyle = DEFAULT_NEWS_TICKER_STYLE,
   showNewsTickerStrip = false,
 }: NavbarProps) {
   const { t, locale, setLocale, dir } = useI18n()
@@ -75,25 +78,43 @@ export function Navbar({
 
   const currentPage = route.page === "project" ? "projects" : route.page
 
+  const overDarkHero = !scrolled && (currentPage === "home" || currentPage === "projects")
+
+  const navLinkClass = (isActive: boolean) =>
+    cn(
+      "relative px-4 py-2 text-sm font-semibold transition-colors duration-300",
+      overDarkHero
+        ? isActive
+          ? "text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]"
+          : "text-white/90 hover:text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]"
+        : isActive
+          ? "text-foreground"
+          : "text-foreground/75 hover:text-foreground"
+    )
+
+  const utilityBtnClass = cn(
+    "text-xs font-medium h-9",
+    overDarkHero
+      ? "text-white/90 hover:text-white hover:bg-white/10 hover:ring-white/25"
+      : "text-foreground/80 hover:text-foreground hover:ring-[oklch(0.78_0.14_82/20%)]"
+  )
+
   const tickerItems = useMemo(
     () => (newsTickerItems.length > 0 ? newsTickerItems : DEFAULT_NEWS_TICKER_ITEMS),
     [newsTickerItems]
   )
-  const tickerLoopItems = useMemo(() => [...tickerItems, ...tickerItems], [tickerItems])
-  const logoType = homeConfig?.nav?.logoType === "video" ? "video" : "image"
-  const logoAlt = locale === "ar" ? homeConfig?.nav?.logoAlt?.ar : homeConfig?.nav?.logoAlt?.en
-  const logoImage = homeConfig?.nav?.logoUrl || "/logo.png"
-  const logoVideo = homeConfig?.nav?.logoVideoUrl || ""
+
+  const tickerStripHeight = `${newsTickerStyle.stripHeight}px`
 
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--news-ticker-visible-height",
-      showNewsTickerStrip ? NEWS_TICKER_STRIP_HEIGHT : "0px"
+      showNewsTickerStrip && newsTickerStyle.enabled ? tickerStripHeight : "0px"
     )
     return () => {
       document.documentElement.style.setProperty("--news-ticker-visible-height", "0px")
     }
-  }, [showNewsTickerStrip])
+  }, [showNewsTickerStrip, newsTickerStyle.enabled, tickerStripHeight])
 
   return (
     <motion.header
@@ -104,7 +125,8 @@ export function Navbar({
         "fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-out",
         scrolled
           ? "glass-strong border-b border-[oklch(0.78_0.14_82/15%)] shadow-lg shadow-black/10"
-          : "bg-transparent"
+          : "bg-transparent",
+        overDarkHero && "nav-over-hero"
       )}
     >
       {!scrolled && (
@@ -115,33 +137,15 @@ export function Navbar({
         dir={dir}
         className="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 h-[var(--navbar-height)] min-h-[var(--navbar-height)]"
       >
-        {/* Logo */}
         <button
           onClick={() => navigate({ page: "home" })}
-          className="flex items-center gap-3 group"
+          className={cn(
+            "brand-logo-text transition-opacity duration-300",
+            overDarkHero && "brand-logo-text-on-hero"
+          )}
+          aria-label="CIAR"
         >
-          <div className="relative h-16 w-16 flex items-center justify-center">
-            {logoType === "video" && logoVideo ? (
-              <video
-                src={logoVideo}
-                className="h-16 w-16 rounded-md object-cover transition-transform duration-500 group-hover:scale-110"
-                autoPlay
-                muted
-                loop
-                playsInline
-              />
-            ) : (
-              <img
-                src={logoImage}
-                alt={logoAlt || "CIAR"}
-                className="h-16 w-16 object-contain transition-transform duration-500 group-hover:scale-110"
-                onError={(e) => {
-                  const img = e.currentTarget
-                  if (!img.src.endsWith("/logo.svg")) img.src = "/logo.svg"
-                }}
-              />
-            )}
-          </div>
+          CIAR
         </button>
 
         {/* Desktop nav links */}
@@ -152,10 +156,7 @@ export function Navbar({
               <button
                 key={item.key}
                 onClick={() => navigate(item.route)}
-                className={cn(
-                  "relative px-4 py-2 text-sm font-medium transition-colors duration-300",
-                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
+                className={navLinkClass(isActive)}
               >
                 {isActive && (
                   <motion.span
@@ -179,10 +180,7 @@ export function Navbar({
               <Button
                 variant="ghost"
                 size="sm"
-                className={cn(
-                  "gap-1 text-muted-foreground hover:text-foreground text-xs font-medium h-9 px-2",
-                  "hover:ring-2 hover:ring-[oklch(0.78_0.14_82/20%)]"
-                )}
+                className={cn("gap-1 px-2", utilityBtnClass)}
               >
                 <span className="text-sm">{currentCurrency.flag}</span>
                 <span className="hidden sm:inline text-[11px] font-mono">{currency.code}</span>
@@ -212,11 +210,7 @@ export function Navbar({
               <Button
                 variant="ghost"
                 size="sm"
-                className={cn(
-                  "gap-1.5 text-muted-foreground hover:text-foreground text-xs font-medium h-9 px-2",
-                  "hover:ring-2 hover:ring-[oklch(0.78_0.14_82/20%)]",
-                  "hidden sm:flex"
-                )}
+                className={cn("gap-1.5 px-2 hidden sm:flex", utilityBtnClass)}
               >
                 <Globe className="h-3.5 w-3.5" />
                 <span className="uppercase text-[11px]">{locale}</span>
@@ -230,7 +224,7 @@ export function Navbar({
                   onClick={() => setLocale(loc)}
                   className={cn(
                     "cursor-pointer text-sm",
-                    locale === loc ? "bg-[oklch(0.78_0.14_82/10%)] text-[oklch(0.78_0.14_82)] font-medium" : ""
+                    locale === loc ? "bg-primary/10 text-primary font-medium" : ""
                   )}
                 >
                   <span className="font-mono text-xs uppercase w-7">{loc}</span>
@@ -246,10 +240,7 @@ export function Navbar({
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn(
-                  "sm:hidden h-9 w-9 text-muted-foreground hover:text-foreground",
-                  "hover:ring-2 hover:ring-[oklch(0.78_0.14_82/20%)]"
-                )}
+                className={cn("sm:hidden h-9 w-9", utilityBtnClass)}
                 aria-label="Change language"
               >
                 <Globe className="h-4 w-4" />
@@ -262,7 +253,7 @@ export function Navbar({
                   onClick={() => setLocale(loc)}
                   className={cn(
                     "cursor-pointer text-sm",
-                    locale === loc ? "bg-[oklch(0.78_0.14_82/10%)] text-[oklch(0.78_0.14_82)] font-medium" : ""
+                    locale === loc ? "bg-primary/10 text-primary font-medium" : ""
                   )}
                 >
                   <span className="font-mono text-xs uppercase w-7">{loc}</span>
@@ -303,10 +294,7 @@ export function Navbar({
               variant="ghost"
               size="sm"
               onClick={() => navigate({ page: "user-auth" })}
-              className={cn(
-                "gap-1.5 text-muted-foreground hover:text-foreground text-xs font-medium h-9 px-3",
-                "hover:ring-2 hover:ring-[oklch(0.78_0.14_82/20%)]"
-              )}
+              className={cn("gap-1.5 px-3", utilityBtnClass)}
             >
               <LogIn className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{t("auth.login") || "Login"}</span>
@@ -317,7 +305,7 @@ export function Navbar({
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden h-9 w-9"
+            className={cn("md:hidden h-9 w-9", utilityBtnClass)}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -336,38 +324,14 @@ export function Navbar({
         </div>
       </nav>
 
-      {showNewsTickerStrip ? (
-        <div
+      {showNewsTickerStrip && newsTickerStyle.enabled ? (
+        <NewsTickerStrip
+          items={tickerItems}
+          style={newsTickerStyle}
+          locale={locale === "ar" ? "ar" : "en"}
           dir={dir}
-          className="relative z-40 w-full border-t border-[oklch(0.78_0.14_82/24%)] bg-black/65 backdrop-blur-md"
-          style={{ minHeight: NEWS_TICKER_STRIP_HEIGHT }}
-          aria-label={locale === "ar" ? "الشريط الإخباري" : "News ticker"}
-        >
-          <div className="mx-auto flex h-full min-h-[inherit] max-w-7xl items-center">
-            <div className="shrink-0 border-e border-white/20 bg-[oklch(0.78_0.14_82/22%)] px-3 py-2.5 sm:px-4">
-              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-white sm:text-[11px]">
-                {locale === "ar" ? "أخبار" : "News"}
-              </span>
-            </div>
-            <div className="relative flex-1 overflow-hidden py-2.5">
-              <motion.div
-                className="flex w-max whitespace-nowrap text-[12px] font-medium tracking-wide text-white/95 sm:text-[13px]"
-                animate={{ x: dir === "rtl" ? ["-50%", "0%"] : ["0%", "-50%"] }}
-                transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
-              >
-                {tickerLoopItems.map((item, index) => (
-                  <span
-                    key={`${item}-${index}`}
-                    className="inline-flex items-center gap-4 px-6 sm:px-8"
-                  >
-                    <span className="text-white/95">{item}</span>
-                    <span className="text-[oklch(0.82_0.145_85)]">•</span>
-                  </span>
-                ))}
-              </motion.div>
-            </div>
-          </div>
-        </div>
+          className="relative z-40 w-full backdrop-blur-md"
+        />
       ) : null}
 
       {/* Mobile menu */}
@@ -397,16 +361,9 @@ export function Navbar({
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,oklch(0.78_0.14_82/10%),transparent_45%)] pointer-events-none" />
               <div className="relative px-4 py-4 h-full overflow-y-auto">
                 <div className="mb-4 flex items-center justify-between rounded-2xl border border-[oklch(0.78_0.14_82/18%)] bg-[oklch(0.12_0.03_265/55%)] px-3 py-2.5">
-                  <div className="flex items-center gap-2.5">
-                    {logoType === "video" && logoVideo ? (
-                      <video src={logoVideo} className="h-8 w-8 rounded object-cover" autoPlay muted loop playsInline />
-                    ) : (
-                      <img src={logoImage} alt={logoAlt || "CIAR"} className="h-8 w-8 object-contain" />
-                    )}
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Menu</p>
-                      <p className="text-sm font-semibold">{locale === "ar" ? "التنقل السريع" : "Quick Navigation"}</p>
-                    </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Menu</p>
+                    <p className="text-sm font-semibold">{locale === "ar" ? "التنقل السريع" : "Quick Navigation"}</p>
                   </div>
                   <Button
                     variant="ghost"

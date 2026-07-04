@@ -40,11 +40,11 @@ export function MarqueeBanner() {
           return (
             <div
               key={`${item.key}-${i}`}
-              className="flex items-center gap-2.5 text-sm sm:text-base font-medium text-[oklch(0.78_0.14_82/70%)] select-none"
+              className="flex items-center gap-2.5 text-sm sm:text-base font-semibold text-foreground/80 select-none"
             >
-              {Icon && <Icon className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />}
+              {Icon && <Icon className="h-4 w-4 text-primary shrink-0" />}
               <span>{t(item.key) || item.fallback}</span>
-              <span className="text-[oklch(0.78_0.14_82/30%)] mx-1">•</span>
+              <span className="mx-1 text-primary/40">•</span>
             </div>
           )
         })}

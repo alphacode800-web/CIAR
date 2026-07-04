@@ -130,60 +130,60 @@ export function AnalyticsTab() {
     ? [
         {
           icon: FolderOpen,
-          label: t("admin.total_projects") || "Total Projects",
+          label: t("admin.total_projects") || "إجمالي المنصات",
           value: analytics.projects.total,
-          color: "bg-gradient-to-br from-blue-500/20 to-cyan-500/10",
-          iconColor: "text-blue-400",
+          color: "bg-blue-500/10",
+          iconColor: "text-blue-600 dark:text-blue-400",
         },
         {
           icon: Layers,
-          label: t("admin.published") || "Published",
+          label: t("admin.published") || "منشور",
           value: analytics.projects.published,
-          color: "bg-gradient-to-br from-emerald-500/20 to-teal-500/10",
-          iconColor: "text-emerald-400",
+          color: "bg-emerald-500/10",
+          iconColor: "text-emerald-600 dark:text-emerald-400",
         },
         {
           icon: FileEdit,
-          label: t("admin.drafts") || "Drafts",
+          label: t("admin.drafts") || "مسودات",
           value: analytics.projects.draft,
-          color: "bg-gradient-to-br from-amber-500/20 to-orange-500/10",
-          iconColor: "text-amber-400",
+          color: "bg-amber-500/10",
+          iconColor: "text-amber-600 dark:text-amber-400",
         },
         {
           icon: Star,
-          label: t("admin.featured") || "Featured",
+          label: t("admin.featured") || "مميز",
           value: analytics.projects.featured,
-          color: "bg-gradient-to-br from-[oklch(0.76_0.19_48/30%)] to-[oklch(0.58_0.17_38/15%)]",
-          iconColor: "text-[oklch(0.76_0.19_48)]",
+          color: "bg-orange-500/10",
+          iconColor: "text-orange-600 dark:text-orange-400",
         },
         {
           icon: Eye,
-          label: t("admin.total_views") || "Total Views",
+          label: t("admin.total_views") || "إجمالي المشاهدات",
           value: analytics.totalViews,
-          color: "bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10",
-          iconColor: "text-violet-400",
+          color: "bg-violet-500/10",
+          iconColor: "text-violet-600 dark:text-violet-400",
         },
         {
           icon: BarChart3,
-          label: t("admin.avg_views") || "Avg Views",
+          label: t("admin.avg_views") || "متوسط المشاهدات",
           value: analytics.avgViews ?? 0,
-          color: "bg-gradient-to-br from-sky-500/20 to-indigo-500/10",
-          iconColor: "text-sky-400",
+          color: "bg-sky-500/10",
+          iconColor: "text-sky-600 dark:text-sky-400",
         },
         {
           icon: MessageSquare,
-          label: t("admin.contact_messages") || "Contact Messages",
+          label: t("admin.contact_messages") || "رسائل التواصل",
           value: analytics.contactMessages ?? analytics.contacts,
-          color: "bg-gradient-to-br from-rose-500/20 to-pink-500/10",
-          iconColor: "text-rose-400",
+          color: "bg-rose-500/10",
+          iconColor: "text-rose-600 dark:text-rose-400",
         },
         {
           icon: Globe,
-          label: t("admin.translation_coverage") || "Translation Coverage",
+          label: t("admin.translation_coverage") || "تغطية الترجمة",
           value: analytics.translationCoverage ?? 0,
           suffix: "%",
-          color: "bg-gradient-to-br from-teal-500/20 to-emerald-500/10",
-          iconColor: "text-teal-400",
+          color: "bg-teal-500/10",
+          iconColor: "text-teal-600 dark:text-teal-400",
         },
       ]
     : []
@@ -196,7 +196,7 @@ export function AnalyticsTab() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h2 className="text-2xl font-bold gradient-text">
+        <h2 className="text-2xl font-bold text-foreground">
           {t("admin.analytics") || "Analytics"}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -224,11 +224,11 @@ export function AnalyticsTab() {
           initial={{ opacity: 0, x: -16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="lg:col-span-2 rounded-2xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 dark:bg-[oklch(0.12_0.03_265/50%)]"
+          className="admin-pro-panel lg:col-span-2 rounded-2xl p-5 shadow-sm"
         >
           <div className="flex items-center gap-2 mb-5">
             <Eye className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
               {t("admin.views_distribution") || "Views Distribution"}
             </h3>
           </div>
@@ -254,11 +254,11 @@ export function AnalyticsTab() {
           initial={{ opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.35, duration: 0.5 }}
-          className="rounded-2xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 dark:bg-[oklch(0.12_0.03_265/50%)]"
+          className="admin-pro-panel rounded-2xl p-5 shadow-sm"
         >
           <div className="flex items-center gap-2 mb-5">
             <PieChart className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
               {t("admin.category_breakdown") || "Categories"}
             </h3>
           </div>
@@ -273,7 +273,7 @@ export function AnalyticsTab() {
                 value: c.count,
                 color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
               }))}
-              centerLabel="Total"
+              centerLabel={t("admin.total") || "الإجمالي"}
               centerValue={String(analytics?.projects.total || 0)}
             />
           )}
@@ -301,7 +301,7 @@ export function AnalyticsTab() {
               {
                 label: t("admin.projects_growth") || "New Projects",
                 value: analytics?.monthlyTrend?.reduce((s, m) => s + m.count, 0) || 0,
-                period: "Last 6 months",
+                period: t("admin.last_6_months") || "آخر 6 أشهر",
                 positive: true,
               },
               {
@@ -310,14 +310,14 @@ export function AnalyticsTab() {
                   ? Math.round((analytics.totalViews / analytics.projects.total / 100) * 100)
                   : 0,
                 suffix: "%",
-                period: "All time",
+                period: t("admin.all_time") || "كل الفترات",
                 positive: true,
               },
               {
                 label: t("admin.localization_score") || "Localization Score",
                 value: analytics?.translationCoverage ?? 0,
                 suffix: "%",
-                period: `${analytics?.activeLocales ?? 0} active locales`,
+                period: `${analytics?.activeLocales ?? 0} ${t("admin.active_locales") || "لغات نشطة"}`,
                 positive: (analytics?.translationCoverage ?? 0) >= 80,
               },
             ].map((card, index) => (
@@ -326,7 +326,7 @@ export function AnalyticsTab() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 + index * 0.08 }}
-                className="rounded-2xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/40%)] backdrop-blur-lg p-5 dark:bg-[oklch(0.12_0.03_265/50%)]"
+                className="admin-pro-panel rounded-2xl p-5 shadow-sm"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">
@@ -345,7 +345,7 @@ export function AnalyticsTab() {
                     ) : (
                       <TrendingDown className="h-3 w-3" />
                     )}
-                    {card.positive ? "Healthy" : "Needs Work"}
+                    {card.positive ? (t("admin.healthy") || "جيد") : (t("admin.needs_work") || "يحتاج تحسين")}
                   </div>
                 </div>
                 <div className="text-2xl font-bold text-foreground">

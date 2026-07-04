@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSetting, updateSettings } from '@/services/settings.service'
+import { buildDefaultHomeSections, localizeHomeSection } from '@/lib/home-section-labels'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,21 +29,15 @@ const updateHomeSectionsSchema = z.object({
 
 const SETTING_KEY = 'home_sections'
 
-/** Default home sections if none are stored yet. */
-const defaultSections: HomeSection[] = [
-  { id: 'hero', name: 'Hero', visible: true, order: 0 },
-  { id: 'services', name: 'Services', visible: true, order: 1 },
-  { id: 'about-brief', name: 'About Brief', visible: true, order: 2 },
-  { id: 'how-it-works', name: 'How It Works', visible: true, order: 3 },
-  { id: 'featured-projects', name: 'Featured Projects', visible: true, order: 4 },
-  { id: 'cta', name: 'Call to Action', visible: true, order: 5 },
-]
+const defaultSections = buildDefaultHomeSections()
 
 function parseSections(value: string | null): HomeSection[] {
   if (!value) return defaultSections
   try {
     const parsed = JSON.parse(value)
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((section) => localizeHomeSection(section as HomeSection))
+    }
   } catch {
     // Fall through to default
   }

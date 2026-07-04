@@ -38,6 +38,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useI18n } from "@/lib/i18n-context"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import {
+  buildDefaultHomeSections,
+  getHomeSectionLabelAr,
+  localizeHomeSection,
+} from "@/lib/home-section-labels"
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -50,25 +55,7 @@ interface HomeSection {
 
 /* ─── Default sections ──────────────────────────────────────────────────── */
 
-const DEFAULT_SECTIONS: HomeSection[] = [
-  { id: "hero-slideshow", name: "Hero Slideshow", visible: true, order: 0 },
-  { id: "marquee-banner", name: "Marquee Banner", visible: true, order: 1 },
-  { id: "about-brief", name: "About Brief", visible: true, order: 2 },
-  { id: "trust-badges", name: "Trust Badges", visible: true, order: 3 },
-  { id: "services-grid", name: "Services Grid", visible: true, order: 4 },
-  { id: "how-it-works", name: "How It Works", visible: true, order: 5 },
-  { id: "stats-section", name: "Stats Section", visible: true, order: 6 },
-  { id: "platforms-grid", name: "Platforms Grid", visible: true, order: 7 },
-  { id: "platform-showcase", name: "Platform Showcase", visible: true, order: 8 },
-  { id: "tech-stack", name: "Tech Stack", visible: true, order: 9 },
-  { id: "testimonials", name: "Testimonials", visible: true, order: 10 },
-  { id: "global-presence", name: "Global Presence", visible: true, order: 11 },
-  { id: "team-highlight", name: "Team Highlight", visible: true, order: 12 },
-  { id: "awards-banner", name: "Awards Banner", visible: true, order: 13 },
-  { id: "news-updates", name: "News & Updates", visible: true, order: 14 },
-  { id: "faq-section", name: "FAQ Section", visible: true, order: 15 },
-  { id: "newsletter-cta", name: "Newsletter CTA", visible: true, order: 16 },
-]
+const DEFAULT_SECTIONS: HomeSection[] = buildDefaultHomeSections()
 
 /* ─── Section icon map ──────────────────────────────────────────────────── */
 
@@ -106,7 +93,7 @@ export function HomeSectionsTab() {
       const res = await fetch("/api/admin/home-sections")
       const data = await res.json()
       if (data.sections && data.sections.length > 0) {
-        setSections(data.sections)
+        setSections(data.sections.map(localizeHomeSection))
       } else {
         setSections(DEFAULT_SECTIONS)
       }
@@ -149,12 +136,12 @@ export function HomeSectionsTab() {
         body: JSON.stringify({ sections: ordered }),
       })
       if (res.ok) {
-        toast.success(t("admin.sections_saved") || "Section order saved successfully")
+        toast.success(t("admin.sections_saved") || "تم حفظ ترتيب الأقسام بنجاح")
       } else {
-        toast.error(t("admin.sections_save_failed") || "Failed to save section order")
+        toast.error(t("admin.sections_save_failed") || "فشل حفظ ترتيب الأقسام")
       }
     } catch {
-      toast.error(t("admin.sections_save_failed") || "Failed to save section order")
+      toast.error(t("admin.sections_save_failed") || "فشل حفظ ترتيب الأقسام")
     } finally {
       setSaving(false)
     }
@@ -170,12 +157,12 @@ export function HomeSectionsTab() {
       })
       if (res.ok) {
         setSections(DEFAULT_SECTIONS)
-        toast.success(t("admin.sections_reset") || "Sections reset to default order")
+        toast.success(t("admin.sections_reset") || "تمت استعادة الترتيب الافتراضي")
       } else {
-        toast.error(t("admin.sections_reset_failed") || "Failed to reset sections")
+        toast.error(t("admin.sections_reset_failed") || "فشل استعادة الأقسام الافتراضية")
       }
     } catch {
-      toast.error(t("admin.sections_reset_failed") || "Failed to reset sections")
+      toast.error(t("admin.sections_reset_failed") || "فشل استعادة الأقسام الافتراضية")
     } finally {
       setResetting(false)
     }
@@ -207,10 +194,10 @@ export function HomeSectionsTab() {
       >
         <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
           <LayoutGrid className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
-          {t("admin.home_sections") || "Home Page Sections"}
+          {t("admin.home_sections") || "أقسام الصفحة الرئيسية"}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          {t("admin.home_sections_desc") || "Drag to reorder and toggle visibility of home page sections"}
+          {t("admin.home_sections_desc") || "اسحب لإعادة الترتيب وتبديل ظهور أقسام الصفحة الرئيسية"}
         </p>
       </motion.div>
 
@@ -226,21 +213,21 @@ export function HomeSectionsTab() {
         <div className="flex items-center gap-2">
           <Layers className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
           <span className="text-sm text-muted-foreground">
-            {sections.length} sections total
+            {t("admin.sections_total") || "إجمالي الأقسام"}: {sections.length}
           </span>
         </div>
         <div className="w-px h-4 bg-[oklch(0.76_0.19_48/15%)]" />
         <div className="flex items-center gap-2">
           <Eye className="h-4 w-4 text-emerald-400" />
           <span className="text-sm text-muted-foreground">
-            {visibleCount} visible
+            {t("admin.sections_visible") || "ظاهر"}: {visibleCount}
           </span>
         </div>
         <div className="w-px h-4 bg-[oklch(0.76_0.19_48/15%)]" />
         <div className="flex items-center gap-2">
           <EyeOff className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
-            {sections.length - visibleCount} hidden
+            {t("admin.sections_hidden") || "مخفي"}: {sections.length - visibleCount}
           </span>
         </div>
       </motion.div>
@@ -293,10 +280,12 @@ export function HomeSectionsTab() {
                 {/* Section info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
-                    {section.name}
+                    {getHomeSectionLabelAr(section.id, section.name)}
                   </p>
-                  <p className="text-[11px] text-muted-foreground font-mono">
-                    #{section.id}
+                  <p className="text-[11px] text-muted-foreground">
+                    {section.visible
+                      ? t("admin.section_visible") || "ظاهر في الصفحة"
+                      : t("admin.section_hidden") || "مخفي من الصفحة"}
                   </p>
                 </div>
 
@@ -370,7 +359,7 @@ export function HomeSectionsTab() {
           ) : (
             <Save className="h-4 w-4" />
           )}
-          {t("admin.save_order") || "Save Order"}
+          {t("admin.save_order") || "حفظ الترتيب"}
         </Button>
 
         <Button
@@ -384,7 +373,7 @@ export function HomeSectionsTab() {
           ) : (
             <RotateCcw className="h-4 w-4" />
           )}
-          {t("admin.reset_default") || "Reset to Default"}
+          {t("admin.reset_default") || "استعادة الافتراضي"}
         </Button>
       </motion.div>
     </div>

@@ -85,7 +85,7 @@ export function AnnouncementBar() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[oklch(0.78_0.14_82)]" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[oklch(0.78_0.14_82)]" />
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] font-[family-name:var(--font-geist-sans)] text-[oklch(0.78_0.14_82)]">
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                 {banner.type === "info" ? "NEWS" : banner.type === "success" ? "NEW" : "ALERT"}
               </span>
             </div>

@@ -13,6 +13,7 @@ import { PlatformDetailsPage } from "@/components/super-platform/platform-detail
 import { AdminLoginPage } from "@/components/pages/admin-login-page"
 import { UserAuthPage } from "@/components/pages/user-auth-page"
 import type { HomeBannersConfig } from "@/lib/home-banners"
+import { DEFAULT_NEWS_TICKER_STYLE } from "@/lib/news-ticker"
 
 const HomePage = lazy(() => import("@/components/pages/home-page").then(m => ({ default: m.HomePage })))
 const ProjectsPage = lazy(() => import("@/components/pages/projects-page").then(m => ({ default: m.ProjectsPage })))
@@ -41,6 +42,7 @@ const DEFAULT_HOME_BANNERS: HomeBannersConfig = {
     imageSlides: [],
   },
   newsTickerItems: [],
+  newsTickerStyle: DEFAULT_NEWS_TICKER_STYLE,
 }
 
 interface Project {
@@ -148,6 +150,7 @@ export default function Page() {
         <Navbar
           homeConfig={homeBanners}
           newsTickerItems={homeBanners.newsTickerItems}
+          newsTickerStyle={homeBanners.newsTickerStyle}
           showNewsTickerStrip={route.page === "home"}
         />
       )}

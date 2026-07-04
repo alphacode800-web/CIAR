@@ -32,6 +32,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useI18n } from "@/lib/i18n-context"
 import { AdminHeader } from "./admin-header"
 import { SearchCommand } from "./search-command"
+import { ThemeSwitcher } from "@/components/layout/theme-switcher"
+import { AdminNavContext } from "@/lib/admin-nav-context"
+import { useRouter } from "@/lib/router-context"
+import { ExternalLink } from "lucide-react"
+import { useTheme } from "next-themes"
+import { cn } from "@/lib/utils"
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
 
@@ -52,7 +58,7 @@ interface SidebarItem {
 /* ─── Sidebar Config ─────────────────────────────────────────────────────── */
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
-  { id: "overview", icon: LayoutDashboard, labelKey: "admin.dashboard", fallback: "نظرة عامة", group: "main" },
+  { id: "overview", icon: LayoutDashboard, labelKey: "admin.dashboard", fallback: "لوحة التحكم", group: "main" },
   { id: "analytics", icon: BarChart3, labelKey: "admin.analytics", fallback: "التحليلات والزيارات", group: "main" },
   { id: "activity", icon: Activity, labelKey: "admin.activity_log", fallback: "سجل النشاط", group: "main" },
   { id: "projects", icon: FolderOpen, labelKey: "admin.projects", fallback: "المشاريع والمنصات", group: "content" },
@@ -101,7 +107,6 @@ function SidebarNav({
 
   const renderGroup = (labelKey: string, items: SidebarItem[]) => {
     if (collapsed) {
-      // Collapsed: no group labels, just icons
       return (
         <div className="flex flex-col items-center gap-0.5 py-1">
           {items.map((tab) => (
@@ -122,10 +127,7 @@ function SidebarNav({
     }
 
     return (
-      <div className="space-y-1">
-        <p className="px-1 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-          {t(labelKey) || labelKey}
-        </p>
+      <div className="space-y-0.5">
         {items.map((tab) => (
           <SidebarButton
             key={tab.id}
@@ -143,19 +145,13 @@ function SidebarNav({
     )
   }
 
+  const allItems = [...mainItems, ...contentItems, ...systemItems]
+
   return (
     <nav
-      className={`min-h-0 flex-1 space-y-1 overflow-y-auto py-2.5 scrollbar-none ${collapsed ? "px-2" : "px-4"}`}
+      className={`min-h-0 flex-1 space-y-0.5 overflow-y-auto py-3 scrollbar-none ${collapsed ? "px-2" : "px-3"}`}
     >
-      {renderGroup(GROUP_LABELS.main, mainItems)}
-
-      <Separator className={`my-3 bg-white/10 ${collapsed ? "mx-2 w-6" : ""}`} />
-
-      {renderGroup(GROUP_LABELS.content, contentItems)}
-
-      <Separator className={`my-3 bg-white/10 ${collapsed ? "mx-2 w-6" : ""}`} />
-
-      {renderGroup(GROUP_LABELS.system, systemItems)}
+      {collapsed ? renderGroup(GROUP_LABELS.main, allItems) : renderGroup(GROUP_LABELS.main, allItems)}
     </nav>
   )
 }
@@ -192,17 +188,22 @@ function SidebarButton({
         setTab(tab.id)
         onNavigate?.()
       }}
-      className={`relative flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-out ${
-        collapsed ? "justify-center px-0" : ""
-      } ${
+      className={cn(
+        "relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+        collapsed ? "justify-center px-0" : "",
         isActive
-          ? "border-[#60a5fa]/70 bg-gradient-to-r from-[#1d4ed8]/80 via-[#2563eb]/75 to-[#ea580c]/45 text-white shadow-[0_14px_30px_-16px_rgba(37,99,235,0.95)]"
-          : "text-slate-200/95 hover:bg-gradient-to-r hover:from-[#1e293b]/80 hover:to-[#1d4ed8]/25 hover:text-white"
-      }`}
+          ? "bg-gradient-to-l from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30"
+          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
+      )}
       aria-label={label}
     >
       <div className="relative shrink-0">
-        <Icon className={`h-4 w-4 ${isActive ? "text-[#3b82f6]" : "text-slate-300"}`} />
+        <Icon
+          className={cn(
+            "h-4 w-4",
+            isActive ? "text-white" : "text-slate-500 dark:text-slate-400"
+          )}
+        />
         {/* Badge count for Activity Log */}
         {activityCount > 0 && (
           <motion.span
@@ -224,7 +225,6 @@ function SidebarButton({
         )}
       </div>
       {!collapsed && <span className="truncate">{label}</span>}
-      {!collapsed && isActive && <div className="ms-auto h-1.5 w-1.5 shrink-0 rounded-full bg-[#3b82f6]" />}
     </button>
   )
 
@@ -305,7 +305,7 @@ function MobileDrawer({
             onDragEnd={handleDragEnd}
             style={{ x }}
             dir={dir}
-            className="admin-3d-panel glass-strong fixed bottom-2 right-2 top-16 z-50 flex w-[280px] flex-col rounded-2xl border border-primary/30 backdrop-blur-xl will-change-transform touch-none lg:hidden"
+            className="admin-pro-drawer fixed bottom-2 right-2 top-16 z-50 flex w-[280px] flex-col rounded-2xl border border-slate-200 bg-white backdrop-blur-xl will-change-transform touch-none dark:border-white/10 dark:bg-[#0d1324] lg:hidden"
           >
             {children}
           </motion.aside>
@@ -318,7 +318,20 @@ function MobileDrawer({
 /* ─── Main Layout Component ──────────────────────────────────────────────── */
 
 export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
-  const { t, dir, locale } = useI18n()
+  const { t, dir, locale, setLocale } = useI18n()
+  const { navigate } = useRouter()
+  const { resolvedTheme } = useTheme()
+  const [themeMounted, setThemeMounted] = useState(false)
+
+  useEffect(() => {
+    setThemeMounted(true)
+  }, [])
+
+  const isDark = themeMounted && resolvedTheme === "dark"
+
+  useEffect(() => {
+    if (locale !== "ar") setLocale("ar")
+  }, [locale, setLocale])
   const reduceMotion = useReducedMotion()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -356,18 +369,31 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
 
   const sidebarWidth = sidebarCollapsed ? 64 : 260
 
+  const isOverview = activeTab === "overview"
+
   return (
+    <AdminNavContext.Provider value={{ setTab }}>
     <div
       dir={dir}
       lang={locale}
       data-admin-lux-layout
-      className="admin-vivid-bg relative flex min-h-screen overflow-x-hidden bg-[#f4f6fb] text-foreground selection:bg-primary/25 selection:text-primary-foreground [&_.text-foreground]:text-foreground [&_.text-muted-foreground]:text-muted-foreground"
+      data-admin-pro
+      className={cn(
+        "admin-pro-bg relative flex min-h-screen overflow-x-hidden selection:bg-orange-500/25",
+        isDark
+          ? "dark bg-[#0a0f1e] text-slate-200 selection:text-white"
+          : "bg-[#f4f6fb] text-slate-900 selection:text-slate-900"
+      )}
     >
       {/* ── Desktop Sidebar (يمين الشاشة — ثابت فيزيائياً) ── */}
       <motion.aside
         animate={{ width: sidebarWidth }}
         transition={{ type: "spring", damping: 32, stiffness: 280 }}
-        className="admin-vivid-sidebar fixed bottom-0 right-0 top-0 z-20 hidden min-h-0 min-w-0 shrink-0 flex-col overflow-hidden border-l border-[#1f2937] bg-[#20293a] text-white lg:flex"
+        className={cn(
+          "admin-pro-sidebar fixed bottom-0 right-0 top-0 z-20 hidden min-h-0 min-w-0 shrink-0 flex-col overflow-hidden border-l lg:flex",
+          "border-slate-200 bg-white text-slate-900 shadow-sm",
+          "dark:border-white/5 dark:bg-[#0d1324] dark:text-white dark:shadow-none"
+        )}
       >
         {/* Logo Area */}
         {!sidebarCollapsed && (
@@ -375,19 +401,18 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.15 }}
-            className="admin-vivid-hero-card border-b border-white/10 bg-[#1a2333] px-4 py-4"
+            className="border-b border-slate-200 px-4 py-4 dark:border-white/5"
           >
-            <div className="flex items-start gap-3">
-              <div className="admin-vivid-logo relative mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#00a2ff] shadow-md">
-                <LayoutDashboard className="h-[19px] w-[19px] text-white" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25">
+                <LayoutDashboard className="h-5 w-5 text-white" />
               </div>
-              <div className="min-w-0 flex-1 space-y-0.5">
-                <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#93c5fd]">CIAR</p>
-                <h1 className="break-words text-sm font-bold leading-snug tracking-tight text-white">
-                  {t("admin.title") || "Admin Panel"}
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm font-bold text-slate-900 dark:text-white">
+                  {t("admin.dashboard") || "لوحة التحكم"}
                 </h1>
-                <p className="whitespace-normal break-words text-[10px] leading-snug text-slate-300">
-                  {t("admin.management") || "CIAR Management"}
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {t("admin.management") || "إدارة المنصات"}
                 </p>
               </div>
             </div>
@@ -395,8 +420,8 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
         )}
 
         {sidebarCollapsed && (
-          <div className="flex justify-center border-b border-white/10 bg-[#1a2333] p-3">
-            <div className="admin-vivid-logo flex h-10 w-10 items-center justify-center rounded-xl bg-[#00a2ff] shadow-md">
+          <div className="flex justify-center border-b border-slate-200 p-3 dark:border-white/5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25">
               <LayoutDashboard className="h-4 w-4 text-white" />
             </div>
           </div>
@@ -410,8 +435,33 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
           unreadContacts={unreadContacts}
         />
 
-        {/* Collapse Toggle Button */}
-        <div className="border-t border-white/10 p-2">
+        {/* Sidebar footer */}
+        <div className="space-y-2 border-t border-slate-200 p-3 dark:border-white/5">
+          {!sidebarCollapsed && (
+            <button
+              type="button"
+              onClick={() => navigate({ page: "home" })}
+              className="flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              {t("admin.back_to_site") || "العودة للموقع"}
+            </button>
+          )}
+          <div
+            className={cn(
+              "flex items-center rounded-xl border px-3 py-2",
+              "border-slate-200 bg-slate-50",
+              "dark:border-white/5 dark:bg-white/[0.03]",
+              sidebarCollapsed ? "justify-center" : "justify-between"
+            )}
+          >
+            {!sidebarCollapsed && (
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                {t("admin.theme_mode") || "الوضع الليلي / النهاري"}
+              </span>
+            )}
+            <ThemeSwitcher />
+          </div>
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -419,18 +469,19 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
                   variant="ghost"
                   size={sidebarCollapsed ? "icon" : "sm"}
                   onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  className={`w-full rounded-lg transition-all ${
+                  className={cn(
+                    "w-full rounded-xl transition-all",
                     sidebarCollapsed
                       ? "h-8 w-8"
-                      : "justify-center gap-2 border border-transparent text-slate-200 hover:bg-white/10 hover:text-white"
-                  }`}
+                      : "justify-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
+                  )}
                 >
                   {sidebarCollapsed ? (
                     <PanelRightOpen className="h-4 w-4" />
                   ) : (
                     <>
                       <PanelRightClose className="h-4 w-4" />
-                      <span className="text-xs font-semibold">{t("admin.collapse") || "Collapse"}</span>
+                      <span className="text-xs font-semibold">{t("admin.collapse") || "طي"}</span>
                     </>
                   )}
                 </Button>
@@ -441,7 +492,7 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
                   sideOffset={10}
                   className="rounded-lg text-xs shadow-[0_10px_28px_-8px_rgba(0,0,0,0.2)]"
                 >
-                  {t("admin.expand") || "Expand sidebar"}
+                  {t("admin.expand") || "توسيع"}
                 </TooltipContent>
               )}
             </Tooltip>
@@ -452,17 +503,17 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
 
       {/* ── Mobile Drawer ── */}
       <MobileDrawer open={mobileOpen} onClose={closeMobile} dir={dir}>
-        <div className="flex items-center justify-between border-b border-primary/15 bg-gradient-to-b from-background to-secondary/40 p-4">
+        <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-white/10">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/40 bg-gradient-to-b from-primary to-[oklch(0.62_0.14_72)] shadow-md ring-1 ring-white/40">
-              <LayoutDashboard className="h-4 w-4 text-primary-foreground" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
+              <LayoutDashboard className="h-4 w-4 text-white" />
             </div>
-            <h1 className="text-sm font-bold tracking-tight text-[#1c1917]">{t("admin.title") || "Admin Panel"}</h1>
+            <h1 className="text-sm font-bold text-slate-900 dark:text-white">{t("admin.dashboard") || "لوحة التحكم"}</h1>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-lg text-[#57534e] hover:bg-[#fff7ed]"
+            className="h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
             onClick={closeMobile}
           >
             <X className="h-4 w-4" />
@@ -476,10 +527,20 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
           activityCount={activityCount}
           unreadContacts={unreadContacts}
         />
-        {/* Mobile drawer footer */}
-        <div className="mt-auto border-t border-[#ea580c]/10 p-3">
-          <p className="text-center text-[10px] font-medium text-[#57534e]">
-            {t("admin.swipe_to_close") || "Swipe right to close"} →
+        <div className="mt-auto space-y-2 border-t border-slate-200 p-3 dark:border-white/10">
+          <button
+            type="button"
+            onClick={() => {
+              navigate({ page: "home" })
+              closeMobile()
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {t("admin.back_to_site") || "العودة للموقع"}
+          </button>
+          <p className="text-center text-[10px] text-slate-400 dark:text-slate-500">
+            {t("admin.swipe_to_close") || "اسحب لليمين للإغلاق"} →
           </p>
         </div>
       </MobileDrawer>
@@ -492,14 +553,49 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
         className="relative z-10 min-w-0 flex-1 max-lg:!mr-0 lg:mr-[260px]"
       >
-        <AdminHeader
-          activeTab={activeTab}
-          setTab={setTab}
-          onMobileMenuToggle={() => setMobileOpen(true)}
-          onOpenSearch={() => setSearchOpen(true)}
-        />
+        {!isOverview && (
+          <AdminHeader
+            activeTab={activeTab}
+            setTab={setTab}
+            onMobileMenuToggle={() => setMobileOpen(true)}
+            onOpenSearch={() => setSearchOpen(true)}
+          />
+        )}
 
-        <div className="px-4 pb-6 pt-4 sm:px-6 sm:pb-8 lg:px-8 lg:pb-10">
+        {isOverview && (
+          <div
+            className={cn(
+              "sticky top-0 z-30 flex h-14 items-center border-b px-4 backdrop-blur-sm lg:hidden",
+              isDark
+                ? "border-white/5 bg-[#0a0f1e]/95"
+                : "border-slate-200 bg-white/95"
+            )}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-8 w-8",
+                isDark
+                  ? "text-slate-300 hover:bg-white/10 hover:text-white"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              )}
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+            <span
+              className={cn(
+                "ms-2 text-sm font-semibold",
+                isDark ? "text-white" : "text-slate-900"
+              )}
+            >
+              {t("admin.dashboard") || "لوحة التحكم"}
+            </span>
+          </div>
+        )}
+
+        <div className={isOverview ? "px-4 pb-8 pt-4 sm:px-6 lg:px-8" : "px-4 pb-6 pt-4 sm:px-6 sm:pb-8 lg:px-8 lg:pb-10"}>
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -511,7 +607,16 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
                   ? { duration: 0.15 }
                   : { type: "spring", stiffness: 320, damping: 28, mass: 0.85 }
               }
-              className="admin-vivid-surface admin-vivid-surface-image mx-auto max-w-7xl rounded-xl border border-[#e5e7eb] bg-white p-5 shadow-sm sm:p-7"
+              className={
+                isOverview
+                  ? "mx-auto max-w-7xl"
+                  : cn(
+                      "admin-pro-tab-surface mx-auto max-w-7xl rounded-2xl border p-5 backdrop-blur-sm sm:p-7",
+                      isDark
+                        ? "border-white/8 bg-[#111827]/80"
+                        : "border-slate-200 bg-white shadow-sm"
+                    )
+              }
             >
               <div className="admin-modern-tabs relative">{children}</div>
             </motion.div>
@@ -522,5 +627,6 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
       {/* ── Search Command Palette ── */}
       <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} onNavigate={setTab} />
     </div>
+    </AdminNavContext.Provider>
   )
 }

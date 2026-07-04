@@ -1,3 +1,6 @@
+import type { NewsTickerStyle } from "@/lib/news-ticker"
+import { DEFAULT_NEWS_TICKER_ITEMS_AR, parseNewsTickerStyle } from "@/lib/news-ticker"
+
 export type HomeMediaType = "image" | "video"
 
 export type LocalizedHomeBannerText = {
@@ -25,14 +28,10 @@ export type HomeBannersConfig = {
     imageSlides: string[]
   }
   newsTickerItems: string[]
+  newsTickerStyle: NewsTickerStyle
 }
 
-const DEFAULT_NEWS_ITEMS = [
-  "Launching new enterprise platforms this quarter",
-  "24/7 technical support now available for all clients",
-  "New AI-powered modules added to our ecosystem",
-  "International expansion across multiple industries",
-]
+const DEFAULT_NEWS_ITEMS = DEFAULT_NEWS_TICKER_ITEMS_AR
 
 const DEFAULT_HERO_IMAGES = Array.from({ length: 20 }, (_, index) => `home_hero_image_${index + 1}`)
 
@@ -99,6 +98,7 @@ export function buildHomeBannersConfig(settings: Record<string, string>): HomeBa
       imageSlides: resolveHeroSlides(settings),
     },
     newsTickerItems: parseHomeNewsTicker(settings.home_news_ticker_items ?? null),
+    newsTickerStyle: parseNewsTickerStyle(settings.home_news_ticker_style ?? null),
   }
 }
 
@@ -122,5 +122,6 @@ export const HOME_BANNERS_SETTING_KEYS = [
   "home_hero_video_url",
   "home_hero_video_poster",
   "home_news_ticker_items",
+  "home_news_ticker_style",
   ...DEFAULT_HERO_IMAGES,
 ] as const

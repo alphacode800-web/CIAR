@@ -48,7 +48,8 @@ export function BulkActionsBar({
               <span className="text-xs font-bold">{selectedCount}</span>
             </div>
             <span className="text-sm font-medium text-foreground">
-              {t("admin.items_selected") || `${selectedCount} item${selectedCount > 1 ? "s" : ""} selected`}
+              {t("admin.items_selected").replace("{n}", String(selectedCount)) ||
+                `${selectedCount} محدد`}
             </span>
           </div>
 
@@ -83,7 +84,7 @@ export function BulkActionsBar({
             >
               <X className="h-3.5 w-3.5" />
               <span className="sr-only">
-                {t("admin.clear_selection") || "Clear selection"}
+                {t("admin.clear_selection")}
               </span>
             </Button>
           </div>

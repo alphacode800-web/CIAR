@@ -70,16 +70,14 @@ export function QuickStats({ stats, columns = 4 }: QuickStatsProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.08, duration: 0.45, ease: "easeOut" }}
             className={cn(
-              "admin-vivid-stat admin-vivid-stat-image group relative overflow-hidden rounded-md border-0 p-5 text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
-              stat.color
+              "admin-pro-stat-tile group relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
+              "border-slate-200 bg-white hover:border-slate-300",
+              "dark:border-white/10 dark:bg-[#111827]/90 dark:hover:border-white/15"
             )}
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-black/10" />
-
             <div className="relative z-10">
-              {/* Icon & Trend */}
               <div className="flex items-center justify-between mb-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded bg-black/15 ring-1 ring-white/20">
+                <div className={cn("flex h-11 w-11 items-center justify-center rounded-lg", stat.color)}>
                   <Icon className={cn("h-5 w-5", stat.iconColor)} />
                 </div>
                 {stat.trend && (
@@ -102,21 +100,20 @@ export function QuickStats({ stats, columns = 4 }: QuickStatsProps) {
               </div>
 
               {/* Value */}
-              <div className="text-4xl font-bold tracking-tight text-white">
+              <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                 {isNumber ? (
                   <CountUp target={stat.value as number} />
                 ) : (
                   stat.value
                 )}
                 {stat.suffix && (
-                  <span className="ml-1 text-lg font-normal text-white/90">
+                  <span className="ml-1 text-lg font-normal text-slate-500 dark:text-slate-400">
                     {stat.suffix}
                   </span>
                 )}
               </div>
 
-              {/* Label */}
-              <p className="mt-1 text-base font-semibold text-white/95">{stat.label}</p>
+              <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{stat.label}</p>
             </div>
           </motion.div>
         )

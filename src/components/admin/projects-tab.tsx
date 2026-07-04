@@ -589,7 +589,7 @@ export function ProjectsTab() {
                     {p.featured && (
                       <Badge className="gap-1 border-0 bg-[oklch(0.76_0.19_48)] px-2 py-0.5 text-[10px] font-semibold text-black">
                         <Star className="h-3 w-3" />
-                        Featured
+                        {t("admin.featured") || "مميز"}
                       </Badge>
                     )}
                     <Badge

@@ -195,14 +195,16 @@ export function ContactPage() {
     }
   }
 
-  const inputClasses = (field: keyof FieldErrors) =>
+  const fieldClasses = (field: keyof FieldErrors) =>
     cn(
-      "rounded-xl border-border/50 glass-subtle bg-background/60",
-      "focus:ring-[oklch(0.78_0.14_82/30%)] focus:border-[oklch(0.78_0.14_82/40%)]",
-      "placeholder:text-muted-foreground/60",
+      "rounded-xl border-2 border-foreground/15 bg-background text-foreground shadow-sm",
+      "focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20",
+      "placeholder:text-muted-foreground",
       "transition-all duration-200",
-      errors[field] && "border-destructive focus:ring-destructive/30 focus:border-destructive/50"
+      errors[field] && "border-destructive focus-visible:ring-destructive/25 focus-visible:border-destructive"
     )
+
+  const inputClasses = (field: keyof FieldErrors) => cn(fieldClasses(field), "h-11")
 
   const buildContactText = () => {
     const lines = [
@@ -375,12 +377,12 @@ export function ContactPage() {
 
           {/* ── Form Column (right) ────────────────────────────────────────── */}
           <AnimatedSection delay={0.2} className="lg:col-span-3">
-            <div className="rounded-2xl border border-border/50 glass-strong p-6 sm:p-8">
+            <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Name + Email row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="contact-name" className="text-sm font-medium">
+                    <Label htmlFor="contact-name" className="text-sm font-semibold text-foreground">
                       {t("contact.name_label")}
                     </Label>
                     <Input
@@ -396,7 +398,7 @@ export function ContactPage() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contact-email" className="text-sm font-medium">
+                    <Label htmlFor="contact-email" className="text-sm font-semibold text-foreground">
                       {t("contact.email_label2")}
                     </Label>
                     <Input
@@ -413,11 +415,11 @@ export function ContactPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contact-phone" className="text-sm font-medium">
+                  <Label htmlFor="contact-phone" className="text-sm font-semibold text-foreground">
                     {t("contact.phone_label") || "Phone Number"}
                   </Label>
                   <div className="relative">
-                    <Phone className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                    <Phone className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="contact-phone"
                       type="tel"
@@ -434,7 +436,7 @@ export function ContactPage() {
 
                 {/* Subject */}
                 <div className="space-y-2">
-                  <Label htmlFor="contact-subject" className="text-sm font-medium">
+                  <Label htmlFor="contact-subject" className="text-sm font-semibold text-foreground">
                     {t("contact.subject_label")}
                   </Label>
                   <Input
@@ -452,7 +454,7 @@ export function ContactPage() {
 
                 {/* Message */}
                 <div className="space-y-2">
-                  <Label htmlFor="contact-message" className="text-sm font-medium">
+                  <Label htmlFor="contact-message" className="text-sm font-semibold text-foreground">
                     {t("contact.message_label")}
                   </Label>
                   <Textarea
@@ -462,7 +464,7 @@ export function ContactPage() {
                     placeholder={t("contact.message_placeholder")}
                     required
                     rows={6}
-                    className={cn(inputClasses("message"), "resize-none")}
+                    className={cn(fieldClasses("message"), "min-h-[9rem] resize-none py-3")}
                   />
                   {errors.message && (
                     <p className="text-xs text-destructive mt-1.5">{errors.message}</p>

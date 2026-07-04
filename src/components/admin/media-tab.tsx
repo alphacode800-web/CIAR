@@ -74,13 +74,28 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
+function formatDate(dateStr: string, locale = "ar-SA"): string {
+  return new Date(dateStr).toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
     year: "numeric",
   })
 }
+
+const FILE_TYPE_FILTERS = [
+  { value: "all", labelKey: "admin.filter_all", fallback: "كل الملفات", icon: HardDrive },
+  { value: "image", labelKey: "admin.filter_image", fallback: "الصور", icon: ImageIcon },
+  { value: "document", labelKey: "admin.filter_document", fallback: "المستندات", icon: FileText },
+  { value: "video", labelKey: "admin.filter_video", fallback: "الفيديو", icon: Video },
+] as const
+
+const CATEGORIES = [
+  { value: "all", labelKey: "admin.category_all", fallback: "كل التصنيفات" },
+  { value: "hero", labelKey: "admin.category_hero", fallback: "الهيدر" },
+  { value: "project", labelKey: "admin.category_project", fallback: "المنصات" },
+  { value: "about", labelKey: "admin.category_about", fallback: "من نحن" },
+  { value: "general", labelKey: "admin.category_general", fallback: "عام" },
+] as const
 
 function normalizeMimeType(mimeType: unknown): string {
   return typeof mimeType === "string" ? mimeType.toLowerCase() : ""
@@ -114,21 +129,6 @@ const ACCEPTED_TYPES = [
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
-
-const FILE_TYPE_FILTERS = [
-  { value: "all", label: "All Files", icon: HardDrive },
-  { value: "image", label: "Images", icon: ImageIcon },
-  { value: "document", label: "Documents", icon: FileText },
-  { value: "video", label: "Videos", icon: Video },
-]
-
-const CATEGORIES = [
-  { value: "all", label: "All Categories" },
-  { value: "hero", label: "Hero" },
-  { value: "project", label: "Project" },
-  { value: "about", label: "About" },
-  { value: "general", label: "General" },
-]
 
 /* ─── Main Component ────────────────────────────────────────────────────── */
 
@@ -367,7 +367,7 @@ export function MediaTab() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <ImageIcon className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
           {t("admin.media_library") || "Media Library"}
         </h2>
@@ -486,7 +486,7 @@ export function MediaTab() {
 
       {/* Filter bar - File type pills + Category */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border">
           {FILE_TYPE_FILTERS.map((filter) => {
             const Icon = filter.icon
             return (
@@ -496,12 +496,12 @@ export function MediaTab() {
                 className={cn(
                   "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5",
                   fileTypeFilter === filter.value
-                    ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/5%)]"
+                    ? "bg-primary/12 text-primary shadow-sm border border-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background border border-transparent"
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
-                {t(`admin.filter_${filter.value}`) || filter.label}
+                {t(filter.labelKey) || filter.fallback}
               </button>
             )
           })}
@@ -510,13 +510,13 @@ export function MediaTab() {
         <div className="flex items-center gap-2">
           <Filter className="h-3.5 w-3.5 text-muted-foreground" />
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-40 rounded-xl h-8 text-xs bg-[oklch(0.14_0.028_265/40%)] border-[oklch(0.76_0.19_48/8%)]">
+            <SelectTrigger className="w-40 rounded-xl h-8 text-xs bg-background border-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {CATEGORIES.map((cat) => (
                 <SelectItem key={cat.value} value={cat.value} className="text-xs">
-                  {t(`admin.category_${cat.value}`) || cat.label}
+                  {t(cat.labelKey) || cat.fallback}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -530,8 +530,8 @@ export function MediaTab() {
             className={cn(
               "ms-auto flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
               selectedIds.size === filteredMedia.length
-                ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)]"
-                : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/5%)]"
+                ? "bg-primary/12 text-primary border border-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
             )}
           >
             <Check className="h-3.5 w-3.5" />
@@ -551,10 +551,10 @@ export function MediaTab() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-dashed border-[oklch(0.76_0.19_48/15%)] bg-[oklch(0.14_0.028_265/20%)]"
+          className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-dashed border-border bg-muted/40"
         >
-          <div className="w-20 h-20 rounded-full bg-[oklch(0.76_0.19_48/8%)] flex items-center justify-center mb-6">
-            <ImageIcon className="h-10 w-10 text-[oklch(0.76_0.19_48/30%)]" />
+          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
+            <ImageIcon className="h-10 w-10 text-muted-foreground" />
           </div>
           <h3 className="text-lg font-semibold text-muted-foreground mb-2">
             {fileTypeFilter !== "all" || category !== "all"

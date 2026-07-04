@@ -6,7 +6,6 @@ import {
   Menu,
   Search,
   Bell,
-  Globe,
   ChevronRight,
   LogOut,
   Settings,
@@ -33,10 +32,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useI18n, ALL_LOCALES, LOCALE_NAMES } from "@/lib/i18n-context"
+import { useI18n } from "@/lib/i18n-context"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter as useHashRouter } from "@/lib/router-context"
+import { ThemeSwitcher } from "@/components/layout/theme-switcher"
 import { usePathname as useNextPathname, useRouter as useNextRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
@@ -121,14 +122,22 @@ export function AdminHeader({
   onMobileMenuToggle,
   onOpenSearch,
 }: AdminHeaderProps) {
-  const { t, locale, setLocale } = useI18n()
+  const { t } = useI18n()
   const { user, logout } = useAuth()
   const { navigate } = useHashRouter()
   const nextPathname = useNextPathname()
   const nextRouter = useNextRouter()
+  const { resolvedTheme } = useTheme()
+  const [themeMounted, setThemeMounted] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifCount, setNotifCount] = useState(3)
   const time = useLiveClock()
+
+  useEffect(() => {
+    setThemeMounted(true)
+  }, [])
+
+  const isDark = themeMounted && resolvedTheme === "dark"
 
   const handleLogout = () => {
     logout()
@@ -177,7 +186,14 @@ export function AdminHeader({
   const tabDescriptionText = tabDesc ? t(tabDesc.key) || tabDesc.fallback : ""
 
   return (
-    <header className="admin-vivid-header admin-vivid-header-image sticky top-0 z-30 border-b border-[#e5e7eb] bg-white text-foreground shadow-sm">
+    <header
+      className={cn(
+        "admin-pro-header sticky top-0 z-30 border-b shadow-sm backdrop-blur-md",
+        isDark
+          ? "border-white/8 bg-[#0a0f1e]/95 text-slate-200"
+          : "border-slate-200 bg-white/95 text-slate-900"
+      )}
+    >
       <div className="flex h-14 items-center justify-between gap-4 px-4 sm:h-16 sm:px-6">
         {/* ── Left Section ── */}
         <div className="flex min-w-0 items-center gap-3">
@@ -185,7 +201,12 @@ export function AdminHeader({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 shrink-0 rounded-lg hover:bg-[#fff7ed] hover:text-[#c2410c] lg:hidden"
+            className={cn(
+              "h-8 w-8 shrink-0 rounded-lg lg:hidden",
+              isDark
+                ? "text-slate-300 hover:bg-white/10 hover:text-white"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            )}
             onClick={onMobileMenuToggle}
           >
             <Menu className="h-4 w-4" />
@@ -197,16 +218,24 @@ export function AdminHeader({
               <BreadcrumbItem>
                 <BreadcrumbLink
                   onClick={() => setTab("overview")}
-                  className="cursor-pointer text-[#78716c] transition-colors hover:text-[#ea580c]"
+                  className={cn(
+                    "cursor-pointer transition-colors hover:text-orange-500",
+                    isDark ? "text-slate-400 hover:text-orange-400" : "text-slate-500"
+                  )}
                 >
                   {t("admin.title") || "Admin"}
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator>
-                <ChevronRight className="h-3 w-3 text-[#d6d3d1]" />
+                <ChevronRight className="h-3 w-3 text-slate-500" />
               </BreadcrumbSeparator>
               <BreadcrumbItem>
-                <BreadcrumbPage className="font-semibold tracking-tight text-[#1c1917] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">
+                <BreadcrumbPage
+                  className={cn(
+                    "font-semibold tracking-tight",
+                    isDark ? "text-white" : "text-slate-900"
+                  )}
+                >
                   {currentTabLabel}
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -214,7 +243,12 @@ export function AdminHeader({
           </Breadcrumb>
 
           {/* Mobile tab label */}
-          <span className="truncate text-sm font-medium text-[#1c1917] sm:hidden">
+          <span
+            className={cn(
+              "truncate text-sm font-medium sm:hidden",
+              isDark ? "text-white" : "text-slate-900"
+            )}
+          >
             {currentTabLabel}
           </span>
         </div>
@@ -225,20 +259,20 @@ export function AdminHeader({
             type="button"
             onClick={onOpenSearch}
             className={cn(
-              "group flex w-full max-w-xs cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm",
-              "border border-[#d6d3d1] bg-white shadow-sm",
-              "text-[#57534e] transition-all duration-300 ease-out",
-              "hover:border-[#ea580c]/40 hover:bg-[#fffdfb]"
+              "group flex w-full max-w-xs cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm shadow-sm transition-all duration-300 ease-out",
+              isDark
+                ? "border border-white/10 bg-white/5 text-slate-400 hover:border-orange-500/30 hover:bg-white/8"
+                : "border border-slate-200 bg-slate-50 text-slate-500 hover:border-orange-300 hover:bg-white"
             )}
           >
-            <Search className="h-3.5 w-3.5 shrink-0 text-[#a8a29e] transition-colors group-hover:text-[#ea580c]" />
-            <span className="flex-1 text-start text-xs text-[#a8a29e]">
+            <Search className="h-3.5 w-3.5 shrink-0 text-slate-500 transition-colors group-hover:text-orange-400" />
+            <span className="flex-1 text-start text-xs text-slate-400">
               {t("admin.search_placeholder") || "Search pages, actions..."}
             </span>
             <motion.kbd
               animate={{ opacity: [0.55, 1, 0.55] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="hidden items-center gap-0.5 rounded-md border border-[#d6d3d1] bg-[#fafaf9] px-1.5 py-0.5 font-mono text-[10px] text-[#78716c] shadow-[inset_0_1px_0_rgba(255,255,255,1)] sm:inline-flex"
+              className="hidden items-center gap-0.5 rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-400 sm:inline-flex"
             >
               <span className="text-[9px]">⌘</span>K
             </motion.kbd>
@@ -247,55 +281,25 @@ export function AdminHeader({
 
         {/* ── Right Section ── */}
         <div className="flex shrink-0 items-center gap-2">
-          {/* Language switcher */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-lg hover:bg-[#fff7ed] hover:text-[#c2410c]"
-                aria-label={t("common.language") || "Change language"}
-              >
-                <Globe className="h-4 w-4 text-[#78716c]" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-44 rounded-xl border border-[#d6d3d1] bg-[#fffdfb] shadow-md"
-            >
-              {ALL_LOCALES.map((loc) => (
-                <DropdownMenuItem
-                  key={loc}
-                  onClick={() => setLocale(loc)}
-                  className={cn(
-                    "cursor-pointer text-sm text-[#44403c]",
-                    locale === loc ? "bg-[#fff7ed] font-medium text-[#c2410c]" : ""
-                  )}
-                >
-                  <span className="w-7 font-mono text-xs uppercase">{loc}</span>
-                  <span className="ms-2">{LOCALE_NAMES[loc]}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ThemeSwitcher />
 
           {/* Live Clock */}
-          <div className="hidden items-center gap-1.5 rounded-lg px-2 py-1 text-[#a8a29e] lg:flex">
+          <div className="hidden items-center gap-1.5 rounded-lg px-2 py-1 text-slate-400 lg:flex">
             <Clock className="h-3 w-3" />
             <span className="font-mono text-xs tabular-nums tracking-wide">{time}</span>
           </div>
 
           {/* Divider */}
-          <div className="mx-0.5 hidden h-5 w-px bg-[#e7e5e4] lg:block" />
+          <div className="mx-0.5 hidden h-5 w-px bg-white/10 lg:block" />
 
           {/* Mobile search button */}
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-lg hover:bg-[#fff7ed] hover:text-[#c2410c] md:hidden"
+            className="h-8 w-8 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white md:hidden"
             onClick={onOpenSearch}
           >
-            <Search className="h-4 w-4 text-[#78716c]" />
+            <Search className="h-4 w-4" />
           </Button>
 
           {/* Notification bell */}
@@ -303,10 +307,10 @@ export function AdminHeader({
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-8 w-8 hover:bg-[#fff7ed] hover:text-[#c2410c]"
+              className="relative h-8 w-8 text-slate-300 hover:bg-white/10 hover:text-white"
               onClick={() => setNotifOpen(!notifOpen)}
             >
-              <Bell className="h-4 w-4 text-[#57534e]" />
+              <Bell className="h-4 w-4" />
               {notifCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
@@ -330,55 +334,55 @@ export function AdminHeader({
           </div>
 
           {/* Separator */}
-          <div className="mx-1 hidden h-6 w-px bg-[#e7e5e4] sm:block" />
+          <div className="mx-1 hidden h-6 w-px bg-white/10 sm:block" />
 
           {/* User avatar dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 gap-2 rounded-lg px-2 hover:bg-[#fff7ed]">
-                <Avatar className="h-7 w-7 rounded-lg border border-[#fed7aa] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-                  <AvatarImage src="/logo.png" alt={t("admin.title") || "Admin"} />
-                  <AvatarFallback className="rounded-lg bg-gradient-to-b from-[#fff7ed] to-[#ffedd5] text-[11px] font-bold text-[#c2410c]">
+              <Button variant="ghost" className="h-8 gap-2 rounded-lg px-2 text-slate-200 hover:bg-white/10 hover:text-white">
+                <Avatar className="h-7 w-7 rounded-lg border border-white/10 shadow-sm">
+                  <AvatarImage src="/logo.png" alt={t("admin.title") || "لوحة الإدارة"} />
+                  <AvatarFallback className="rounded-lg bg-orange-500/20 text-[11px] font-bold text-orange-300">
                     AD
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden text-xs font-medium text-[#44403c] sm:inline">
-                  {t("admin.title") || "Admin"}
+                <span className="hidden text-xs font-medium text-white sm:inline">
+                  {t("admin.title") || "لوحة الإدارة"}
                 </span>
-                <ChevronDown className="hidden h-3 w-3 text-[#a8a29e] sm:block" />
+                <ChevronDown className="hidden h-3 w-3 text-slate-400 sm:block" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-56 rounded-xl border border-[#d6d3d1] bg-[#fffdfb] shadow-md"
+              className="w-56 rounded-xl border border-border bg-popover shadow-md"
             >
-              <DropdownMenuLabel className="text-xs font-normal text-[#78716c]">
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-semibold text-[#1c1917]">{t("admin.admin_user") || "Admin User"}</span>
+                  <span className="text-sm font-semibold text-foreground">{t("admin.admin_user") || "مدير النظام"}</span>
                   <span className="truncate">{user?.email || user?.phone || "—"}</span>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-[#fed7aa]/60" />
+              <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem className="cursor-pointer gap-2.5 text-[#44403c] focus:bg-[#fff7ed]">
-                  <User className="h-4 w-4 text-[#a8a29e]" />
-                  {t("admin.profile") || "Profile"}
+                <DropdownMenuItem className="cursor-pointer gap-2.5 focus:bg-muted">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  {t("admin.profile") || "الملف الشخصي"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="cursor-pointer gap-2.5 text-[#44403c] focus:bg-[#fff7ed]"
+                  className="cursor-pointer gap-2.5 focus:bg-muted"
                   onClick={() => setTab("settings")}
                 >
-                  <Settings className="h-4 w-4 text-[#a8a29e]" />
-                  {t("admin.settings") || "Settings"}
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  {t("admin.settings") || "الإعدادات"}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-[#fed7aa]/60" />
+              <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="cursor-pointer gap-2.5 text-red-600 focus:bg-red-50 focus:text-red-700"
+                className="cursor-pointer gap-2.5 text-destructive focus:bg-destructive/10 focus:text-destructive"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
-                {t("admin.logout") || "Log out"}
+                {t("admin.logout") || "تسجيل الخروج"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -394,8 +398,13 @@ export function AdminHeader({
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
           className="hidden px-4 pb-3 sm:block sm:px-6"
         >
-          <div className="rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 py-2 shadow-sm">
-            <p className="text-[11px] leading-relaxed text-[#57534e]">{tabDescriptionText}</p>
+          <div
+            className={cn(
+              "rounded-xl border px-3 py-2",
+              isDark ? "border-white/8 bg-[#111827]" : "border-slate-200 bg-slate-50"
+            )}
+          >
+            <p className={cn("text-[11px] leading-relaxed", isDark ? "text-slate-400" : "text-slate-600")}>{tabDescriptionText}</p>
           </div>
         </motion.div>
       )}
@@ -423,28 +432,28 @@ function NotificationDropdown({
       exit={{ opacity: 0, y: -4 }}
       transition={{ duration: 0.15 }}
       className={cn(
-        "absolute end-0 top-full z-50 mt-1.5 w-72 rounded-xl border border-[#d6d3d1]",
-        "bg-[#fffdfb]",
+        "absolute end-0 top-full z-50 mt-1.5 w-72 rounded-xl border border-border",
+        "bg-popover",
         "shadow-md"
       )}
       data-notif-area
     >
-      <div className="flex items-center justify-between border-b border-[#fed7aa]/60 px-4 py-3">
-        <span className="text-xs font-semibold text-[#1c1917]">
-          {t("admin.notifications") || "Notifications"}
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <span className="text-xs font-semibold text-foreground">
+          {t("admin.notifications") || "الإشعارات"}
         </span>
         {count > 0 && (
           <button
             onClick={onMarkAllRead}
-            className="cursor-pointer text-[10px] font-medium text-[#c2410c] hover:underline"
+            className="cursor-pointer text-[10px] font-medium text-primary hover:underline"
           >
-            {t("admin.mark_all_read") || "Mark all read"}
+            {t("admin.mark_all_read") || "تعليم الكل كمقروء"}
           </button>
         )}
       </div>
       <div className="p-3 text-center">
-        <p className="text-xs text-[#78716c]">
-          {t("admin.notification_hint") || "Open notification panel for details"}
+        <p className="text-xs text-muted-foreground">
+          {t("admin.notification_hint") || "افتح لوحة الإشعارات للتفاصيل"}
         </p>
       </div>
     </motion.div>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Geist, Geist_Mono, Changa, Aref_Ruqaa_Ink } from "next/font/google"
+import { Geist, Geist_Mono, Changa, Cairo, Tajawal, El_Messiri, Plus_Jakarta_Sans, Aref_Ruqaa_Ink } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
@@ -25,6 +25,34 @@ const changa = Changa({
   variable: "--font-changa",
   subsets: ["arabic", "latin"],
   weight: ["200", "300", "400", "500", "600", "700", "800"],
+  display: "swap",
+})
+
+const cairo = Cairo({
+  variable: "--font-cairo",
+  subsets: ["arabic", "latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+})
+
+const tajawal = Tajawal({
+  variable: "--font-tajawal",
+  subsets: ["arabic", "latin"],
+  weight: ["300", "400", "500", "700", "800"],
+  display: "swap",
+})
+
+const elMessiri = El_Messiri({
+  variable: "--font-el-messiri",
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+})
+
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 })
 
@@ -84,7 +112,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${changa.variable} ${arefRuqaaInk.variable} font-sans antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${changa.variable} ${cairo.variable} ${tajawal.variable} ${elMessiri.variable} ${plusJakarta.variable} ${arefRuqaaInk.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"

@@ -1,61 +1,28 @@
 "use client"
 
-import { useRef, useEffect, useMemo, useState } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { useEffect, useMemo, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   ArrowRight,
   Layers,
-  Sparkles,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
 import type { HomeBannersConfig } from "@/lib/home-banners"
-
-// New home section components
+import { DEFAULT_HERO_IMAGE_URLS } from "@/lib/default-hero-images"
 import { MarqueeBanner } from "@/components/home/MarqueeBanner"
 import { AboutBrief } from "@/components/home/AboutBrief"
 import { ServicesGrid } from "@/components/home/ServicesGrid"
 import { HowItWorks } from "@/components/home/HowItWorks"
-import { TechStack } from "@/components/home/TechStack"
 import { Testimonials } from "@/components/home/Testimonials"
-import { GlobalPresence } from "@/components/home/GlobalPresence"
 import { TrustBadges } from "@/components/home/TrustBadges"
 import { AwardsBanner } from "@/components/home/AwardsBanner"
-import { TeamHighlight } from "@/components/home/TeamHighlight"
 import { NewsUpdates } from "@/components/home/NewsUpdates"
 import { FAQSection } from "@/components/home/FAQSection"
 import { NewsletterCTA } from "@/components/home/NewsletterCTA"
 import { PaymentMethods } from "@/components/home/PaymentMethods"
-
-/** 20 distinct wide shots: travel, property, retail, mobility, logistics, teams, commerce, hospitality, etc. Replace via الإعدادات → الخلفيات. */
-const u = (id: string) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1920&q=75`
-
-const DEFAULT_HERO_IMAGES = [
-  u("1436491865332-7a61a109cc05"), // aviation / tourism
-  u("1560518883-ce09059eeffa"), // real estate keys
-  u("1441986300917-64674bd600d8"), // retail / e‑mall
-  u("1492144534655-ae79c964c9d7"), // automotive
-  u("1586528116311-ad8dd3c8310d"), // warehouse / shipping
-  u("1522071820081-009f0129c71c"), // collaboration / jobs
-  u("1460925895917-afdab827c52f"), // analytics / ads tech
-  u("1556742049-0cfed4f6a45d"), // payments / commerce
-  u("1517248135467-4c7edcad34c4"), // hospitality
-  u("1445205170230-053b83016050"), // fashion retail
-  u("1507679799987-c73779587ccf"), // professional services
-  u("1504307651254-35680f356dfd"), // maintenance / field services
-  u("1544191693-867a14dca8cf"), // luxury / VIP
-  u("1486406146926-c627a92ad3b4"), // corporate / investment mood
-  u("1556761175-5973dc0f32e7"), // product / campaign workspace
-  u("1578574577315-3fbeb0ce23b9"), // global logistics
-  u("1521737604893-d14cc237f11d"), // marketing / creative
-  u("1454165804606-c3d568bc25a3"), // partnerships
-  u("1497366216548-37526070297c"), // modern workspace
-  u("1489515217757-5fd1b906566c"), // digital / platform lifestyle
-]
 
 interface FeaturedProject {
   id: string
@@ -99,9 +66,9 @@ type PlatformBanner = {
 }
 
 const hero = (a: number, b: number, c: number) => ({
-  imageUrl1: DEFAULT_HERO_IMAGES[a % DEFAULT_HERO_IMAGES.length],
-  imageUrl2: DEFAULT_HERO_IMAGES[b % DEFAULT_HERO_IMAGES.length],
-  imageUrl3: DEFAULT_HERO_IMAGES[c % DEFAULT_HERO_IMAGES.length],
+  imageUrl1: DEFAULT_HERO_IMAGE_URLS[a % DEFAULT_HERO_IMAGE_URLS.length],
+  imageUrl2: DEFAULT_HERO_IMAGE_URLS[b % DEFAULT_HERO_IMAGE_URLS.length],
+  imageUrl3: DEFAULT_HERO_IMAGE_URLS[c % DEFAULT_HERO_IMAGE_URLS.length],
 })
 
 const FALLBACK_BANNERS: PlatformBanner[] = [
@@ -122,49 +89,75 @@ const FALLBACK_BANNERS: PlatformBanner[] = [
 export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
   const { t, locale } = useI18n()
   const { navigate } = useRouter()
-  const heroRef = useRef<HTMLDivElement>(null)
-
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  })
-
-  const y = useTransform(scrollYProgress, [0, 1], [0, 150])
-  const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.97])
+  const activeLocale = locale === "ar" ? "ar" : "en"
 
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [heroImages, setHeroImages] = useState<string[]>(DEFAULT_HERO_IMAGES)
+  const [heroImages, setHeroImages] = useState<string[]>([...DEFAULT_HERO_IMAGE_URLS])
   const [platformBanners, setPlatformBanners] = useState<PlatformBanner[]>(FALLBACK_BANNERS)
-  const activeHeroImages = useMemo(() => {
-    const fromConfig = Array.isArray(homeConfig?.hero?.imageSlides) ? homeConfig.hero.imageSlides : []
-    const cleaned = (fromConfig.length > 0 ? fromConfig : heroImages).map((url) => String(url || "").trim()).filter(Boolean)
-    return cleaned.length > 0 ? cleaned : DEFAULT_HERO_IMAGES
-  }, [heroImages, homeConfig?.hero?.imageSlides])
+  const [brokenHeroUrls, setBrokenHeroUrls] = useState<Set<string>>(() => new Set())
 
   const heroBackgroundType = homeConfig?.hero?.backgroundType === "video" ? "video" : "image"
   const heroVideoUrl = homeConfig?.hero?.backgroundVideoUrl || ""
   const heroVideoPoster = homeConfig?.hero?.backgroundVideoPoster || ""
   const heroTitle = locale === "ar" ? homeConfig?.hero?.title?.ar : homeConfig?.hero?.title?.en
   const heroSubtitle = locale === "ar" ? homeConfig?.hero?.subtitle?.ar : homeConfig?.hero?.subtitle?.en
-  const heroPrimaryLabel = locale === "ar" ? homeConfig?.hero?.ctaPrimary?.ar : homeConfig?.hero?.ctaPrimary?.en
-  const heroSecondaryLabel = locale === "ar" ? homeConfig?.hero?.ctaSecondary?.ar : homeConfig?.hero?.ctaSecondary?.en
 
-  const resolveRouteFromSetting = (raw: string | undefined, fallback: "projects" | "about") => {
-    const value = String(raw || "").trim().toLowerCase()
-    if (value === "home" || value === "projects" || value === "about" || value === "contact") return value
-    return fallback
-  }
-  const primaryRoute = resolveRouteFromSetting(homeConfig?.hero?.ctaPrimaryHref, "projects")
-  const secondaryRoute = resolveRouteFromSetting(homeConfig?.hero?.ctaSecondaryHref, "about")
+  const platformHeroImages = useMemo(() => {
+    const urls = platformBanners
+      .map((banner) => String(banner.imageUrl1 || "").trim())
+      .filter(Boolean)
+    return [...new Set(urls)].filter((url) => !brokenHeroUrls.has(url))
+  }, [platformBanners, brokenHeroUrls])
+
+  const activeHeroImages = useMemo(() => {
+    const fromConfig = Array.isArray(homeConfig?.hero?.imageSlides)
+      ? homeConfig.hero.imageSlides.map((url) => String(url || "").trim()).filter(Boolean)
+      : []
+    if (fromConfig.length > 0) {
+      return fromConfig.filter((url) => !brokenHeroUrls.has(url))
+    }
+
+    if (platformHeroImages.length > 0) return platformHeroImages
+
+    const cleaned = heroImages.map((url) => String(url || "").trim()).filter(Boolean)
+    const usable = cleaned.filter((url) => !brokenHeroUrls.has(url))
+    return usable.length > 0 ? usable : [...DEFAULT_HERO_IMAGE_URLS]
+  }, [heroImages, homeConfig?.hero?.imageSlides, platformHeroImages, brokenHeroUrls])
+
+  const HERO_SLIDE_INTERVAL_MS = 3500
+
+  const headerSlides = useMemo(() => activeHeroImages.slice(0, 5), [activeHeroImages])
+
+  const displayTitle =
+    heroTitle ||
+    (activeLocale === "ar" ? "منصتنا - منظومة رقمية متكاملة" : "Our Platform - Integrated Digital Ecosystem")
+
+  const displaySubtitle =
+    heroSubtitle ||
+    t("hero.subtitle") ||
+    (activeLocale === "ar"
+      ? "جميع المنصات في واجهة واحدة حديثة. كل منصة تُدار من لوحة الأدمن مع صور ومحتوى ديناميكي."
+      : "All platforms in one modern experience. Every card is managed dynamically from the admin panel.")
 
   useEffect(() => {
-    if (activeHeroImages.length <= 1) return
+    if (heroBackgroundType === "video" && heroVideoUrl) return
+    if (headerSlides.length <= 1) return
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % activeHeroImages.length)
-    }, 7000)
+      setCurrentSlide((prev) => (prev + 1) % headerSlides.length)
+    }, HERO_SLIDE_INTERVAL_MS)
     return () => clearInterval(interval)
-  }, [activeHeroImages.length])
+  }, [headerSlides.length, heroBackgroundType, heroVideoUrl])
+
+  useEffect(() => {
+    setCurrentSlide(0)
+  }, [headerSlides.length])
+
+  useEffect(() => {
+    headerSlides.forEach((src) => {
+      const img = new Image()
+      img.src = src
+    })
+  }, [headerSlides])
 
   useEffect(() => {
     fetch("/api/settings")
@@ -180,7 +173,7 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
         }
       })
       .catch(() => {
-        setHeroImages(DEFAULT_HERO_IMAGES)
+        setHeroImages([...DEFAULT_HERO_IMAGE_URLS])
       })
   }, [])
 
@@ -200,6 +193,16 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
         setPlatformBanners(FALLBACK_BANNERS)
       })
   }, [])
+
+  const markHeroImageBroken = (url: string) => {
+    setBrokenHeroUrls((prev) => {
+      if (prev.has(url)) return prev
+      const next = new Set(prev)
+      next.add(url)
+      return next
+    })
+    setCurrentSlide(0)
+  }
 
   const resolvePlatformSlug = (banner: PlatformBanner) => {
     if (banner.module?.slug) return banner.module.slug.toLowerCase()
@@ -224,82 +227,72 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
   }
 
   return (
-    <div ref={heroRef} className="relative overflow-hidden pt-[var(--site-header-offset)]">
-      {/* ═══ 1. HERO SECTION — stacked slides: instant cut, no load gap / gray flash ═══ */}
-      <section className="relative h-[75vh] flex items-center justify-center">
-        <div className="absolute inset-0 bg-black">
-          {heroBackgroundType === "video" && heroVideoUrl ? (
-            <video
-              key={heroVideoUrl}
-              src={heroVideoUrl}
-              poster={heroVideoPoster || undefined}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover select-none"
-            />
-          ) : (
-            activeHeroImages.map((url, i) => (
-              <img
-                key={`hero-bg-${i}-${url}`}
-                src={url}
+    <div className="relative overflow-hidden">
+      {/* ═══ 1. HERO — same style as منصاتنا (SuperPlatformHome) ═══ */}
+      <section className="relative min-h-[62vh] overflow-hidden bg-[oklch(0.10_0.025_265)]">
+        {heroBackgroundType === "video" && heroVideoUrl ? (
+          <video
+            key={heroVideoUrl}
+            src={heroVideoUrl}
+            poster={heroVideoPoster || undefined}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover select-none"
+          />
+        ) : (
+          headerSlides.length > 0 && (
+            <AnimatePresence mode="sync">
+              <motion.img
+                key={headerSlides[currentSlide]}
+                src={headerSlides[currentSlide]}
                 alt=""
                 aria-hidden
-                loading="eager"
-                decoding="async"
-                fetchPriority={i === currentSlide ? "high" : "low"}
-                className={cn(
-                  "pointer-events-none absolute inset-0 h-full w-full object-cover select-none",
-                  i === currentSlide ? "z-[1] opacity-100" : "z-0 opacity-0"
-                )}
-                style={{ transition: "none" }}
-                onError={() => {
-                  const removeIndex = i
-                  setHeroImages((prev) => {
-                    if (prev.length <= 1) return DEFAULT_HERO_IMAGES
-                    return prev.filter((_, idx) => idx !== removeIndex)
-                  })
-                  setCurrentSlide(0)
-                }}
+                className="absolute inset-0 h-full w-full object-cover"
+                initial={{ opacity: 0, scale: 1.04 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                onError={() => markHeroImageBroken(headerSlides[currentSlide])}
               />
-            ))
-          )}
-          <div className="absolute inset-0 z-[2] bg-black/35" />
+            </AnimatePresence>
+          )
+        )}
+        <div className="absolute inset-0 bg-black/60" />
+
+        <div className="relative z-10 mx-auto flex min-h-[62vh] max-w-7xl items-center px-4 pb-20 sm:px-6 lg:px-8 pt-[calc(var(--site-header-offset)+2.5rem)]">
+          <div className="max-w-4xl space-y-6 text-white">
+            <h1
+              className={cn(
+                "text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)]",
+                activeLocale === "ar" && "font-arabic-display"
+              )}
+            >
+              {displayTitle}
+            </h1>
+            <p className="max-w-3xl text-lg text-white/90 leading-relaxed drop-shadow-[0_1px_10px_rgba(0,0,0,0.4)]">
+              {displaySubtitle}
+            </p>
+
+            {headerSlides.length > 1 && heroBackgroundType !== "video" && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {headerSlides.map((img, idx) => (
+                  <button
+                    key={`${img}-${idx}`}
+                    type="button"
+                    className={cn(
+                      "h-2 rounded-full transition-all duration-300",
+                      idx === currentSlide ? "w-10 bg-primary shadow-[0_0_12px_oklch(0.78_0.14_82/50%)]" : "w-4 bg-white/40 hover:bg-white/60"
+                    )}
+                    onClick={() => setCurrentSlide(idx)}
+                    aria-label={`${activeLocale === "ar" ? "صورة" : "Image"} ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-
-        <div className="absolute inset-0 dot-pattern opacity-20" />
-
-        <motion.div style={{ y, opacity, scale }} className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 pb-20 sm:pt-36 sm:pb-28 flex flex-col items-center text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8"
-          >
-            <img
-              src="/logo.png"
-              alt="CIAR"
-              className="h-24 sm:h-32 lg:h-40 w-auto object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
-            />
-          </motion.div>
-
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }} className="mt-8 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            {heroTitle ? <span className="mb-2 block text-2xl font-semibold text-white">{heroTitle}</span> : null}
-            {heroSubtitle || t("hero.subtitle")}
-          </motion.p>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }} className="mt-10 flex flex-col sm:flex-row items-center gap-4 rounded-2xl glass-premium px-4 py-4">
-            <Button size="lg" onClick={() => navigate({ page: primaryRoute })} className={cn("gap-2 rounded-xl px-8 h-12 text-base font-semibold", "btn-gold", "transition-all duration-500")}>
-              {heroPrimaryLabel || t("hero.cta")}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate({ page: secondaryRoute })} className={cn("rounded-xl px-8 h-12 text-base font-medium", "border-[oklch(0.78_0.14_82/25%)] bg-[oklch(0.78_0.14_82/5%)]", "text-[oklch(0.78_0.14_82)]", "hover:bg-[oklch(0.78_0.14_82/10%)] hover:border-[oklch(0.78_0.14_82/40%)]", "transition-all duration-300")}>
-              {heroSecondaryLabel || t("hero.cta2")}
-            </Button>
-          </motion.div>
-
-        </motion.div>
       </section>
 
       <div className="glow-line-gold" />
@@ -309,12 +302,12 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
         <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp(0)} className="text-center mb-14">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[oklch(0.78_0.14_82/20%)] bg-[oklch(0.78_0.14_82/6%)] px-4 py-1.5 text-xs font-semibold text-[oklch(0.82_0.145_85)]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-4 py-1.5 text-xs font-semibold text-primary">
               <Layers className="h-3.5 w-3.5" />
               {locale === "ar" ? "منصات CIAR" : "CIAR Platforms"}
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              {locale === "ar" ? "جميع المنصات" : "All Platforms"}
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+              {locale === "ar" ? "جميع منصاتنا" : "All Our Platforms"}
             </h2>
           </motion.div>
 
@@ -326,31 +319,32 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
                 <motion.article
                   key={banner.id}
                   {...fadeUp(idx * 0.05)}
-                  className="overflow-hidden rounded-2xl border border-[oklch(0.78_0.14_82/20%)] bg-card/40 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                  className="group overflow-hidden rounded-2xl border border-primary/15 bg-card shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/35 hover:shadow-[0_20px_50px_-12px_oklch(0.78_0.14_82/25%)]"
                 >
-                  <div className="relative h-56 overflow-hidden bg-[oklch(0.10_0.025_265)]">
+                  <div className="relative h-56 overflow-hidden bg-muted">
                     <img
-                      src={banner.imageUrl1 || activeHeroImages[idx % activeHeroImages.length] || DEFAULT_HERO_IMAGES[0]}
+                      src={banner.imageUrl1 || activeHeroImages[idx % activeHeroImages.length] || DEFAULT_HERO_IMAGE_URLS[0]}
                       alt={title}
-                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute bottom-3 left-3 flex gap-1.5">
-                      <span className="h-1.5 w-6 rounded-full bg-white" />
-                      <span className="h-1.5 w-2 rounded-full bg-white/50" />
-                      <span className="h-1.5 w-2 rounded-full bg-white/50" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.10_0.03_265/90)] via-[oklch(0.10_0.03_265/25)] to-transparent" />
+                    <div className="absolute bottom-3 inset-x-3 flex items-end justify-between gap-2">
+                      <Badge className="border-0 bg-primary/90 text-primary-foreground text-[10px] font-semibold shadow-lg">
+                        {locale === "ar" ? "منصة" : "Platform"}
+                      </Badge>
                     </div>
                   </div>
-                  <div className="space-y-2 p-5">
-                    <h3 className="text-xl font-semibold">{title}</h3>
-                    <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
+                  <div className="space-y-2.5 p-5">
+                    <h3 className="text-xl font-bold tracking-tight text-foreground">{title}</h3>
+                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
                     <button
                       type="button"
                       onClick={() => navigate({ page: "platform", slug: resolvePlatformSlug(banner) })}
-                      className="inline-flex text-sm font-medium text-[oklch(0.78_0.14_82)] hover:underline"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
                     >
                       {locale === "ar" ? banner.ctaTextAr || "استكشف القسم" : banner.ctaTextEn || "Explore section"}
+                      <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
                     </button>
                   </div>
                 </motion.article>
@@ -398,27 +392,12 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
 
       <div className="section-divider-gold mx-auto max-w-7xl" />
 
-      {/* ═══ 11. Tech Stack ═══ */}
-      <TechStack />
-
-      <div className="glow-line-gold" />
-
-      {/* ═══ 12. Testimonials ═══ */}
+      {/* ═══ 11. Testimonials ═══ */}
       <Testimonials />
 
       <div className="section-divider-gold mx-auto max-w-7xl" />
 
-      {/* ═══ 13. Global Presence ═══ */}
-      <GlobalPresence />
-
-      <div className="glow-line-gold" />
-
-      {/* ═══ 14. Team Highlight ═══ */}
-      <TeamHighlight />
-
-      <div className="section-divider-gold mx-auto max-w-7xl" />
-
-      {/* ═══ 15. Awards Banner ═══ */}
+      {/* ═══ 12. Awards Banner ═══ */}
       <AwardsBanner />
 
       <div className="glow-line-gold" />

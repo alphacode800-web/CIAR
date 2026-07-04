@@ -33,12 +33,12 @@ type FilterType = "all" | "project" | "translation" | "contact" | "settings"
 
 /* ─── Config ────────────────────────────────────────────────────────────── */
 
-const FILTER_OPTIONS: Array<{ value: FilterType; label: string; icon: React.ElementType }> = [
-  { value: "all", label: "All Activity", icon: Clock },
-  { value: "project", label: "Projects", icon: FolderOpen },
-  { value: "translation", label: "Translations", icon: Languages },
-  { value: "contact", label: "Contacts", icon: Mail },
-  { value: "settings", label: "Settings", icon: Cog },
+const FILTER_OPTIONS: Array<{ value: FilterType; labelKey: string; icon: React.ElementType }> = [
+  { value: "all", labelKey: "admin.activity_filter_all", icon: Clock },
+  { value: "project", labelKey: "admin.activity_filter_projects", icon: FolderOpen },
+  { value: "translation", labelKey: "admin.activity_filter_translations", icon: Languages },
+  { value: "contact", labelKey: "admin.activity_filter_contacts", icon: Mail },
+  { value: "settings", labelKey: "admin.activity_filter_settings", icon: Cog },
 ]
 
 const ACTIVITY_CONFIG: Record<
@@ -89,16 +89,16 @@ const ACTIVITY_CONFIG: Record<
   },
 }
 
-const ACTION_STYLES: Record<string, { variant: "default" | "secondary" | "outline"; label: string }> = {
-  project_published: { variant: "default", label: "Published" },
-  project_created: { variant: "secondary", label: "Created" },
-  project_updated: { variant: "outline", label: "Updated" },
-  project_featured: { variant: "default", label: "Featured" },
-  contact_received: { variant: "secondary", label: "Message" },
-  translation_updated: { variant: "outline", label: "i18n" },
-  settings_updated: { variant: "outline", label: "Config" },
-  user_registered: { variant: "secondary", label: "User" },
-  media_uploaded: { variant: "outline", label: "Media" },
+const ACTION_STYLES: Record<string, { variant: "default" | "secondary" | "outline"; labelKey: string }> = {
+  project_published: { variant: "default", labelKey: "admin.action_published" },
+  project_created: { variant: "secondary", labelKey: "admin.action_created" },
+  project_updated: { variant: "outline", labelKey: "admin.action_updated" },
+  project_featured: { variant: "default", labelKey: "admin.action_featured" },
+  contact_received: { variant: "secondary", labelKey: "admin.action_contact" },
+  translation_updated: { variant: "outline", labelKey: "admin.action_translation" },
+  settings_updated: { variant: "outline", labelKey: "admin.action_settings" },
+  user_registered: { variant: "secondary", labelKey: "admin.action_user" },
+  media_uploaded: { variant: "outline", labelKey: "admin.action_media" },
 }
 
 function formatTimestamp(dateStr: string): string {
@@ -220,7 +220,7 @@ export function ActivityTab() {
             )}
           >
             <opt.icon className="h-3.5 w-3.5" />
-            {opt.label}
+            {t(opt.labelKey)}
           </button>
         ))}
       </motion.div>
@@ -257,7 +257,7 @@ export function ActivityTab() {
                 const config = ACTIVITY_CONFIG[activity.type] || ACTIVITY_CONFIG.project
                 const actionStyle = ACTION_STYLES[activity.action] || {
                   variant: "outline" as const,
-                  label: activity.action,
+                  labelKey: "admin.action_updated",
                 }
                 const Icon = config.icon
 
@@ -284,15 +284,10 @@ export function ActivityTab() {
                     </div>
 
                     {/* Card */}
-                    <div
-                      className={cn(
-                        "flex-1 rounded-xl border border-[oklch(0.78_0.14_82/8%)] bg-[oklch(0.14_0.028_265/30%)] backdrop-blur-lg p-4 transition-all duration-200 hover:border-[oklch(0.78_0.14_82/18%)] hover:bg-[oklch(0.14_0.028_265/45%)]",
-                        "dark:bg-[oklch(0.12_0.03_265/40%)]"
-                      )}
-                    >
+                    <div className="admin-pro-list-item flex-1 rounded-xl p-4 transition-all duration-200 hover:border-white/12">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-foreground leading-relaxed">
+                          <p className="text-sm text-slate-900 dark:text-white leading-relaxed">
                             {activity.description}
                           </p>
                           {activity.meta && Object.keys(activity.meta).length > 0 && (
@@ -302,7 +297,7 @@ export function ActivityTab() {
                                 .map(([key, val]) => (
                                   <span
                                     key={key}
-                                    className="inline-flex text-[11px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md"
+                                    className="inline-flex text-[11px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-md"
                                   >
                                     {key}: {String(val)}
                                   </span>
@@ -314,7 +309,7 @@ export function ActivityTab() {
                           variant={actionStyle.variant}
                           className="text-[10px] px-1.5 py-0 h-5 shrink-0"
                         >
-                          {actionStyle.label}
+                          {t(actionStyle.labelKey)}
                         </Badge>
                       </div>
 

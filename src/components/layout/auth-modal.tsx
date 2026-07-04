@@ -172,10 +172,10 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
           <p className="text-center text-sm text-muted-foreground mt-6">
             {isLogin ? (
               <>{t("auth.no_account") || "Don't have an account?"}{" "}
-                <button onClick={openRegister} className="text-[oklch(0.78_0.14_82)] hover:underline font-medium">{t("auth.register") || "Register"}</button></>
+                <button onClick={openRegister} className="text-primary hover:underline font-medium">{t("auth.register") || "Register"}</button></>
             ) : (
               <>{t("auth.has_account") || "Already have an account?"}{" "}
-                <button onClick={openLogin} className="text-[oklch(0.78_0.14_82)] hover:underline font-medium">{t("auth.login") || "Login"}</button></>
+                <button onClick={openLogin} className="text-primary hover:underline font-medium">{t("auth.login") || "Login"}</button></>
             )}
           </p>
         </motion.div>

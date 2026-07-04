@@ -109,23 +109,23 @@ function formatDate(dateStr: string): string {
   }
 }
 
-function getRoleBadge(role: string) {
+function getRoleBadge(role: string, t: (key: string) => string) {
   switch (role) {
     case "admin":
       return {
-        label: "Admin",
+        label: t("admin.role_admin"),
         className: "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] border-[oklch(0.76_0.19_48/25%)]",
         icon: Crown,
       }
     case "editor":
       return {
-        label: "Editor",
+        label: t("admin.role_editor"),
         className: "bg-sky-500/15% text-sky-400 border-sky-500/25%",
         icon: Pencil,
       }
     default:
       return {
-        label: "Viewer",
+        label: t("admin.role_viewer"),
         className: "bg-slate-500/15% text-slate-400 border-slate-500/25%",
         icon: UserCircle,
       }
@@ -491,7 +491,7 @@ export function UsersTab() {
 
           {/* User rows */}
           {filteredUsers.map((user, index) => {
-            const badge = getRoleBadge(user.role)
+            const badge = getRoleBadge(user.role, t)
             const BadgeIcon = badge.icon
             const isActive = user.active !== false
 

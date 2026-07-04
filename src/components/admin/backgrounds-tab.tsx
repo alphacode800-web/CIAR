@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useMemo, useState, type ChangeEvent } from "react"
-import { Image as ImageIcon, Save, Loader2, Search, Wand2, Pencil, Upload } from "lucide-react"
+import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react"
+import { Image as ImageIcon, Save, Loader2, Search, Pencil, Upload, Layers } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { resolveHeroImagePreviewUrl } from "@/lib/default-hero-images"
 
 const PAGE_BACKGROUNDS = [
   { id: "home", label: "الصفحة الرئيسية", path: "/" },
@@ -62,6 +64,192 @@ type ConfiguredMedia = {
 }
 
 const isLikelyVideo = (url: string) => /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(String(url || "").trim())
+
+const PLATFORM_BANNER_FIELDS = [
+  { field: "imageUrl1" as const, label: "البنر الأول" },
+  { field: "imageUrl2" as const, label: "البنر الثاني" },
+  { field: "imageUrl3" as const, label: "البنر الثالث" },
+]
+
+function MediaBannerPreview({
+  value,
+  alt,
+  broken,
+  onBroken,
+  className,
+  aspect = "wide",
+  fit = "cover",
+}: {
+  value: string
+  alt: string
+  broken?: boolean
+  onBroken?: () => void
+  className?: string
+  aspect?: "wide" | "card"
+  fit?: "cover" | "contain"
+}) {
+  const aspectClass = aspect === "card" ? "aspect-video" : "aspect-[21/9]"
+  const fitClass = fit === "contain" ? "object-contain" : "object-cover"
+
+  if (!value?.trim()) {
+    return (
+      <div
+        className={cn(
+          "flex w-full flex-col items-center justify-center gap-2 bg-slate-100 text-slate-400 dark:bg-slate-900/80",
+          aspectClass,
+          className
+        )}
+      >
+        <ImageIcon className="h-8 w-8 opacity-40" />
+        <span className="px-2 text-center text-xs">لا توجد صورة</span>
+      </div>
+    )
+  }
+
+  if (broken) {
+    return (
+      <div
+        className={cn(
+          "flex w-full items-center justify-center bg-amber-500/10 px-3 text-center text-xs text-amber-700 dark:text-amber-200",
+          aspectClass,
+          className
+        )}
+      >
+        الرابط غير صالح
+      </div>
+    )
+  }
+
+  if (isLikelyVideo(value)) {
+    return (
+      <video
+        src={value}
+        className={cn("w-full", fitClass, aspectClass, className)}
+        controls
+        muted
+        playsInline
+      />
+    )
+  }
+
+  return (
+    <img
+      src={value}
+      alt={alt}
+      className={cn("w-full", fitClass, aspectClass, className)}
+      onError={onBroken}
+    />
+  )
+}
+
+function BannerCard({
+  index,
+  title,
+  subtitle,
+  value,
+  previewValue,
+  isDefaultPreview,
+  placeholder,
+  isChanged,
+  isSaving,
+  broken,
+  onChange,
+  onSave,
+  onEdit,
+  onBroken,
+  extra,
+}: {
+  index?: number
+  title: string
+  subtitle?: string
+  value: string
+  previewValue?: string
+  isDefaultPreview?: boolean
+  placeholder: string
+  isChanged?: boolean
+  isSaving?: boolean
+  broken?: boolean
+  onChange: (value: string) => void
+  onSave: () => void
+  onEdit?: () => void
+  onBroken?: () => void
+  extra?: ReactNode
+}) {
+  const displayPreview = previewValue ?? value
+
+  return (
+    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm transition hover:border-orange-400/40 dark:border-white/10 dark:bg-slate-900/60">
+      <div className="relative isolate shrink-0 overflow-hidden">
+        <MediaBannerPreview
+          key={displayPreview}
+          value={displayPreview}
+          alt={title}
+          broken={broken}
+          onBroken={onBroken}
+          aspect="card"
+          className="rounded-none"
+        />
+        {typeof index === "number" ? (
+          <span className="absolute end-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white shadow">
+            {index}
+          </span>
+        ) : null}
+        {isDefaultPreview ? (
+          <span className="absolute bottom-2 start-2 rounded-md bg-slate-900/75 px-1.5 py-0.5 text-[10px] font-medium text-white">
+            افتراضي
+          </span>
+        ) : null}
+        {isChanged ? (
+          <span className="absolute start-2 top-2 rounded-md bg-amber-500 px-1.5 py-0.5 text-[10px] font-medium text-white shadow">
+            غير محفوظ
+          </span>
+        ) : null}
+      </div>
+
+      <div className="flex flex-1 flex-col gap-2.5 p-3">
+        <div className="min-h-[2.75rem]">
+          <h4 className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 dark:text-white">{title}</h4>
+          {subtitle ? (
+            <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400" dir="ltr">
+              {subtitle}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-[11px] font-medium text-slate-500">رابط الصورة</Label>
+          <Input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="h-8 text-xs"
+            dir="ltr"
+          />
+        </div>
+
+        {extra}
+
+        <div className="mt-auto flex gap-2 pt-1">
+          {onEdit ? (
+            <Button type="button" variant="outline" size="sm" className="h-8 gap-1 rounded-lg px-2.5" onClick={onEdit}>
+              <Pencil className="h-3.5 w-3.5" />
+              تعديل
+            </Button>
+          ) : null}
+          <Button
+            onClick={onSave}
+            disabled={isSaving}
+            size="sm"
+            className="h-8 flex-1 gap-1 rounded-lg"
+          >
+            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            حفظ
+          </Button>
+        </div>
+      </div>
+    </article>
+  )
+}
 
 export function BackgroundsTab() {
   const [settings, setSettings] = useState<Record<string, string>>({})
@@ -203,6 +391,14 @@ export function BackgroundsTab() {
     if (!q) return rows
     return rows.filter((row) => row.label.toLowerCase().includes(q) || row.path.toLowerCase().includes(q) || row.key.toLowerCase().includes(q))
   }, [rows, query])
+
+  const filteredHeroRows = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return heroRows
+    return heroRows.filter(
+      (row) => row.label.toLowerCase().includes(q) || row.key.toLowerCase().includes(q)
+    )
+  }, [heroRows, query])
 
   const changedKeys = useMemo(
     () =>
@@ -385,246 +581,128 @@ export function BackgroundsTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* ── Header ── */}
       <div>
-        <h2 className="flex items-center gap-2 text-2xl font-bold gradient-text">
-          <ImageIcon className="h-6 w-6 text-[oklch(0.76_0.19_48)]" />
-          تبويب الخلفيات
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900 dark:text-white">
+          <ImageIcon className="h-6 w-6 text-orange-500" />
+          إدارة الخلفيات والبنرات
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">إدارة خلفيات جميع صفحات الموقع من مكان واحد.</p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          كل بنر في كرت مستقل — 3 كروت في الصف مع معاينة واضحة وتحرير سريع.
+        </p>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:max-w-sm">
-          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      {/* ── Toolbar ── */}
+      <div className="admin-pro-panel sticky top-0 z-10 flex flex-col gap-3 rounded-2xl p-4 md:flex-row md:items-center md:justify-between">
+        <div className="relative w-full md:max-w-md">
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ابحث عن صفحة أو مسار..."
+            placeholder="ابحث عن بنر أو صفحة..."
             className="ps-9"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">تغييرات غير محفوظة: {changedKeys.length}</span>
-          <Button onClick={saveAllChanged} disabled={savingAll || changedKeys.length === 0} className="gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600 dark:bg-white/10 dark:text-slate-300">
+            تغييرات غير محفوظة: <strong>{changedKeys.length}</strong>
+          </span>
+          <Button
+            onClick={saveAllChanged}
+            disabled={savingAll || changedKeys.length === 0}
+            className="gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+          >
             {savingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             حفظ الكل
           </Button>
         </div>
       </div>
 
-      <div className="rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
-        <h3 className="mb-3 text-sm font-semibold text-foreground">صور هيدر الصفحة الرئيسية (20 صورة)</h3>
-        <p className="mb-3 text-xs text-muted-foreground">أضف حتى 20 صورة للهيدر تعكس منتجات وخدمات المنصة (يفضل عريض 1920×1080 أو أعلى).</p>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {heroRows.map((row) => (
-            <div key={row.key} className="space-y-2 rounded-lg border border-[oklch(0.76_0.19_48/12%)] bg-[oklch(0.12_0.03_265/55%)] p-3">
-              <Label className="text-xs text-slate-300">{row.label}</Label>
-              <Input
-                value={settings[row.key] || ""}
-                onChange={(e) => updateLocal(row.key, e.target.value)}
-                placeholder="https://example.com/hero-image.jpg"
-              />
-              {row.value ? (
-                isLikelyVideo(row.value) ? (
-                  <video src={row.value} className="h-24 w-full rounded-lg object-cover" controls muted playsInline />
-                ) : (
-                  isLikelyVideo(row.value) ? (
-                    <video src={row.value} className="h-24 w-full rounded-lg object-cover" controls muted playsInline />
-                  ) : (
-                    <img
-                      src={row.value}
-                      alt={row.label}
-                      className="h-24 w-full rounded-lg object-cover"
-                      onError={() => setBrokenPreviews((prev) => ({ ...prev, [row.key]: true }))}
-                    />
-                  )
-                )
-              ) : null}
-              {brokenPreviews[row.key] ? (
-                <p className="text-[11px] text-amber-200">رابط الصورة غير صحيح أو الصورة غير متاحة.</p>
-              ) : null}
-              <div className="flex justify-end">
-                <Button onClick={() => saveKey(row.key)} disabled={savingKey === row.key} className="gap-2">
-                  {savingKey === row.key ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  حفظ
-                </Button>
-              </div>
-            </div>
-          ))}
+      {/* ── Homepage hero banners ── */}
+      <section className="space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">بنرات هيدر الصفحة الرئيسية</h3>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {filteredHeroRows.length} بنر — المعاينة تعرض الصورة الافتراضية إن لم يُحفظ رابط مخصص.
+            </p>
+          </div>
+          <span className="shrink-0 rounded-xl bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-600 dark:text-orange-300">
+            20 بنر
+          </span>
         </div>
-      </div>
 
-      <div className="rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
-        <h3 className="mb-3 text-sm font-semibold text-foreground">صور الصفحات</h3>
-        {pageImages.length === 0 ? (
-          <p className="text-xs text-muted-foreground">لا توجد صور صفحات مضبوطة حاليًا.</p>
-        ) : (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {pageImages.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => openImageDialog(item)}
-                className="rounded-lg border border-[oklch(0.76_0.19_48/14%)] bg-[oklch(0.12_0.03_265/65%)] p-2 text-start transition hover:border-[oklch(0.76_0.19_48/35%)] hover:shadow-[0_0_18px_oklch(0.76_0.19_48/10%)]"
-              >
-                {isLikelyVideo(item.value) ? (
-                  <video src={item.value} className="h-24 w-full rounded-md object-cover" controls muted playsInline />
-                ) : (
-                  <img src={item.value} alt={item.key} className="h-24 w-full rounded-md object-cover" />
-                )}
-                <p className="mt-2 truncate text-[11px] text-slate-300" title={item.key}>
-                  {item.key}
-                </p>
-                <p className="truncate text-[10px] text-slate-400" title={item.value}>
-                  {item.value}
-                </p>
-              </button>
-            ))}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {filteredHeroRows.map((row, idx) => {
+            const savedValue = settings[row.key] || ""
+            const previewValue = resolveHeroImagePreviewUrl(savedValue, row.key)
+            const isDefaultPreview = !savedValue.trim()
+
+            return (
+            <BannerCard
+              key={row.key}
+              index={idx + 1}
+              title={row.label}
+              value={savedValue}
+              previewValue={previewValue}
+              isDefaultPreview={isDefaultPreview}
+              placeholder="https://example.com/hero.jpg"
+              isChanged={savedValue !== (initialSettings[row.key] || "")}
+              isSaving={savingKey === row.key}
+              broken={brokenPreviews[row.key]}
+              onChange={(v) => updateLocal(row.key, v)}
+              onSave={() => saveKey(row.key)}
+              onEdit={() =>
+                openImageDialog({
+                  key: row.label,
+                  value: savedValue || previewValue,
+                  sourceType: "setting",
+                  settingKey: row.key,
+                })
+              }
+              onBroken={() => setBrokenPreviews((prev) => ({ ...prev, [row.key]: true }))}
+            />
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ── Page backgrounds ── */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Layers className="h-5 w-5 text-orange-500" />
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">خلفيات صفحات الموقع</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">خلفية كل صفحة في كرت مستقل.</p>
           </div>
-        )}
-      </div>
+        </div>
 
-      <div className="rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
-        <h3 className="mb-3 text-sm font-semibold text-foreground">صور المكونات (بدون كروت المنصات)</h3>
-        {componentImages.length === 0 ? (
-          <p className="text-xs text-muted-foreground">لا توجد صور مكونات إضافية حاليًا.</p>
-        ) : (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {componentImages.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => openImageDialog(item)}
-                className="rounded-lg border border-[oklch(0.76_0.19_48/14%)] bg-[oklch(0.12_0.03_265/65%)] p-2 text-start transition hover:border-[oklch(0.76_0.19_48/35%)] hover:shadow-[0_0_18px_oklch(0.76_0.19_48/10%)]"
-              >
-                {isLikelyVideo(item.value) ? (
-                  <video src={item.value} className="h-24 w-full rounded-md object-cover" controls muted playsInline />
-                ) : (
-                  <img src={item.value} alt={item.key} className="h-24 w-full rounded-md object-cover" />
-                )}
-                <p className="mt-2 truncate text-[11px] text-slate-300" title={item.key}>
-                  {item.key}
-                </p>
-                <p className="truncate text-[10px] text-slate-400" title={item.value}>
-                  {item.value}
-                </p>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4">
-        <h3 className="mb-3 text-sm font-semibold text-foreground">صور بنرات المنصات الحالية</h3>
-        {platformBanners.length === 0 ? (
-          <p className="text-xs text-muted-foreground">لا توجد بنرات منصات حالياً.</p>
-        ) : (
-          <div className="space-y-3">
-            {platformBanners.map((banner) => (
-              <div key={banner.id} className="rounded-lg border border-border/40 bg-background/40 p-3">
-                <p className="mb-2 text-xs text-muted-foreground">
-                  {(banner.titleAr || banner.titleEn || banner.moduleId || banner.id).trim()}
-                </p>
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-                  {(["imageUrl1", "imageUrl2", "imageUrl3"] as const).map((field) => {
-                    const value = String(banner[field] || "")
-                    const fieldKey = `${banner.id}:${field}`
-                    return (
-                      <div key={fieldKey} className="space-y-2 rounded-lg border border-border/40 p-3">
-                        <Label className="text-[11px] text-muted-foreground">{field}</Label>
-                        {value ? (
-                          isLikelyVideo(value) ? (
-                            <video src={value} className="h-44 w-full rounded-md object-cover" controls muted playsInline />
-                          ) : (
-                            <img src={value} className="h-44 w-full rounded-md object-cover" alt={fieldKey} />
-                          )
-                        ) : (
-                          <div className="flex h-44 items-center justify-center rounded-md border border-dashed border-border/50 text-xs text-muted-foreground">
-                            لا يوجد محتوى
-                          </div>
-                        )}
-                        <Input
-                          value={value}
-                          onChange={(e) =>
-                            setPlatformBanners((prev) =>
-                              prev.map((row) =>
-                                row.id === banner.id ? { ...row, [field]: e.target.value } : row
-                              )
-                            )
-                          }
-                          placeholder="https://example.com/banner-image.jpg"
-                        />
-                        <div className="grid grid-cols-2 gap-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="gap-1.5"
-                            onClick={() =>
-                              openImageDialog({
-                                key: fieldKey,
-                                value,
-                                sourceType: "platform-banner",
-                                bannerId: banner.id,
-                                bannerField: field,
-                              })
-                            }
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                            تعديل
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => savePlatformBannerField(banner.id, field, value)}
-                            disabled={savingBannerKey === fieldKey}
-                            className="gap-2"
-                          >
-                            {savingBannerKey === fieldKey ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Save className="h-3.5 w-3.5" />
-                            )}
-                            حفظ
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-3">
-        {filteredRows.map((row) => (
-          <div
-            key={row.id}
-            className="grid gap-3 rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.14_0.028_265/45%)] p-4 md:grid-cols-[1.2fr_2fr_auto]"
-          >
-            <div>
-              <p className="text-sm font-semibold text-foreground">{row.label}</p>
-              <p className="text-xs text-muted-foreground">{row.path}</p>
-              <p className="mt-1 text-[11px] text-muted-foreground/70">{row.key}</p>
-              {(settings[row.key] || "") !== (initialSettings[row.key] || "") ? (
-                <span className="mt-1 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] text-amber-300">
-                  تعديل غير محفوظ
-                </span>
-              ) : null}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">رابط الخلفية</Label>
-              <Input
-                value={settings[row.key] || ""}
-                onChange={(e) => updateLocal(row.key, e.target.value)}
-                placeholder="/uploads/media/page-bg.jpg"
-              />
-              <div className="flex items-center gap-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {filteredRows.map((row) => (
+            <BannerCard
+              key={row.id}
+              title={row.label}
+              subtitle={row.path}
+              value={settings[row.key] || ""}
+              placeholder="/uploads/media/page-background.jpg"
+              isChanged={(settings[row.key] || "") !== (initialSettings[row.key] || "")}
+              isSaving={savingKey === row.key}
+              broken={brokenPreviews[row.key]}
+              onChange={(v) => updateLocal(row.key, v)}
+              onSave={() => saveKey(row.key)}
+              onEdit={() =>
+                openImageDialog({
+                  key: row.label,
+                  value: settings[row.key] || "",
+                  sourceType: "setting",
+                  settingKey: row.key,
+                })
+              }
+              onBroken={() => setBrokenPreviews((prev) => ({ ...prev, [row.key]: true }))}
+              extra={
                 <select
-                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs"
+                  className="h-8 w-full rounded-md border border-slate-200 bg-white px-2 text-[11px] dark:border-white/10 dark:bg-slate-900"
                   defaultValue=""
                   onChange={(e) => {
                     if (!e.target.value) return
@@ -632,62 +710,94 @@ export function BackgroundsTab() {
                     e.currentTarget.value = ""
                   }}
                 >
-                  <option value="">اختر صورة من الصور الحالية</option>
+                  <option value="">اختر صورة جاهزة...</option>
                   {configuredImages.map((img) => (
                     <option key={`${row.id}-${img.key}`} value={img.value}>
                       {img.key}
                     </option>
                   ))}
                 </select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="shrink-0 gap-1"
-                  onClick={() => {
-                    const first = configuredImages[0]?.value
-                    if (first) updateLocal(row.key, first)
-                  }}
-                >
-                  <Wand2 className="h-3.5 w-3.5" />
-                  اقتراح
-                </Button>
-              </div>
-              {row.value ? (
-                brokenPreviews[row.key] ? (
-                  <div className="flex h-24 w-full items-center justify-between rounded-lg border border-amber-400/35 bg-amber-500/10 px-3">
-                    <span className="text-xs text-amber-200">الصورة غير موجودة أو الرابط غير صحيح</span>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        const replacement = configuredImages.find((img) => img.value !== row.value)?.value
-                        if (replacement) updateLocal(row.key, replacement)
-                      }}
-                    >
-                      تطبيق صورة متاحة
-                    </Button>
-                  </div>
-                ) : (
-                  <img
-                    src={row.value}
-                    alt={row.label}
-                    className="h-24 w-full rounded-lg object-cover"
-                    onError={() => setBrokenPreviews((prev) => ({ ...prev, [row.key]: true }))}
+              }
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* ── Platform banners ── */}
+      {platformBanners.length > 0 ? (
+        <section className="space-y-4">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">بنرات المنصات</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">صور البنرات المرتبطة بكل منصة — 3 كروت في الصف.</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {platformBanners.flatMap((banner) => {
+              const bannerTitle = (banner.titleAr || banner.titleEn || banner.moduleId || banner.id).trim()
+              return PLATFORM_BANNER_FIELDS.map(({ field, label }) => {
+                const value = String(banner[field] || "")
+                const fieldKey = `${banner.id}:${field}`
+                return (
+                  <BannerCard
+                    key={fieldKey}
+                    title={`${bannerTitle} — ${label}`}
+                    value={value}
+                    placeholder="https://example.com/banner.jpg"
+                    isSaving={savingBannerKey === fieldKey}
+                    onChange={(next) =>
+                      setPlatformBanners((prev) =>
+                        prev.map((row) => (row.id === banner.id ? { ...row, [field]: next } : row))
+                      )
+                    }
+                    onSave={() => savePlatformBannerField(banner.id, field, value)}
+                    onEdit={() =>
+                      openImageDialog({
+                        key: fieldKey,
+                        value,
+                        sourceType: "platform-banner",
+                        bannerId: banner.id,
+                        bannerField: field,
+                      })
+                    }
                   />
                 )
-              ) : null}
-            </div>
-
-            <div className="flex items-start justify-end">
-              <Button onClick={() => saveKey(row.key)} disabled={savingKey === row.key} className="gap-2">
-                {savingKey === row.key ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                حفظ
-              </Button>
-            </div>
+              })
+            })}
           </div>
-        ))}
-      </div>
+        </section>
+      ) : null}
+
+      {/* ── Media gallery (configured images) ── */}
+      {configuredImages.length > 0 ? (
+        <section className="space-y-4">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">معرض الوسائط المستخدمة</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">جميع الصور والفيديوهات المضبوطة في الموقع.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {configuredImages.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => openImageDialog(item)}
+                className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white text-start shadow-sm transition hover:border-orange-400/40 dark:border-white/10 dark:bg-slate-900/60"
+              >
+                <MediaBannerPreview value={item.value} alt={item.key} aspect="card" className="rounded-none" />
+                <div className="flex flex-1 flex-col gap-1 border-t border-slate-200/80 p-3 dark:border-white/8">
+                  <p className="line-clamp-2 text-sm font-medium text-slate-900 dark:text-white">{item.key}</p>
+                  <p className="truncate text-xs text-slate-500" dir="ltr">
+                    {item.value}
+                  </p>
+                  <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-orange-500">
+                    <Pencil className="h-3 w-3" />
+                    تعديل
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <Dialog
         open={!!selectedImage}
@@ -699,104 +809,134 @@ export function BackgroundsTab() {
           }
         }}
       >
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>تفاصيل الصورة</DialogTitle>
-            <DialogDescription>يمكنك تعديل الرابط وحفظ التغييرات مباشرة من هذه النافذة.</DialogDescription>
-          </DialogHeader>
-
+        <DialogContent className="admin-solid-dialog flex w-[calc(100%-2rem)] max-w-2xl flex-col gap-0 overflow-hidden border border-slate-200 !bg-white p-0 shadow-2xl dark:border-white/10 dark:!bg-slate-950 sm:max-w-2xl">
           {selectedImage ? (
-            <div className="space-y-4">
-              {isLikelyVideo(selectedImageUrl || selectedImage.value) ? (
-                <video
-                  src={selectedImageUrl || selectedImage.value}
-                  className="h-64 w-full rounded-xl object-cover"
-                  controls
-                  muted
-                  playsInline
-                />
-              ) : (
-                <img src={selectedImageUrl || selectedImage.value} alt={selectedImage.key} className="h-64 w-full rounded-xl object-cover" />
-              )}
-
-              <div className="space-y-1">
-                <Label>المعرف</Label>
-                <p className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs">{selectedImage.key}</p>
+            <>
+              <div className="shrink-0 border-b border-slate-200 bg-white px-5 py-4 pe-12 dark:border-white/10 dark:bg-slate-950">
+                <DialogHeader className="space-y-1.5 text-start">
+                  <DialogTitle className="text-base leading-snug sm:text-lg">{selectedImage.key}</DialogTitle>
+                  <DialogDescription className="text-xs sm:text-sm">
+                    عدّل الرابط أو ارفع صورة جديدة ثم احفظ.
+                  </DialogDescription>
+                </DialogHeader>
               </div>
 
-              <div className="space-y-1">
-                <Label>المصدر</Label>
-                <p className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs">
-                  {selectedImage.sourceType === "setting" ? "إعدادات الموقع" : "بانرات المنصات"}
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <Label>طريقة التعديل</Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={selectedImageSource === "link" ? "default" : "outline"}
-                    onClick={() => setSelectedImageSource("link")}
-                  >
-                    رابط
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={selectedImageSource === "upload" ? "default" : "outline"}
-                    onClick={() => setSelectedImageSource("upload")}
-                  >
-                    رفع من الهاتف/الجهاز
-                  </Button>
-                </div>
-              </div>
-
-              {selectedImageSource === "link" ? (
-                <div className="space-y-1">
-                  <Label>رابط الصورة/الفيديو</Label>
-                  <Input value={selectedImageUrl} onChange={(e) => setSelectedImageUrl(e.target.value)} />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label>رفع صورة أو فيديو</Label>
-                  <label className="flex h-24 cursor-pointer items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 text-xs text-muted-foreground transition hover:border-[oklch(0.76_0.19_48/45%)]">
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v"
-                      onChange={handleDialogFileUpload}
+              <div className="relative h-48 w-full shrink-0 overflow-hidden bg-slate-950 sm:h-56">
+                {selectedImageUrl || selectedImage.value ? (
+                  isLikelyVideo(selectedImageUrl || selectedImage.value) ? (
+                    <video
+                      src={selectedImageUrl || selectedImage.value}
+                      className="h-full w-full object-contain"
+                      controls
+                      muted
+                      playsInline
                     />
-                    {uploadingImageDetails ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        جاري الرفع...
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Upload className="h-4 w-4" />
-                        اختر ملف من الجهاز
-                      </span>
-                    )}
-                  </label>
-                  {selectedImageUrl ? (
-                    <p className="truncate rounded-md border border-border bg-muted/30 px-2 py-1 text-[11px] text-muted-foreground">
-                      {selectedImageUrl}
-                    </p>
-                  ) : null}
-                </div>
-              )}
-            </div>
-          ) : null}
+                  ) : (
+                    <img
+                      src={selectedImageUrl || selectedImage.value}
+                      alt={selectedImage.key}
+                      className="h-full w-full object-contain"
+                    />
+                  )
+                ) : (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 text-slate-400">
+                    <ImageIcon className="h-8 w-8 opacity-50" />
+                    <span className="text-xs">لا توجد معاينة</span>
+                  </div>
+                )}
+              </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedImage(null)}>إغلاق</Button>
-            <Button onClick={saveImageDetails} disabled={savingImageDetails} className="gap-2">
-              {savingImageDetails ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              حفظ التعديل
-            </Button>
-          </DialogFooter>
+              <div className="flex max-h-[min(42vh,320px)] flex-col gap-4 overflow-y-auto bg-white p-5 dark:bg-slate-950">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-slate-500">المصدر</Label>
+                  <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-white/10 dark:bg-slate-900">
+                    {selectedImage.sourceType === "setting" ? "إعدادات الموقع" : "بانرات المنصات"}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-500">طريقة التعديل</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={selectedImageSource === "link" ? "default" : "outline"}
+                      className="h-9 rounded-lg"
+                      onClick={() => setSelectedImageSource("link")}
+                    >
+                      رابط
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={selectedImageSource === "upload" ? "default" : "outline"}
+                      className="h-9 rounded-lg"
+                      onClick={() => setSelectedImageSource("upload")}
+                    >
+                      رفع ملف
+                    </Button>
+                  </div>
+                </div>
+
+                {selectedImageSource === "link" ? (
+                  <div className="space-y-1.5">
+                    <Label>رابط الصورة أو الفيديو</Label>
+                    <Input
+                      value={selectedImageUrl}
+                      onChange={(e) => setSelectedImageUrl(e.target.value)}
+                      placeholder="https://example.com/banner.jpg"
+                      dir="ltr"
+                      className="text-sm"
+                    />
+                    <p className="text-[11px] text-slate-500">
+                      يُفضّل رابط صورة واحدة بعرض 1920 بكسل أو أكثر.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label>رفع صورة أو فيديو من الجهاز</Label>
+                    <label className="flex h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 text-xs text-slate-500 transition hover:border-orange-400 hover:bg-orange-50/50 dark:border-white/15 dark:bg-slate-900 dark:hover:bg-orange-500/5">
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v"
+                        onChange={handleDialogFileUpload}
+                      />
+                      {uploadingImageDetails ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          جاري الرفع...
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5">
+                          <Upload className="h-4 w-4" />
+                          اضغط لاختيار ملف
+                        </span>
+                      )}
+                    </label>
+                    {selectedImageUrl ? (
+                      <p
+                        className="truncate rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500 dark:border-white/10 dark:bg-slate-900"
+                        dir="ltr"
+                      >
+                        {selectedImageUrl}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter className="shrink-0 gap-2 border-t border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-950 sm:justify-between">
+                <Button variant="outline" className="rounded-lg" onClick={() => setSelectedImage(null)}>
+                  إغلاق
+                </Button>
+                <Button onClick={saveImageDetails} disabled={savingImageDetails} className="gap-2 rounded-lg">
+                  {savingImageDetails ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  حفظ التعديل
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

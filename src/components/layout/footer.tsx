@@ -36,13 +36,8 @@ export function Footer() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-8">
             {/* Brand */}
             <div className="sm:col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-3 mb-3">
-                <img
-                  src="/logo.png"
-                  alt="CIAR"
-                  className="h-8 w-8 object-contain"
-                />
-                <span className="gradient-text text-xl font-bold tracking-wider">
+              <div className="mb-3">
+                <span className="brand-logo-text brand-logo-text-sm">
                   {t("footer.brand")}
                 </span>
               </div>
@@ -77,7 +72,7 @@ export function Footer() {
                   className={cn(
                     "w-9 h-9 rounded-full glass-subtle border border-[oklch(0.78_0.14_82/15%)]",
                     "flex items-center justify-center",
-                    "text-muted-foreground hover:text-[oklch(0.78_0.14_82)]",
+                    "text-muted-foreground hover:text-primary",
                     "hover:border-[oklch(0.78_0.14_82/30%)]",
                     "transition-all duration-200"
                   )}
@@ -94,7 +89,7 @@ export function Footer() {
                   className={cn(
                     "w-9 h-9 rounded-full glass-subtle border border-[oklch(0.78_0.14_82/15%)]",
                     "flex items-center justify-center",
-                    "text-muted-foreground hover:text-[oklch(0.78_0.14_82)]",
+                    "text-muted-foreground hover:text-primary",
                     "hover:border-[oklch(0.78_0.14_82/30%)]",
                     "transition-all duration-200"
                   )}
@@ -111,7 +106,7 @@ export function Footer() {
                   className={cn(
                     "w-9 h-9 rounded-full glass-subtle border border-[oklch(0.78_0.14_82/15%)]",
                     "flex items-center justify-center",
-                    "text-muted-foreground hover:text-[oklch(0.78_0.14_82)]",
+                    "text-muted-foreground hover:text-primary",
                     "hover:border-[oklch(0.78_0.14_82/30%)]",
                     "transition-all duration-200"
                   )}
@@ -133,7 +128,7 @@ export function Footer() {
                       onClick={() => navigate({ page: "platform", slug: item.slug })}
                       className={cn(
                         "text-sm text-muted-foreground transition-all duration-200 inline-flex items-center gap-1.5",
-                        "hover:text-[oklch(0.78_0.14_82)] hover:translate-x-0.5"
+                        "hover:text-primary hover:translate-x-0.5"
                       )}
                     >
                       <ChevronRight className={`h-3.5 w-3.5 ${isAr ? "rotate-180" : ""}`} />
@@ -154,7 +149,7 @@ export function Footer() {
                       onClick={() => navigate({ page: item.page })}
                       className={cn(
                         "text-sm text-muted-foreground transition-all duration-200 inline-flex items-center gap-1.5",
-                        "hover:text-[oklch(0.78_0.14_82)] hover:translate-x-0.5"
+                        "hover:text-primary hover:translate-x-0.5"
                       )}
                     >
                       <ChevronRight className={`h-3.5 w-3.5 ${isAr ? "rotate-180" : ""}`} />

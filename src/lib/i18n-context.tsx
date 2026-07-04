@@ -115,6 +115,34 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const t = useCallback(
     (key: string): string => {
+      const isAdminScope = key.startsWith("admin.") || key.startsWith("common.")
+
+      // Admin panel (Arabic): never fall back to English DB/bundled strings.
+      if (locale === "ar" && isAdminScope) {
+        const localizedValue = translations[key]
+        if (typeof localizedValue === "string" && localizedValue.trim().length > 0 && !isPlaceholderValue(localizedValue)) {
+          return stripEmojis(normalizeBrand(localizedValue))
+        }
+
+        const bundledAr = DEFAULT_TRANSLATIONS.ar?.[key]
+        if (typeof bundledAr === "string" && bundledAr.trim().length > 0) {
+          return stripEmojis(normalizeBrand(bundledAr))
+        }
+
+        const adminAr = ADMIN_LOCALE_FALLBACK.ar[key]
+        if (typeof adminAr === "string" && adminAr.trim().length > 0) {
+          return stripEmojis(normalizeBrand(adminAr))
+        }
+
+        return (
+          key
+            .split(".")
+            .pop()
+            ?.replace(/_/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase()) || key
+        )
+      }
+
       const localizedValue = translations[key]
       if (typeof localizedValue === "string" && localizedValue.trim().length > 0 && !isPlaceholderValue(localizedValue)) {
         return stripEmojis(normalizeBrand(localizedValue))
@@ -158,6 +186,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   )
 
   const dir = RTL_LOCALES.includes(locale) ? "rtl" : "ltr"
+
+  useEffect(() => {
+    document.documentElement.lang = locale
+    document.documentElement.dir = dir
+
+    // Re-sync fonts when language direction changes
+    window.dispatchEvent(new CustomEvent("ciar:locale-changed", { detail: { locale, dir } }))
+  }, [locale, dir])
 
   useEffect(() => {
     const bootstrapLocale = async () => {

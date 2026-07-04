@@ -199,7 +199,7 @@ export function ProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-card border-border text-foreground">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? t("admin.edit_project") : t("admin.add_project")}
@@ -216,7 +216,7 @@ export function ProjectDialog({
                 onChange={(e) => updateForm("slug", e.target.value)}
                 placeholder="my-project"
                 disabled={isEdit}
-                className="rounded-xl"
+                className="rounded-xl bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <div className="space-y-2">
@@ -225,7 +225,7 @@ export function ProjectDialog({
                 value={form.category}
                 onChange={(e) => updateForm("category", e.target.value)}
                 placeholder="Infrastructure"
-                className="rounded-xl"
+                className="rounded-xl bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <div className="space-y-2">
@@ -236,7 +236,7 @@ export function ProjectDialog({
                 value={form.externalUrl}
                 onChange={(e) => updateForm("externalUrl", e.target.value)}
                 placeholder="https://your-domain.com"
-                className="rounded-xl"
+                className="rounded-xl bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               <p className="text-[11px] text-muted-foreground">
                 {t("admin.project_website_url_hint") || "ادخل رابط موقع المنصة (سيتم إضافة https:// تلقائياً عند الحاجة)."}
@@ -248,7 +248,7 @@ export function ProjectDialog({
                 value={form.tags}
                 onChange={(e) => updateForm("tags", e.target.value)}
                 placeholder='["React", "TypeScript"]'
-                className="rounded-xl"
+                className="rounded-xl bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
