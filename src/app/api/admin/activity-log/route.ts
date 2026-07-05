@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { db } from '@/lib/db'
 
-// ── Types ────────────────────────────────────────────────────────────────────
-
 interface ActivityEntry {
   id: string
   type: 'project' | 'contact' | 'translation' | 'user' | 'media' | 'setting'
@@ -13,8 +11,6 @@ interface ActivityEntry {
   timestamp: Date
 }
 
-// ── Validation ───────────────────────────────────────────────────────────────
-
 const VALID_FILTERS = ['all', 'project', 'translation', 'contact', 'setting', 'user', 'media']
 
 const querySchema = z.object({
@@ -23,19 +19,23 @@ const querySchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
 })
 
-// ── Route Handler ────────────────────────────────────────────────────────────
+function pickProjectName(
+  translations: Array<{ locale: string; name: string }>,
+  slug: string
+): string {
+  const ar = translations.find((tr) => tr.locale === 'ar')?.name?.trim()
+  if (ar) return ar
+  const en = translations.find((tr) => tr.locale === 'en')?.name?.trim()
+  if (en) return en
+  return slug
+}
 
-/**
- * GET /api/admin/activity-log
- *
- * Returns an activity log derived from recent database records.
- * Supports filtering by type and pagination.
- *
- * Query params:
- *   - filter (string, default "all"): activity type to filter
- *   - limit (number, default 50): entries per page
- *   - page (number, default 1): page number
- */
+function localizeCategory(category: string): string {
+  const trimmed = category.trim()
+  if (!trimmed || trimmed === 'Uncategorized') return 'غير مصنّف'
+  return trimmed
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
     const limit = parsed.data.limit
     const page = parsed.data.page
 
-    // Fetch recent data to build the activity log
     const [
       recentProjects,
       recentContacts,
@@ -75,9 +74,7 @@ export async function GET(request: NextRequest) {
           createdAt: true,
           updatedAt: true,
           translations: {
-            where: { locale: 'en' },
-            select: { name: true },
-            take: 1,
+            select: { name: true, locale: true },
           },
         },
       }),
@@ -129,17 +126,17 @@ export async function GET(request: NextRequest) {
 
     const activities: ActivityEntry[] = []
 
-    // Project activities
     if (filter === 'all' || filter === 'project' || filter === 'setting') {
       for (const p of recentProjects) {
-        const name = p.translations[0]?.name ?? p.slug
+        const name = pickProjectName(p.translations, p.slug)
+        const category = localizeCategory(p.category || '')
 
         activities.push({
           id: `proj-create-${p.id}`,
           type: 'project',
           action: 'project_created',
-          description: `Project "${name}" created`,
-          meta: { slug: p.slug, category: p.category || 'Uncategorized' },
+          description: `تم إنشاء المنصة «${name}»`,
+          meta: { slug: p.slug, category },
           timestamp: p.createdAt,
         })
 
@@ -149,8 +146,8 @@ export async function GET(request: NextRequest) {
             type: 'project',
             action: p.featured ? 'project_featured' : 'project_updated',
             description: p.featured
-              ? `Project "${name}" marked as featured`
-              : `Project "${name}" updated`,
+              ? `تم تمييز المنصة «${name}»`
+              : `تم تحديث المنصة «${name}»`,
             meta: { slug: p.slug },
             timestamp: p.updatedAt,
           })
@@ -161,7 +158,7 @@ export async function GET(request: NextRequest) {
             id: `proj-pub-${p.id}`,
             type: 'project',
             action: 'project_published',
-            description: `Project "${name}" published`,
+            description: `تم نشر المنصة «${name}»`,
             meta: { slug: p.slug },
             timestamp: p.createdAt,
           })
@@ -169,60 +166,52 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Contact submission activities
     for (const c of recentContacts) {
       activities.push({
         id: `contact-${c.id}`,
         type: 'contact',
         action: 'contact_received',
-        description: `New contact message from ${c.name}`,
+        description: `رسالة تواصل جديدة من ${c.name}`,
         meta: { email: c.email, subject: c.subject },
         timestamp: c.createdAt,
       })
     }
 
-    // Translation activities
     for (const tr of recentTranslations) {
       activities.push({
         id: `trans-${tr.id}`,
         type: 'translation',
         action: 'translation_updated',
-        description: `Translation "${tr.key}" updated [${tr.locale}]`,
+        description: `تم تحديث الترجمة «${tr.key}» (${tr.locale})`,
         meta: { key: tr.key, locale: tr.locale },
         timestamp: new Date(),
       })
     }
 
-    // User activities
     for (const u of recentUsers) {
       activities.push({
         id: `user-${u.id}`,
         type: 'user',
         action: 'user_registered',
-        description: `User "${u.name}" registered`,
+        description: `تسجيل مستخدم جديد «${u.name}»`,
         meta: { email: u.email },
         timestamp: u.createdAt,
       })
     }
 
-    // Media activities
     for (const m of recentMedia) {
       activities.push({
         id: `media-${m.id}`,
         type: 'media',
         action: 'media_uploaded',
-        description: `Media "${m.filename}" uploaded`,
+        description: `تم رفع ملف «${m.filename}»`,
         meta: { filename: m.filename },
         timestamp: m.createdAt,
       })
     }
 
-    // Sort by timestamp descending
-    activities.sort(
-      (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
-    )
+    activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 
-    // Paginate
     const start = (page - 1) * limit
     const paginated = activities.slice(start, start + limit)
     const total = activities.length

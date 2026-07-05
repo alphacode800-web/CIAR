@@ -1,11 +1,16 @@
 "use client"
 
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { motion, useInView } from "framer-motion"
 import { Target, Lightbulb, Users, Rocket, Shield, Globe } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useI18n } from "@/lib/i18n-context"
 import { cn } from "@/lib/utils"
+import {
+  DEFAULT_ABOUT_COMPANY_INTRO,
+  resolveAboutCompanyIntro,
+  type AboutCompanyIntro,
+} from "@/lib/about-content"
 
 // ── Values configuration – keys come from translations ──────────────────────
 const VALUES = [
@@ -108,7 +113,24 @@ function SpotlightCard({
 
 // ── About page component ────────────────────────────────────────────────────
 export function AboutPage() {
-  const { t, dir } = useI18n()
+  const { t, dir, locale } = useI18n()
+  const [companyIntro, setCompanyIntro] = useState<AboutCompanyIntro>(DEFAULT_ABOUT_COMPANY_INTRO)
+
+  useEffect(() => {
+    fetch("/api/about/content")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.intro) {
+          setCompanyIntro(d.intro as AboutCompanyIntro)
+        }
+      })
+      .catch(() => {
+        setCompanyIntro(DEFAULT_ABOUT_COMPANY_INTRO)
+      })
+  }, [])
+
+  const valuesIntro =
+    resolveAboutCompanyIntro(companyIntro, locale) || t("about.subtitle")
 
   return (
     <div dir={dir} className="relative overflow-hidden">
@@ -199,8 +221,8 @@ export function AboutPage() {
           <h2 className="text-2xl sm:text-3xl font-bold">
             {t("about.values_title")}
           </h2>
-          <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
-            {t("about.subtitle")}
+          <p className="mx-auto mt-3 max-w-3xl text-base leading-relaxed text-muted-foreground">
+            {valuesIntro}
           </p>
         </AnimatedSection>
 

@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { useI18n } from "@/lib/i18n-context"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { SITE_CONTACT_DEFAULTS, whatsappHref as buildWhatsappHref } from "@/lib/site-contact"
 
 // ── Client-side Zod validation schema ───────────────────────────────────────
 const contactFormSchema = z.object({
@@ -111,7 +112,7 @@ export function ContactPage() {
   })
   const [errors, setErrors] = useState<FieldErrors>({})
   const [socialLinks, setSocialLinks] = useState<Record<string, string>>({
-    whatsapp: "",
+    whatsapp: SITE_CONTACT_DEFAULTS.social_whatsapp,
     telegram: "",
     facebook: "",
     instagram: "",
@@ -122,14 +123,19 @@ export function ContactPage() {
     snapchat: "",
   })
 
+  const [contactEmail, setContactEmail] = useState(SITE_CONTACT_DEFAULTS.contact_email)
+  const [contactPhone, setContactPhone] = useState(SITE_CONTACT_DEFAULTS.contact_phone)
+
   useEffect(() => {
     const loadSocial = async () => {
       try {
         const res = await fetch("/api/settings")
         if (!res.ok) return
         const data = await res.json()
+        if (data?.contact_email) setContactEmail(String(data.contact_email))
+        if (data?.contact_phone) setContactPhone(String(data.contact_phone))
         const mapped = {
-          whatsapp: String(data?.social_whatsapp || ""),
+          whatsapp: String(data?.social_whatsapp || data?.contact_phone || SITE_CONTACT_DEFAULTS.social_whatsapp),
           telegram: String(data?.social_telegram || ""),
           facebook: String(data?.social_facebook || ""),
           instagram: String(data?.social_instagram || ""),
@@ -218,9 +224,8 @@ export function ContactPage() {
   }
 
   const whatsappHref = (() => {
-    const base = socialLinks.whatsapp.replace(/[^\d]/g, "")
-    if (!base) return ""
-    return `https://wa.me/${base}?text=${buildContactText()}`
+    const text = decodeURIComponent(buildContactText())
+    return buildWhatsappHref(socialLinks.whatsapp, text)
   })()
 
   const telegramHref = socialLinks.telegram
@@ -305,7 +310,13 @@ export function ContactPage() {
               <InfoCard
                 icon={Mail}
                 label={t("contact.email_label")}
-                value={t("contact.email")}
+                value={contactEmail}
+              />
+
+              <InfoCard
+                icon={Phone}
+                label={t("contact.phone_label")}
+                value={contactPhone}
               />
 
               {/* Office card */}

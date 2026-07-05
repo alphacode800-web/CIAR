@@ -217,7 +217,7 @@ export function SettingsTab() {
           descKey: "admin.setting_email_desc",
           descFallback: "Primary email address for inquiries",
           type: "text",
-          placeholder: "info@ciar.com",
+          placeholder: "azasnaa628@gmail.com",
         },
         {
           key: "contact_phone",
@@ -226,7 +226,7 @@ export function SettingsTab() {
           descKey: "admin.setting_phone_desc",
           descFallback: "Phone number for customer support",
           type: "text",
-          placeholder: "+1 (555) 000-0000",
+          placeholder: "+963993153333",
         },
         {
           key: "contact_address",
@@ -309,7 +309,7 @@ export function SettingsTab() {
           descKey: "admin.setting_whatsapp_desc",
           descFallback: "WhatsApp number with country code (or wa.me URL)",
           type: "text",
-          placeholder: "+966500000000",
+          placeholder: "+963993153333",
         },
         {
           key: "social_telegram",

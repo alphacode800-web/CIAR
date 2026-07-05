@@ -2,6 +2,7 @@
 
 import { lazy, Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { isSectionContentTab } from "@/lib/section-admin-registry"
 
 const OverviewTab = lazy(() => import("@/components/admin/overview-tab").then((m) => ({ default: m.OverviewTab })))
 const AnalyticsTab = lazy(() => import("@/components/admin/analytics-tab").then((m) => ({ default: m.AnalyticsTab })))
@@ -11,14 +12,20 @@ const TranslationsTab = lazy(() => import("@/components/admin/translations-tab")
 const MediaTab = lazy(() => import("@/components/admin/media-tab").then((m) => ({ default: m.MediaTab })))
 const BackgroundsTab = lazy(() => import("@/components/admin/backgrounds-tab").then((m) => ({ default: m.BackgroundsTab })))
 const HomeBannersTab = lazy(() => import("@/components/admin/home-banners-tab").then((m) => ({ default: m.HomeBannersTab })))
+const ImageStripTab = lazy(() => import("@/components/admin/image-strip-tab").then((m) => ({ default: m.ImageStripTab })))
+const AboutContentTab = lazy(() =>
+  import("@/components/admin/about-content-tab").then((m) => ({ default: m.AboutContentTab }))
+)
 const ContactsTab = lazy(() => import("@/components/admin/contacts-tab").then((m) => ({ default: m.ContactsTab })))
 const UsersTab = lazy(() => import("@/components/admin/users-tab").then((m) => ({ default: m.UsersTab })))
-const HomeSectionsTab = lazy(() => import("@/components/admin/home-sections-tab").then((m) => ({ default: m.HomeSectionsTab })))
 const NewsTickerTab = lazy(() => import("@/components/admin/news-ticker-tab").then((m) => ({ default: m.NewsTickerTab })))
 const SeoTab = lazy(() => import("@/components/admin/seo-tab").then((m) => ({ default: m.SeoTab })))
 const AppearanceTab = lazy(() => import("@/components/admin/appearance-tab").then((m) => ({ default: m.AppearanceTab })))
 const SiteSettingsTab = lazy(() => import("@/components/admin/site-settings-tab").then((m) => ({ default: m.SiteSettingsTab })))
 const DataExportTab = lazy(() => import("@/components/admin/data-export-tab").then((m) => ({ default: m.DataExportTab })))
+const SectionContentTab = lazy(() =>
+  import("@/components/admin/section-content-tab").then((m) => ({ default: m.SectionContentTab }))
+)
 
 export function AdminTabSkeleton() {
   return (
@@ -52,12 +59,14 @@ export function AdminTabContent({ activeTab }: { activeTab: string }) {
       return <BackgroundsTab />
     case "home-banners":
       return <HomeBannersTab />
+    case "image-strip":
+      return <ImageStripTab />
+    case "about-content":
+      return <AboutContentTab />
     case "contacts":
       return <ContactsTab />
     case "users":
       return <UsersTab />
-    case "home-sections":
-      return <HomeSectionsTab />
     case "news-ticker":
       return <NewsTickerTab />
     case "seo":
@@ -69,6 +78,9 @@ export function AdminTabContent({ activeTab }: { activeTab: string }) {
     case "data-export":
       return <DataExportTab />
     default:
+      if (isSectionContentTab(activeTab)) {
+        return <SectionContentTab tabId={activeTab} />
+      }
       return <OverviewTab />
   }
 }

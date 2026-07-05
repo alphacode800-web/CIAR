@@ -7,6 +7,7 @@ import { useRouter } from "@/lib/router-context"
 import { useAuth } from "@/lib/auth-context"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
+import { FloatingWhatsAppButton } from "@/components/layout/floating-whatsapp-button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SuperPlatformHome } from "@/components/super-platform/super-platform-home"
 import { PlatformDetailsPage } from "@/components/super-platform/platform-details-page"
@@ -286,6 +287,7 @@ export default function Page() {
       </main>
 
       {!isAdmin && <Footer />}
+      {!isAdmin && <FloatingWhatsAppButton />}
     </div>
   )
 }

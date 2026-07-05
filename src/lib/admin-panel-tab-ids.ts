@@ -1,23 +1,26 @@
 /**
- * التبويبات الـ15 للوحة التحكم الكاملة — يجب أن تطابق `SIDEBAR_ITEMS` في `admin-layout.tsx`.
+ * تبويبات لوحة التحكم — الشريط الجانبي + تبويبات الأقسام (عبر مركز الصفحة).
  */
+import { getSectionAdminTabIds } from "@/lib/section-admin-registry"
+
 export const ADMIN_PANEL_TAB_IDS = [
   "overview",
   "analytics",
   "activity",
   "projects",
-  "translations",
   "media",
   "backgrounds",
   "home-banners",
+  "image-strip",
+  "about-content",
   "contacts",
   "users",
-  "home-sections",
   "news-ticker",
   "seo",
   "appearance",
   "settings",
   "data-export",
+  ...getSectionAdminTabIds(),
 ] as const
 
 export type AdminPanelTabId = (typeof ADMIN_PANEL_TAB_IDS)[number]

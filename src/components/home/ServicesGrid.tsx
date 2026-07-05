@@ -1,81 +1,62 @@
 "use client"
 
-import { useRef, useCallback } from "react"
+import { useRef, useCallback, useEffect, useState } from "react"
 import { motion, useInView } from "framer-motion"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
+import { CIAR_MODULES } from "@/features/super-platform/config"
 import {
   Building2,
   Car,
   ShoppingCart,
   Plane,
-  UtensilsCrossed,
-  GraduationCap,
-  HeartPulse,
   Truck,
+  Briefcase,
+  Sparkles,
+  Globe,
+  Crown,
+  Wrench,
+  Megaphone,
+  TrendingUp,
   ArrowLeft,
+  Layers,
+  type LucideIcon,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
-const services = [
-  {
-    icon: Building2,
-    key: "home.service_real_estate",
-    name: "Real Estate",
-    description: "Browse properties, schedule viewings, and manage listings with our comprehensive real estate platform.",
-    platformSlug: "REAL_ESTATE",
-  },
-  {
-    icon: Car,
-    key: "home.service_car_rental",
-    name: "Car Rental",
-    description: "Find and book vehicles with flexible rental plans, GPS tracking, and doorstep delivery options.",
-    platformSlug: "CARS",
-  },
-  {
-    icon: ShoppingCart,
-    key: "home.service_ecommerce",
-    name: "E-Commerce",
-    description: "Shop from thousands of vendors with secure payments, fast shipping, and easy returns.",
-    platformSlug: "MALL",
-  },
-  {
-    icon: Plane,
-    key: "home.service_tourism",
-    name: "Tourism",
-    description: "Discover travel destinations, book hotels and flights, and create unforgettable travel experiences.",
-    platformSlug: "TOURISM",
-  },
-  {
-    icon: UtensilsCrossed,
-    key: "home.service_food",
-    name: "Food Delivery",
-    description: "Order from local restaurants with real-time tracking, scheduled delivery, and contactless pickup.",
-    platformSlug: "MALL",
-  },
-  {
-    icon: GraduationCap,
-    key: "home.service_education",
-    name: "Education",
-    description: "Access online courses, certifications, and learning resources from top institutions worldwide.",
-    platformSlug: "JOBS",
-  },
-  {
-    icon: HeartPulse,
-    key: "home.service_healthcare",
-    name: "Healthcare",
-    description: "Book appointments, access telemedicine, and manage health records securely in one platform.",
-    platformSlug: "SERVICES",
-  },
-  {
-    icon: Truck,
-    key: "home.service_logistics",
-    name: "Logistics",
-    description: "Streamline shipping, track deliveries, and optimize supply chain operations with smart logistics tools.",
-    platformSlug: "SHIPPING",
-  },
-]
+type PlatformItem = {
+  slug: string
+  nameEn: string
+  nameAr: string
+  descriptionEn: string
+  descriptionAr: string
+}
+
+const SLUG_ICONS: Record<string, LucideIcon> = {
+  FASHION: Sparkles,
+  GLOBAL_PRODUCTS: Globe,
+  VIP: Crown,
+  MALL: ShoppingCart,
+  TOURISM: Plane,
+  REAL_ESTATE: Building2,
+  CARS: Car,
+  SERVICES: Wrench,
+  SHIPPING: Truck,
+  JOBS: Briefcase,
+  ADS_MARKETING: Megaphone,
+  INVESTMENT: TrendingUp,
+}
+
+function buildFallbackPlatforms(): PlatformItem[] {
+  return CIAR_MODULES.filter((module) => module.visibility === "VISIBLE").map((module) => ({
+    slug: module.slug,
+    nameEn: module.nameEn,
+    nameAr: module.nameAr,
+    descriptionEn: module.descriptionEn,
+    descriptionAr: module.descriptionAr,
+  }))
+}
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -85,14 +66,56 @@ const fadeUp = (delay = 0) => ({
 })
 
 export function ServicesGrid() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const ref = useRef<HTMLDivElement>(null)
+  const [platforms, setPlatforms] = useState<PlatformItem[]>(buildFallbackPlatforms)
+
+  useEffect(() => {
+    fetch("/api/super-platform/modules")
+      .then((res) => res.json())
+      .then((data) => {
+        const rows = Array.isArray(data?.modules) ? data.modules : []
+        const visible = rows
+          .filter(
+            (module: { visibility?: string; isEnabled?: boolean }) =>
+              module.visibility === "VISIBLE" && module.isEnabled
+          )
+          .sort((a: { order?: number }, b: { order?: number }) => (a.order ?? 0) - (b.order ?? 0))
+
+        if (visible.length === 0) return
+
+        setPlatforms(
+          visible.map(
+            (module: {
+              slug: string
+              nameEn: string
+              nameAr: string
+              descriptionEn: string
+              descriptionAr: string
+            }) => ({
+              slug: module.slug,
+              nameEn: module.nameEn,
+              nameAr: module.nameAr,
+              descriptionEn: module.descriptionEn,
+              descriptionAr: module.descriptionAr,
+            })
+          )
+        )
+      })
+      .catch(() => {
+        // keep bundled fallback
+      })
+  }, [])
+
+  const title =
+    locale === "ar"
+      ? t("home.services_title") || `${platforms.length} منصة متكاملة`
+      : t("home.services_title") || `${platforms.length} Integrated Platforms`
 
   return (
     <section ref={ref} className="relative py-20 sm:py-28">
       <div className="absolute inset-0 dot-pattern opacity-20 pointer-events-none" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <motion.div {...fadeUp(0)} className="text-center mb-14">
           <Badge
             className={cn(
@@ -100,22 +123,22 @@ export function ServicesGrid() {
               "text-[oklch(0.78_0.14_82)]"
             )}
           >
-            {t("home.services_badge") || "Our Services"}
+            <Layers className="h-3.5 w-3.5" />
+            {t("home.services_badge") || (locale === "ar" ? "منصاتنا" : "Our Platforms")}
           </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            {t("home.services_title") || "8 Integrated Platforms"}
-          </h2>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">{title}</h2>
           <div className="mt-4 mx-auto w-24 h-1 rounded-full bg-gradient-to-r from-[oklch(0.82_0.145_85)] via-[oklch(0.78_0.14_82)] to-[oklch(0.70_0.13_72)]" />
           <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
             {t("home.services_subtitle") ||
-              "Comprehensive digital solutions designed to simplify your daily life and empower businesses."}
+              (locale === "ar"
+                ? "حلول رقمية متكاملة لتبسيط الحياة اليومية وتمكين الأعمال."
+                : "Comprehensive digital solutions designed to simplify daily life and empower businesses.")}
           </p>
         </motion.div>
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
-          {services.map((service, i) => (
-            <ServiceCard key={service.key} service={service} index={i} t={t} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 lg:gap-6">
+          {platforms.map((platform, index) => (
+            <PlatformCard key={platform.slug} platform={platform} index={index} />
           ))}
         </div>
       </div>
@@ -123,20 +146,12 @@ export function ServicesGrid() {
   )
 }
 
-function ServiceCard({
-  service,
-  index,
-  t,
-}: {
-  service: (typeof services)[0]
-  index: number
-  t: (key: string) => string
-}) {
+function PlatformCard({ platform, index }: { platform: PlatformItem; index: number }) {
   const { navigate } = useRouter()
   const { locale } = useI18n()
   const cardRef = useRef<HTMLButtonElement>(null)
   const isInView = useInView(cardRef, { once: true, margin: "-60px" })
-  const Icon = service.icon
+  const Icon = SLUG_ICONS[platform.slug] ?? Layers
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const card = cardRef.current
@@ -146,21 +161,18 @@ function ServiceCard({
     card.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`)
   }, [])
 
-  const handleClick = () => {
-    navigate({ page: "platform", slug: service.platformSlug })
-  }
-
-  const title = t(service.key + "_name") || service.name
+  const title = locale === "ar" ? platform.nameAr : platform.nameEn
+  const description = locale === "ar" ? platform.descriptionAr : platform.descriptionEn
 
   return (
     <motion.button
       type="button"
       ref={cardRef}
-      onClick={handleClick}
+      onClick={() => navigate({ page: "platform", slug: platform.slug })}
       onMouseMove={handleMouseMove}
       initial={{ opacity: 0, y: 24 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
       aria-label={locale === "ar" ? `استكشف ${title}` : `Explore ${title}`}
       className={cn(
         "card-spotlight group rounded-2xl border border-primary/15 bg-card p-6 text-start w-full",
@@ -181,9 +193,7 @@ function ServiceCard({
           {title}
         </h3>
 
-        <p className="text-sm text-foreground/70 leading-relaxed line-clamp-3">
-          {t(service.key + "_desc") || service.description}
-        </p>
+        <p className="text-sm text-foreground/70 leading-relaxed line-clamp-3">{description}</p>
       </div>
     </motion.button>
   )

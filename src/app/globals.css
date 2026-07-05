@@ -1101,6 +1101,82 @@ body:has([data-admin-lux-layout]) {
   display: none;
 }
 
+/* ─── Image strip marquee ─────────────────────────────────────── */
+
+@keyframes image-strip-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.image-strip-marquee {
+  animation: image-strip-marquee var(--strip-duration, 45s) linear infinite;
+  will-change: transform;
+}
+
+.image-strip-marquee-pause:hover {
+  animation-play-state: paused;
+}
+
+.image-strip-marquee-paused {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-strip-marquee {
+    animation: none;
+  }
+}
+
+/* ─── News ticker marquee (seamless loop) ─────────────────────── */
+
+@keyframes news-ticker-marquee-ltr {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes news-ticker-marquee-rtl {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.news-ticker-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  flex-direction: row;
+  direction: ltr;
+}
+
+.news-ticker-track-ltr {
+  animation: news-ticker-marquee-ltr var(--ticker-duration, 24s) linear infinite;
+}
+
+/* Legacy alias — same motion as LTR (scroll away from badge in RTL layouts) */
+.news-ticker-track-rtl {
+  animation: news-ticker-marquee-ltr var(--ticker-duration, 24s) linear infinite;
+  flex-direction: row;
+  direction: ltr;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .news-ticker-track-ltr,
+  .news-ticker-track-rtl {
+    animation: none;
+  }
+}
+
 /* ─── Premium Utility Classes ──────────────────────────────────── */
 
 /* Gold text for inline use */

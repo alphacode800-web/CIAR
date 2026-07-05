@@ -321,17 +321,23 @@ export function NewsTickerTab() {
           <div className="flex items-center justify-between text-sm">
             <Label>سرعة الحركة</Label>
             <span className="text-muted-foreground">
-              {style.scrollDuration <= 16 ? "سريع" : style.scrollDuration >= 36 ? "بطيء" : "متوسط"}
+              {style.scrollDuration <= 28
+                ? "سريع"
+                : style.scrollDuration >= 48
+                  ? "بطيء"
+                  : "متوسط"}
             </span>
           </div>
           <Slider
             value={[style.scrollDuration]}
-            min={8}
-            max={48}
+            min={20}
+            max={90}
             step={1}
             onValueChange={([value]) => updateStyle("scrollDuration", value)}
           />
-          <p className="text-xs text-muted-foreground">حرّك المؤشر يميناً لتسريع الشريط، ويساراً لإبطائه</p>
+          <p className="text-xs text-muted-foreground">
+            حرّك المؤشر يميناً لإبطاء الشريط، ويساراً لتسريعه
+          </p>
         </div>
 
         <div className="space-y-3">
@@ -341,7 +347,7 @@ export function NewsTickerTab() {
           </div>
           <Slider
             value={[style.stripHeight]}
-            min={36}
+            min={28}
             max={72}
             step={2}
             onValueChange={([value]) => updateStyle("stripHeight", value)}

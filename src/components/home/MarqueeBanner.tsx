@@ -6,7 +6,7 @@ import { useI18n } from "@/lib/i18n-context"
 import { Sparkles, Zap, Globe, ShieldCheck } from "lucide-react"
 
 const marqueeItems = [
-  { icon: Sparkles, key: "home.marquee_platforms", fallback: "8+ Digital Platforms" },
+  { icon: Sparkles, key: "home.marquee_platforms", fallback: "12 Digital Platforms" },
   { icon: Globe, key: "home.marquee_users", fallback: "50K+ Active Users" },
   { key: "home.marquee_languages", fallback: "5 Languages Supported" },
   { icon: ShieldCheck, key: "home.marquee_support", fallback: "24/7 Customer Support" },

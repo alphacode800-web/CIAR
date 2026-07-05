@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Layers,
   Clapperboard,
+  Film,
   Megaphone,
   Building2,
   ShieldCheck,
@@ -61,6 +62,7 @@ const DEFAULT_SECTIONS: HomeSection[] = buildDefaultHomeSections()
 
 const SECTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "hero-slideshow": Clapperboard,
+  "image-strip": Film,
   "marquee-banner": Megaphone,
   "about-brief": Building2,
   "trust-badges": ShieldCheck,

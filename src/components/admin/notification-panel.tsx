@@ -23,6 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useI18n } from "@/lib/i18n-context"
 import { cn } from "@/lib/utils"
+import { formatAdminTimeAgo } from "@/lib/admin-activity-text"
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
 
@@ -40,7 +41,17 @@ interface Notification {
   read: boolean
 }
 
-/* ─── Config ──────────────────────────────────────────────────────────────── */
+const ACTION_TITLE_KEYS: Record<string, string> = {
+  project_published: "admin.action_published",
+  project_created: "admin.action_created",
+  project_updated: "admin.action_updated",
+  project_featured: "admin.action_featured",
+  contact_received: "admin.action_contact",
+  translation_updated: "admin.action_translation",
+  settings_updated: "admin.action_settings",
+  user_registered: "admin.action_user",
+  media_uploaded: "admin.action_media",
+}
 
 const NOTIFICATION_STYLES: Record<
   Notification["type"],
@@ -76,19 +87,11 @@ const NOTIFICATION_STYLES: Record<
   },
 }
 
-function timeAgo(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (seconds < 60) return "Just now"
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
-  return `${Math.floor(days / 30)}mo ago`
+function timeAgo(dateStr: string, t: (key: string) => string): string {
+  return formatAdminTimeAgo(dateStr, t)
 }
 
-/* ─── Component ───────────────────────────────────────────────────────────── */
+/* ─── Config ──────────────────────────────────────────────────────────────── */
 
 export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps) {
   const { t } = useI18n()
@@ -123,10 +126,10 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
           return {
             id: entry.id,
             type: notifType,
-            title: entry.action.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+            title: t(ACTION_TITLE_KEYS[entry.action] || "admin.action_updated"),
             description: entry.description,
             timestamp: entry.timestamp,
-            read: index > 2, // First 3 are unread
+            read: index > 2,
           }
         }
       )
@@ -137,7 +140,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     if (open) {
@@ -185,11 +188,11 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">
-                    {t("admin.notifications") || "Notifications"}
+                    {t("admin.notifications")}
                   </h3>
                   {unreadCount > 0 && (
                     <p className="text-[10px] text-muted-foreground">
-                      {unreadCount} {t("admin.unread") || "unread"}
+                      {unreadCount} {t("admin.unread")}
                     </p>
                   )}
                 </div>
@@ -203,7 +206,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                     className="h-7 px-2 text-[10px] text-[oklch(0.76_0.19_48)] hover:bg-[oklch(0.76_0.19_48/8%)] gap-1"
                   >
                     <CheckCheck className="h-3 w-3" />
-                    {t("admin.mark_all_read") || "Mark all read"}
+                    {t("admin.mark_all_read")}
                   </Button>
                 )}
                 <Button
@@ -237,10 +240,10 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                     <Bell className="h-5 w-5 text-[oklch(0.76_0.19_48/30%)]" />
                   </div>
                   <p className="text-sm font-medium text-muted-foreground">
-                    {t("admin.no_notifications") || "No notifications"}
+                    {t("admin.no_notifications")}
                   </p>
                   <p className="text-xs text-muted-foreground/60 mt-1 text-center">
-                    {t("admin.no_notifications_desc") || "You're all caught up! New notifications will appear here."}
+                    {t("admin.no_notifications_desc")}
                   </p>
                 </div>
               ) : (
@@ -303,7 +306,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                             </p>
                             <p className="text-[10px] text-muted-foreground/40 mt-1.5 flex items-center gap-1">
                               <Clock className="h-2.5 w-2.5" />
-                              {timeAgo(notification.timestamp)}
+                              {timeAgo(notification.timestamp, t)}
                             </p>
                           </div>
                         </motion.div>
@@ -322,7 +325,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                   size="sm"
                   className="w-full h-8 text-[11px] text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/8%)]"
                 >
-                  {t("admin.view_all_notifications") || "View All Notifications"}
+                  {t("admin.view_all_notifications")}
                 </Button>
               </div>
             )}

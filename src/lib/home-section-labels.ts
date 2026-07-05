@@ -1,5 +1,6 @@
 export const HOME_SECTION_LABELS_AR: Record<string, string> = {
   "hero-slideshow": "عرض الشرائح الرئيسي",
+  "image-strip": "شريط الصور",
   "marquee-banner": "الشريط المتحرك",
   "about-brief": "نبذة عن الشركة",
   "trust-badges": "شارات الثقة",

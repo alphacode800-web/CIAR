@@ -39,6 +39,7 @@ import { ThemeSwitcher } from "@/components/layout/theme-switcher"
 import { usePathname as useNextPathname, useRouter as useNextRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
+import { getSectionByAdminTab } from "@/lib/section-admin-registry"
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
 
@@ -65,7 +66,8 @@ const TAB_LABELS: Record<string, string> = {
   media: "admin.media",
   backgrounds: "admin.backgrounds",
   "home-banners": "admin.home_banners",
-  "home-sections": "admin.home_sections",
+  "image-strip": "admin.image_strip",
+  "about-content": "admin.about_content",
   "news-ticker": "admin.news_ticker",
   seo: "admin.seo",
   "data-export": "admin.data_export",
@@ -82,9 +84,10 @@ const TAB_DESCRIPTIONS: Record<string, { key: string; fallback: string }> = {
   media: { key: "admin.tab_desc_media", fallback: "Upload and manage images, documents, and files" },
   backgrounds: { key: "admin.tab_desc_backgrounds", fallback: "Manage page background images and visual themes" },
   "home-banners": { key: "admin.tab_desc_home_banners", fallback: "Control homepage banners, logo, hero text, and media" },
+  "image-strip": { key: "admin.tab_desc_image_strip", fallback: "Manage the animated image strip below the hero section" },
+  "about-content": { key: "admin.tab_desc_about_content", fallback: "Edit the company intro text on the About page" },
   contacts: { key: "admin.tab_desc_contacts", fallback: "Review and respond to submitted messages" },
   users: { key: "admin.tab_desc_users", fallback: "Manage user accounts, roles, and permissions" },
-  "home-sections": { key: "admin.tab_desc_home_sections", fallback: "Customize homepage section order and visibility" },
   "news-ticker": { key: "admin.tab_desc_news_ticker", fallback: "Edit the scrolling news ticker in hero header" },
   seo: { key: "admin.tab_desc_seo", fallback: "Meta tags, social previews, and sitemap" },
   appearance: { key: "admin.tab_desc_appearance", fallback: "Colors, typography, layout, and effects" },
@@ -177,13 +180,22 @@ export function AdminHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [notifOpen])
 
-  const currentTabLabel =
-    t(TAB_LABELS[activeTab] || "") ||
-    t(`admin.${activeTab}`) ||
-    activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+  const currentTabLabel = (() => {
+    const sectionEntry = getSectionByAdminTab(activeTab)
+    if (sectionEntry) return sectionEntry.titleAr
+    return (
+      t(TAB_LABELS[activeTab] || "") ||
+      t(`admin.${activeTab}`) ||
+      activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+    )
+  })()
 
   const tabDesc = TAB_DESCRIPTIONS[activeTab]
-  const tabDescriptionText = tabDesc ? t(tabDesc.key) || tabDesc.fallback : ""
+  const tabDescriptionText = (() => {
+    const sectionEntry = getSectionByAdminTab(activeTab)
+    if (sectionEntry) return sectionEntry.descAr
+    return tabDesc ? t(tabDesc.key) || tabDesc.fallback : ""
+  })()
 
   return (
     <header

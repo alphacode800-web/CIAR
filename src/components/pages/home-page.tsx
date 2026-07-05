@@ -23,6 +23,8 @@ import { NewsUpdates } from "@/components/home/NewsUpdates"
 import { FAQSection } from "@/components/home/FAQSection"
 import { NewsletterCTA } from "@/components/home/NewsletterCTA"
 import { PaymentMethods } from "@/components/home/PaymentMethods"
+import { ImageStripBar } from "@/components/home/ImageStripBar"
+import { DEFAULT_IMAGE_STRIP_CONFIG, type ImageStripConfig } from "@/lib/image-strip"
 
 interface FeaturedProject {
   id: string
@@ -76,12 +78,12 @@ const FALLBACK_BANNERS: PlatformBanner[] = [
   { id: "global", titleEn: "CIAR Global Products", titleAr: "CiAr للمنتجات الصينية والدولية", descriptionEn: "Chinese and international products across industries.", descriptionAr: "للمنتجات الصينية والدولية بين الشركات العالمية من كافة الصناعات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(2, 15, 7) },
   { id: "vip", titleEn: "CIAR VIP", titleAr: "CiAr VIP", descriptionEn: "Premium experience for VIP customers and luxury brands.", descriptionAr: "لكبار الشخصيات، البسة رجالية ونسائية وماركات عالمية.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(12, 13, 10) },
   { id: "mall", titleEn: "CIAR E-Mall", titleAr: "مول CiAr الالكتروني", descriptionEn: "Daily offers and exclusive features in one giant mall.", descriptionAr: "أكبر مول الكتروني عالميا مع عروض وميزات يومية.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(2, 7, 8) },
-  { id: "tourism", titleEn: "CIAR Tourism", titleAr: "CiAr الدليل والوسيط السياحي", descriptionEn: "Global tourism services and offers.", descriptionAr: "الدليل والوسيط السياحي لكافة دول وشركات العالم.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(0, 19, 8) },
-  { id: "realestate", titleEn: "CIAR Real Estate", titleAr: "دليل CiAr للتسويق العقاري", descriptionEn: "Buy, sell, and rent all property types.", descriptionAr: "بيع وشراء وأجار كافة انواع العقارات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(1, 13, 18) },
-  { id: "cars", titleEn: "CIAR Cars", titleAr: "دليل CiAr لتجارة السيارات", descriptionEn: "Buy, sell, and rent all car types.", descriptionAr: "بيع وشراء وأجار كافة انواع السيارات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(3, 4, 11) },
-  { id: "services", titleEn: "CIAR Services", titleAr: "دليل CiAr للصيانة والتنظيف", descriptionEn: "Home and office maintenance and cleaning.", descriptionAr: "صيانة المنازل والمكاتب وخدمات التنظيف.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(11, 5, 6) },
-  { id: "shipping", titleEn: "CIAR Shipping", titleAr: "CiAr دليل الشحن العالمي", descriptionEn: "Shipping by land, sea, and air worldwide.", descriptionAr: "الشحن العالمي برا وبحرا وجوا إلى كافة دول العالم.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(4, 15, 0) },
-  { id: "jobs", titleEn: "CIAR Jobs", titleAr: "CiAr دليل شواغر التوظيف", descriptionEn: "Jobs, career search, and employee housing.", descriptionAr: "شواغر التوظيف والبحث عن العمل وسكن موظفين.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(5, 18, 10) },
+  { id: "tourism", titleEn: "CIAR Tourism", titleAr: "CiAr الوسيط السياحي", descriptionEn: "Global tourism services and offers.", descriptionAr: "الوسيط السياحي لكافة دول وشركات العالم.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(0, 19, 8) },
+  { id: "realestate", titleEn: "CIAR Real Estate", titleAr: "CiAr للتسويق العقاري", descriptionEn: "Buy, sell, and rent all property types.", descriptionAr: "بيع وشراء وأجار كافة انواع العقارات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(1, 13, 18) },
+  { id: "cars", titleEn: "CIAR Cars", titleAr: "CiAr لتجارة السيارات", descriptionEn: "Buy, sell, and rent all car types.", descriptionAr: "بيع وشراء وأجار كافة انواع السيارات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(3, 4, 11) },
+  { id: "services", titleEn: "CIAR Services", titleAr: "CiAr للصيانة والتنظيف", descriptionEn: "Home and office maintenance and cleaning.", descriptionAr: "صيانة المنازل والمكاتب وخدمات التنظيف.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(11, 5, 6) },
+  { id: "shipping", titleEn: "CIAR Shipping", titleAr: "CiAr للشحن العالمي", descriptionEn: "Shipping by land, sea, and air worldwide.", descriptionAr: "الشحن العالمي برا وبحرا وجوا إلى كافة دول العالم.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(4, 15, 0) },
+  { id: "jobs", titleEn: "CIAR Jobs", titleAr: "CiAr لشواغر التوظيف", descriptionEn: "Jobs, career search, and employee housing.", descriptionAr: "شواغر التوظيف والبحث عن العمل وسكن موظفين.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(5, 18, 10) },
   { id: "marketing", titleEn: "CIAR Ads & Marketing", titleAr: "CiAr استضافة وتصميم الحملات الاعلانية", descriptionEn: "Design and hosting for full ad campaigns.", descriptionAr: "استضافة وتصميم كافة الحملات الاعلانية.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(6, 16, 19) },
   { id: "investment", titleEn: "CIAR Investment", titleAr: "CiAr أسهم المنصة والمكافآت", descriptionEn: "Member shares and rewards in CIAR platform.", descriptionAr: "أسهم منصتنا الخاصة بالأعضاء والمكافآت.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(13, 14, 17) },
 ]
@@ -94,6 +96,8 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [heroImages, setHeroImages] = useState<string[]>([...DEFAULT_HERO_IMAGE_URLS])
   const [platformBanners, setPlatformBanners] = useState<PlatformBanner[]>(FALLBACK_BANNERS)
+  const [imageStripConfig, setImageStripConfig] = useState<ImageStripConfig>(DEFAULT_IMAGE_STRIP_CONFIG)
+  const [imageStripImages, setImageStripImages] = useState<string[]>([...DEFAULT_HERO_IMAGE_URLS])
   const [brokenHeroUrls, setBrokenHeroUrls] = useState<Set<string>>(() => new Set())
 
   const heroBackgroundType = homeConfig?.hero?.backgroundType === "video" ? "video" : "image"
@@ -191,6 +195,23 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
       })
       .catch(() => {
         setPlatformBanners(FALLBACK_BANNERS)
+      })
+  }, [])
+
+  useEffect(() => {
+    fetch("/api/home/image-strip")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.config) {
+          setImageStripConfig(d.config as ImageStripConfig)
+        }
+        if (Array.isArray(d?.images)) {
+          setImageStripImages(d.images)
+        }
+      })
+      .catch(() => {
+        setImageStripConfig(DEFAULT_IMAGE_STRIP_CONFIG)
+        setImageStripImages([...DEFAULT_HERO_IMAGE_URLS])
       })
   }, [])
 
@@ -295,6 +316,9 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
         </div>
       </section>
 
+      {/* ═══ Image strip — animated category gallery ═══ */}
+      <ImageStripBar config={imageStripConfig} images={imageStripImages} />
+
       <div className="glow-line-gold" />
 
       {/* ═══ 2. ALL PLATFORMS GRID (replaces single banner) ═══ */}
@@ -328,7 +352,7 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
                       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.10_0.03_265/90)] via-[oklch(0.10_0.03_265/25)] to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/55 to-transparent" />
                     <div className="absolute bottom-3 inset-x-3 flex items-end justify-between gap-2">
                       <Badge className="border-0 bg-primary/90 text-primary-foreground text-[10px] font-semibold shadow-lg">
                         {locale === "ar" ? "منصة" : "Platform"}
@@ -336,12 +360,12 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
                     </div>
                   </div>
                   <div className="space-y-2.5 p-5">
-                    <h3 className="text-xl font-bold tracking-tight text-foreground">{title}</h3>
-                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+                    <h3 className="text-xl font-bold tracking-tight text-black dark:text-white">{title}</h3>
+                    <p className="line-clamp-2 text-sm leading-relaxed text-black/75 dark:text-white/80">{description}</p>
                     <button
                       type="button"
                       onClick={() => navigate({ page: "platform", slug: resolvePlatformSlug(banner) })}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-black transition-colors hover:text-black/70 dark:text-white dark:hover:text-white/80"
                     >
                       {locale === "ar" ? banner.ctaTextAr || "استكشف القسم" : banner.ctaTextEn || "Explore section"}
                       <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />

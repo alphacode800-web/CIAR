@@ -67,10 +67,10 @@ export const DEFAULT_NEWS_TICKER_STYLE: NewsTickerStyle = {
   badgeLabelAr: "أخبار",
   badgeLabelEn: "News",
   fontFamily: "tajawal",
-  fontSize: 13,
+  fontSize: 12,
   fontWeight: 600,
-  scrollDuration: 24,
-  stripHeight: 46,
+  scrollDuration: 52,
+  stripHeight: 32,
 }
 
 export const NEWS_TICKER_PRESETS: Array<{
@@ -148,8 +148,8 @@ export const newsTickerStyleSchema = z.object({
   fontFamily: z.enum(newsTickerFontKeys),
   fontSize: z.number().min(11).max(22),
   fontWeight: z.union([z.literal(400), z.literal(500), z.literal(600), z.literal(700), z.literal(800)]),
-  scrollDuration: z.number().min(8).max(60),
-  stripHeight: z.number().min(36).max(72),
+  scrollDuration: z.number().min(12).max(90),
+  stripHeight: z.number().min(28).max(72),
 })
 
 export function getNewsTickerFontStack(key: NewsTickerFontKey): string {
@@ -160,7 +160,14 @@ export function parseNewsTickerStyle(raw: string | null | undefined): NewsTicker
   if (!raw) return { ...DEFAULT_NEWS_TICKER_STYLE }
   try {
     const parsed = newsTickerStyleSchema.safeParse(JSON.parse(raw))
-    if (parsed.success) return parsed.data
+    if (parsed.success) {
+      const style = { ...DEFAULT_NEWS_TICKER_STYLE, ...parsed.data }
+      // ترحيل الإعدادات القديمة السريعة جداً إلى سرعة مريحة للقراءة
+      if (style.scrollDuration <= 30) {
+        style.scrollDuration = DEFAULT_NEWS_TICKER_STYLE.scrollDuration
+      }
+      return style
+    }
   } catch {
     // ignore
   }

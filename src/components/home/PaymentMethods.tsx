@@ -3,7 +3,26 @@
 import { motion } from "framer-motion"
 import { useI18n } from "@/lib/i18n-context"
 
-const paymentMethods = [
+type PaymentMethod = {
+  key: string
+  label: string
+  iconUrl: string
+  imageClassName?: string
+}
+
+const paymentMethods: PaymentMethod[] = [
+  {
+    key: "ciar-prepaid",
+    label: "CIAR Prepaid",
+    iconUrl: "/payment/ciar-prepaid.png",
+    imageClassName: "h-14 sm:h-16 w-auto rounded-lg shadow-md ring-1 ring-black/10 dark:ring-white/10",
+  },
+  {
+    key: "whish",
+    label: "Whish Money",
+    iconUrl: "/payment/whish-money.png",
+    imageClassName: "h-12 sm:h-14 w-auto rounded-md object-contain",
+  },
   { key: "mada", label: "mada", iconUrl: "/payment/mada.svg" },
   { key: "visa", label: "Visa", iconUrl: "/payment/visa.svg" },
   { key: "mastercard", label: "Mastercard", iconUrl: "/payment/mastercard.svg" },
@@ -48,7 +67,9 @@ export function PaymentMethods() {
               <img
                 src={method.iconUrl}
                 alt={method.label}
-                className="h-12 sm:h-14 w-auto object-contain shrink-0"
+                className={
+                  method.imageClassName ?? "h-12 sm:h-14 w-auto object-contain shrink-0"
+                }
                 loading="lazy"
               />
             </motion.div>

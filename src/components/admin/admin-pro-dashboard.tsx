@@ -20,6 +20,7 @@ import { useI18n } from "@/lib/i18n-context"
 import { useAuth } from "@/lib/auth-context"
 import { useAdminNav } from "@/lib/admin-nav-context"
 import { useRouter } from "@/lib/router-context"
+import { localizeAdminCategory, localizeAdminPlatformName } from "@/lib/admin-analytics-labels"
 import { cn } from "@/lib/utils"
 
 interface AnalyticsData {
@@ -268,7 +269,9 @@ export function AdminProDashboard() {
                       <Globe2 className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-slate-900 dark:text-white truncate">{cat.category}</p>
+                      <p className="font-semibold text-slate-900 dark:text-white truncate">
+                        {localizeAdminCategory(cat.category)}
+                      </p>
                       <p className="text-xs text-slate-500">
                         {cat.count} {t("admin.platform_count") || "منصة"}
                       </p>
@@ -309,10 +312,12 @@ export function AdminProDashboard() {
                       <FolderOpen className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-slate-900 dark:text-white truncate">{project.name || project.slug}</p>
+                      <p className="font-semibold text-slate-900 dark:text-white truncate">
+                        {localizeAdminPlatformName(project.slug, project.name)}
+                      </p>
                       <p className="text-xs text-slate-500 flex items-center gap-1 truncate">
                         <MapPin className="h-3 w-3 shrink-0" />
-                        {project.category}
+                        {localizeAdminCategory(project.category, project.slug)}
                       </p>
                     </div>
                   </div>

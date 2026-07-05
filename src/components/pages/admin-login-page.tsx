@@ -100,7 +100,7 @@ export function AdminLoginPage() {
             {error}
           </p>
         ) : null}
-
+ 
         <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
           {loading
             ? locale === "ar" ? "جاري تسجيل الدخول..." : "Signing in..."

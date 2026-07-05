@@ -1,14 +1,33 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Mail, MapPin, Phone, ChevronRight } from "lucide-react"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
+import { SITE_CONTACT_DEFAULTS } from "@/lib/site-contact"
 import { cn } from "@/lib/utils"
 
 export function Footer() {
   const { t, dir, locale } = useI18n()
   const { navigate } = useRouter()
   const isAr = locale === "ar"
+  const [contactEmail, setContactEmail] = useState(SITE_CONTACT_DEFAULTS.contact_email)
+  const [contactPhone, setContactPhone] = useState(SITE_CONTACT_DEFAULTS.contact_phone)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/settings")
+        if (!res.ok) return
+        const data = await res.json()
+        if (data?.contact_email) setContactEmail(String(data.contact_email))
+        if (data?.contact_phone) setContactPhone(String(data.contact_phone))
+      } catch {
+        // keep defaults
+      }
+    }
+    void load()
+  }, [])
 
   const quickLinks = [
     { label: isAr ? "الرئيسية" : "Home", page: "home" as const },
@@ -22,7 +41,7 @@ export function Footer() {
     { label: isAr ? "CiAr للمنتجات العالمية" : "CIAR Global Products", slug: "global_products" },
     { label: isAr ? "CiAr VIP" : "CIAR VIP", slug: "vip" },
     { label: isAr ? "مول CiAr الإلكتروني" : "CIAR E-Mall", slug: "mall" },
-    { label: isAr ? "دليل CiAr السياحي" : "CIAR Tourism", slug: "tourism" },
+    { label: isAr ? "CiAr السياحي" : "CIAR Tourism", slug: "tourism" },
   ]
 
   return (
@@ -50,11 +69,15 @@ export function Footer() {
               <div className="mt-5 space-y-2.5 text-sm text-muted-foreground">
                 <p className="inline-flex items-center gap-2">
                   <Phone className="h-4 w-4 text-primary" />
-                  +966 50 000 0000
+                  <a href={`tel:${contactPhone.replace(/\s/g, "")}`} className="hover:text-primary transition-colors">
+                    {contactPhone}
+                  </a>
                 </p>
                 <p className="inline-flex items-center gap-2">
                   <Mail className="h-4 w-4 text-primary" />
-                  hello@ciar.com
+                  <a href={`mailto:${contactEmail}`} className="hover:text-primary transition-colors">
+                    {contactEmail}
+                  </a>
                 </p>
                 <p className="inline-flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-primary" />

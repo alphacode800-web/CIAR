@@ -17,6 +17,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/lib/i18n-context"
 import { cn } from "@/lib/utils"
+import {
+  formatAdminMetaLabel,
+  formatAdminTimeAgo,
+  formatAdminTimestamp,
+  localizeAdminMetaValue,
+} from "@/lib/admin-activity-text"
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -102,26 +108,11 @@ const ACTION_STYLES: Record<string, { variant: "default" | "secondary" | "outlin
 }
 
 function formatTimestamp(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+  return formatAdminTimestamp(dateStr)
 }
 
-function timeAgo(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (seconds < 60) return "Just now"
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
-  return `${Math.floor(days / 30)}mo ago`
+function timeAgo(dateStr: string, t: (key: string) => string): string {
+  return formatAdminTimeAgo(dateStr, t)
 }
 
 /* ─── Component ─────────────────────────────────────────────────────────── */
@@ -191,10 +182,10 @@ export function ActivityTab() {
         transition={{ duration: 0.4 }}
       >
         <h2 className="text-2xl font-bold gradient-text">
-          {t("admin.activity_log") || "Activity Log"}
+          {t("admin.activity_log")}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          {t("admin.activity_log_subtitle") || "Track all changes and events across your platform."}
+          {t("admin.activity_log_subtitle")}
         </p>
       </motion.div>
 
@@ -240,10 +231,10 @@ export function ActivityTab() {
         >
           <Clock className="h-12 w-12 mb-3 opacity-30" />
           <p className="text-sm font-medium">
-            {t("admin.no_activity") || "No activity found"}
+            {t("admin.no_activity")}
           </p>
           <p className="text-xs mt-1 opacity-60">
-            {t("admin.no_activity_desc") || "Activity will appear here as changes are made."}
+            {t("admin.no_activity_desc")}
           </p>
         </motion.div>
       ) : (
@@ -299,7 +290,7 @@ export function ActivityTab() {
                                     key={key}
                                     className="inline-flex text-[11px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-md"
                                   >
-                                    {key}: {String(val)}
+                                    {formatAdminMetaLabel(key)}: {localizeAdminMetaValue(key, val)}
                                   </span>
                                 ))}
                             </div>
@@ -316,7 +307,7 @@ export function ActivityTab() {
                       <div className="flex items-center gap-2 mt-2.5 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         <span title={formatTimestamp(activity.timestamp)}>
-                          {timeAgo(activity.timestamp)}
+                          {timeAgo(activity.timestamp, t)}
                         </span>
                       </div>
                     </div>
@@ -345,12 +336,12 @@ export function ActivityTab() {
             {loadingMore ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{t("admin.loading") || "Loading..."}</span>
+                <span>{t("admin.loading")}</span>
               </>
             ) : (
               <>
                 <ChevronDown className="h-4 w-4" />
-                <span>{t("admin.load_more") || "Load More"}</span>
+                <span>{t("admin.load_more")}</span>
               </>
             )}
           </Button>

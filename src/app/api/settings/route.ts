@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSettings, updateSettings } from '@/services/settings.service'
+import { withSiteContactDefaults } from '@/lib/site-contact'
 
 // ── Route Handlers ───────────────────────────────────────────────────────────
 
 export async function GET() {
   try {
-    const settings = await getSettings()
+    const settings = withSiteContactDefaults(await getSettings())
     return NextResponse.json(settings)
   } catch (error) {
     console.error('GET /api/settings error:', error)

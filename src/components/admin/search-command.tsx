@@ -6,8 +6,8 @@ import {
   BarChart3,
   Activity,
   FolderOpen,
-  Languages,
   Settings,
+  Building2,
   Search,
   Mail,
   Plus,
@@ -18,6 +18,7 @@ import {
   Globe,
   Newspaper,
   Wallpaper,
+  Film,
   Clapperboard,
 } from "lucide-react"
 import {
@@ -52,7 +53,6 @@ interface CommandItemConfig {
 }
 
 const COMMAND_ITEMS: CommandItemConfig[] = [
-  // Pages
   {
     id: "overview",
     labelKey: "admin.cmd_go_dashboard",
@@ -86,14 +86,6 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
     action: (nav) => nav?.("projects"),
   },
   {
-    id: "translations",
-    labelKey: "admin.cmd_go_translations",
-    fallback: "Go to Translations",
-    icon: Languages,
-    group: "pages",
-    action: (nav) => nav?.("translations"),
-  },
-  {
     id: "backgrounds",
     labelKey: "admin.cmd_go_backgrounds",
     fallback: "Go to Backgrounds",
@@ -108,6 +100,22 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
     icon: Newspaper,
     group: "pages",
     action: (nav) => nav?.("news-ticker"),
+  },
+  {
+    id: "about-content",
+    labelKey: "admin.cmd_go_about_content",
+    fallback: "Go to About Content",
+    icon: Building2,
+    group: "pages",
+    action: (nav) => nav?.("about-content"),
+  },
+  {
+    id: "image-strip",
+    labelKey: "admin.cmd_go_image_strip",
+    fallback: "Go to Image Strip",
+    icon: Film,
+    group: "pages",
+    action: (nav) => nav?.("image-strip"),
   },
   {
     id: "home-banners",
