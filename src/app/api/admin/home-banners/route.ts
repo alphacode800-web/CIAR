@@ -32,7 +32,7 @@ const payloadSchema = z.object({
     videoPoster: z.string().trim(),
     imageSlides: z.array(z.string().trim()).max(20),
   }),
-  newsTickerItems: z.array(z.string().trim().min(1).max(220)).min(1).max(20),
+  newsTickerItems: z.array(z.string().trim().min(1).max(220)).min(1).max(20).optional(),
 })
 
 function projectSettings(settings: Record<string, string>) {
@@ -90,7 +90,9 @@ export async function PUT(request: NextRequest) {
       home_hero_background_type: data.hero.backgroundType,
       home_hero_video_url: data.hero.videoUrl,
       home_hero_video_poster: data.hero.videoPoster,
-      home_news_ticker_items: JSON.stringify(data.newsTickerItems),
+      ...(data.newsTickerItems
+        ? { home_news_ticker_items: JSON.stringify(data.newsTickerItems) }
+        : {}),
       ...slideSettings,
     })
 

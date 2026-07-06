@@ -327,6 +327,11 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
     setThemeMounted(true)
   }, [])
 
+  useEffect(() => {
+    document.body.classList.add("ciar-admin-active")
+    return () => document.body.classList.remove("ciar-admin-active")
+  }, [])
+
   const isDark = themeMounted && resolvedTheme === "dark"
 
   useEffect(() => {

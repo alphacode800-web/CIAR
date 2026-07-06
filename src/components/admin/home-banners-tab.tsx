@@ -6,7 +6,6 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 type FormState = {
@@ -33,7 +32,6 @@ type FormState = {
     videoPoster: string
     imageSlides: string[]
   }
-  newsTickerItemsText: string
 }
 
 const emptySlides = Array.from({ length: 20 }, () => "")
@@ -62,7 +60,6 @@ const DEFAULT_STATE: FormState = {
     videoPoster: "",
     imageSlides: emptySlides,
   },
-  newsTickerItemsText: "",
 }
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(String(url || "").trim())
@@ -75,10 +72,6 @@ export function HomeBannersTab() {
   const [editingSlideIndex, setEditingSlideIndex] = useState<number | null>(null)
   const [slideDraftUrl, setSlideDraftUrl] = useState("")
   const [slideDraftSource, setSlideDraftSource] = useState<"link" | "upload">("link")
-  const tickerItems = state.newsTickerItemsText
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean)
   const activeHeroSlides = state.hero.imageSlides.map((item) => item.trim()).filter(Boolean)
   const configuredHeroSlides = state.hero.imageSlides
     .map((item, index) => ({ index: index + 1, url: item.trim() }))
@@ -119,7 +112,6 @@ export function HomeBannersTab() {
               String(settingsMap[`home_hero_image_${index + 1}`] || config.hero.imageSlides?.[index] || "")
             ),
           },
-          newsTickerItemsText: Array.isArray(config.newsTickerItems) ? config.newsTickerItems.join("\n") : "",
         })
       } catch {
         toast.error("تعذر تحميل إعدادات بنرات الصفحة الرئيسية")
@@ -162,16 +154,6 @@ export function HomeBannersTab() {
   }
 
   const save = async () => {
-    const tickerItems = state.newsTickerItemsText
-      .split("\n")
-      .map((item) => item.trim())
-      .filter(Boolean)
-
-    if (tickerItems.length === 0) {
-      toast.error("أدخل عنصرًا واحدًا على الأقل في الشريط الإخباري")
-      return
-    }
-
     setSaving(true)
     try {
       const res = await fetch("/api/admin/home-banners", {
@@ -180,7 +162,6 @@ export function HomeBannersTab() {
         body: JSON.stringify({
           nav: state.nav,
           hero: state.hero,
-          newsTickerItems: tickerItems,
         }),
       })
       if (!res.ok) throw new Error("Save failed")
@@ -208,13 +189,13 @@ export function HomeBannersTab() {
           بنرات الصفحة الرئيسية
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          تحكم باللوجو، نصوص الهيرو، الخلفية (صورة/فيديو)، الشريط الإخباري وصور السلايدر.
+          تحكم باللوجو، نصوص الهيرو، الخلفية (صورة/فيديو) وصور السلايدر.
         </p>
       </div>
 
       <section className="space-y-4 rounded-xl border border-border/40 bg-card/30 p-4">
         <h3 className="text-sm font-semibold">معاينة البنرات الحالية</h3>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4">
           <div className="rounded-xl border border-border/40 bg-background/40 p-3">
             <p className="mb-2 text-xs text-muted-foreground">بنر اللوجو</p>
             <div className="flex min-h-24 items-center justify-center rounded-lg border border-border/30 bg-black/30 p-3">
@@ -229,20 +210,7 @@ export function HomeBannersTab() {
           </div>
 
           <div className="rounded-xl border border-border/40 bg-background/40 p-3">
-            <p className="mb-2 text-xs text-muted-foreground">بنر الشريط الإخباري</p>
-            <div className="min-h-24 rounded-lg border border-border/30 bg-black/60 p-3">
-              <div className="mb-2 inline-flex rounded bg-[oklch(0.78_0.14_82/22%)] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
-                News
-              </div>
-              <p className="line-clamp-2 text-sm text-white/90">
-                {tickerItems.length > 0 ? tickerItems.join(" • ") : "لا توجد عناصر حالياً"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border/40 bg-background/40 p-3">
-          <p className="mb-2 text-xs text-muted-foreground">بنر Hero</p>
+            <p className="mb-2 text-xs text-muted-foreground">بنر Hero</p>
           <div className="relative min-h-52 overflow-hidden rounded-lg border border-border/30">
             {state.hero.backgroundType === "video" && state.hero.videoUrl ? (
               <video
@@ -272,6 +240,7 @@ export function HomeBannersTab() {
                 </span>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </section>
@@ -550,16 +519,6 @@ export function HomeBannersTab() {
         )}
       </section>
 
-      <section className="space-y-2 rounded-xl border border-border/40 bg-card/30 p-4">
-        <h3 className="text-sm font-semibold">الشريط الإخباري</h3>
-        <p className="text-xs text-muted-foreground">كل سطر = عنصر واحد في الشريط الإخباري.</p>
-        <Textarea
-          className="min-h-36"
-          value={state.newsTickerItemsText}
-          onChange={(e) => setState((prev) => ({ ...prev, newsTickerItemsText: e.target.value }))}
-        />
-      </section>
-
       <div className="flex justify-end">
         <Button onClick={save} disabled={saving} className="gap-2 btn-gold">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -568,7 +527,7 @@ export function HomeBannersTab() {
       </div>
 
       <Dialog open={editingSlideIndex !== null} onOpenChange={(open) => !open && setEditingSlideIndex(null)}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="admin-solid-dialog max-w-xl border border-slate-200 !bg-white shadow-2xl dark:border-white/10 dark:!bg-slate-950">
           <DialogHeader>
             <DialogTitle>تعديل بنر Hero</DialogTitle>
             <DialogDescription>اختر التعديل عبر رابط أو رفع ملف صورة/فيديو من الجهاز.</DialogDescription>
