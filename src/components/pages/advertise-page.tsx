@@ -32,15 +32,24 @@ import { useI18n } from "@/lib/i18n-context"
 import { ContactSenderTypePicker } from "@/components/contact/contact-sender-type-picker"
 import { CONTACT_SENDER_TYPE_IDS, type ContactSenderTypeId } from "@/lib/contact-sender-types"
 import { setPostAuthRedirect } from "@/lib/post-auth-redirect"
+import { normalizeOptionalUrl } from "@/lib/optional-url"
 import { cn } from "@/lib/utils"
+
+const optionalUrlField = z.preprocess(
+  (value) => normalizeOptionalUrl(value),
+  z.union([z.literal(""), z.string().url()])
+)
 
 const adFormSchema = z.object({
   companyName: z.string().min(2),
   senderType: z.enum(CONTACT_SENDER_TYPE_IDS),
   title: z.string().min(3),
   description: z.string().min(10),
-  link: z.string().url().optional().or(z.literal("")),
-  imageUrl: z.string().optional().or(z.literal("")),
+  link: optionalUrlField.optional().default(""),
+  imageUrl: z.preprocess(
+    (value) => normalizeOptionalUrl(value),
+    z.string().max(500)
+  ).optional().default(""),
 })
 
 function AnimatedSection({
@@ -208,7 +217,17 @@ export function AdvertisePage() {
         return
       }
       if (!res.ok) {
-        throw new Error(typeof data?.error === "string" ? data.error : "failed")
+        const message =
+          data?.code === "DB_ERROR"
+            ? isAr
+              ? "تعذّر حفظ الطلب — جاري تحديث قاعدة البيانات، حاول بعد دقائق"
+              : "Could not save your request — database is updating, try again shortly"
+            : typeof data?.error === "string"
+              ? data.error
+              : isAr
+                ? "فشل إرسال طلب الإعلان"
+                : "Failed to submit ad request"
+        throw new Error(message)
       }
       toast.success(
         isAr
@@ -221,8 +240,14 @@ export function AdvertisePage() {
       setDescription("")
       setLink("")
       setImageUrl("")
-    } catch {
-      toast.error(isAr ? "فشل إرسال طلب الإعلان" : "Failed to submit ad request")
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : isAr
+            ? "فشل إرسال طلب الإعلان"
+            : "Failed to submit ad request"
+      )
     } finally {
       setSubmitting(false)
     }
