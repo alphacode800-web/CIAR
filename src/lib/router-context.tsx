@@ -9,6 +9,7 @@ export type PageRoute =
   | { page: "platform"; slug: string }
   | { page: "about" }
   | { page: "contact" }
+  | { page: "advertise" }
   | { page: "user-auth" }
   | { page: "admin-login" }
   | { page: "admin"; tab?: string }
@@ -41,6 +42,7 @@ function parseLocationToRoute(): PageRoute {
   if (hash.startsWith("/platform/")) return { page: "platform", slug: hash.slice(10) }
   if (hash === "/about") return { page: "about" }
   if (hash === "/contact") return { page: "contact" }
+  if (hash === "/advertise") return { page: "advertise" }
   if (hash === "/login") return { page: "user-auth" }
   if (hash === "/admin-login") return { page: "admin-login" }
   if (hash.startsWith("/admin")) {
@@ -115,6 +117,9 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
         break
       case "contact":
         hash = "/contact"
+        break
+      case "advertise":
+        hash = "/advertise"
         break
       case "user-auth":
         hash = "/login"

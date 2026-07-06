@@ -58,6 +58,7 @@ import {
 import { useI18n } from "@/lib/i18n-context"
 import { toast } from "sonner"
 import { ProjectDialog } from "./project-dialog"
+import { syncPlatformBannerImages } from "@/lib/sync-platform-banner-images"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -315,6 +316,10 @@ export function ProjectsTab() {
                 return next
               }
             )
+            await syncPlatformBannerImages(
+              editProject.slug,
+              Array.isArray(projectData.imageUrls) ? (projectData.imageUrls as string[]) : []
+            )
             setDialogOpen(false)
             setEditProject(null)
             toast.success(t("admin.project_updated") || "Project updated")
@@ -358,6 +363,10 @@ export function ProjectsTab() {
               )
               setDialogOpen(false)
               setEditProject(null)
+              await syncPlatformBannerImages(
+                editProject.slug,
+                Array.isArray(projectData.imageUrls) ? (projectData.imageUrls as string[]) : []
+              )
               toast.success(t("admin.project_updated") || "Project updated")
               return
             }
@@ -375,6 +384,10 @@ export function ProjectsTab() {
             return
           }
         }
+        await syncPlatformBannerImages(
+          editProject.slug,
+          Array.isArray(projectData.imageUrls) ? (projectData.imageUrls as string[]) : []
+        )
         toast.success(t("admin.project_updated") || "Project updated")
       } else {
         // Send only meaningful translations; empty names fail API validation.

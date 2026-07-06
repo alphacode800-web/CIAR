@@ -7,6 +7,7 @@ export interface ContactSubmissionRow {
   name: string
   email?: string | null
   phone?: string | null
+  senderType: string
   subject: string
   message: string
   locale: string
@@ -26,6 +27,7 @@ export async function submitContact(
     name: string
     email?: string
     phone?: string
+    senderType: string
     subject: string
     message: string
     locale?: string
@@ -36,6 +38,7 @@ export async function submitContact(
       name: data.name,
       email: data.email || null,
       phone: data.phone || null,
+      senderType: data.senderType,
       subject: data.subject,
       message: data.message,
       locale: data.locale ?? 'en',

@@ -48,6 +48,7 @@ import { useI18n } from "@/lib/i18n-context"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { BulkActionsBar } from "./bulk-actions-bar"
+import { getContactSenderTypeLabel } from "@/lib/contact-sender-types"
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -56,6 +57,7 @@ interface ContactMessage {
   name: string
   email?: string | null
   phone?: string | null
+  senderType?: string | null
   subject: string
   message: string
   locale: string
@@ -557,6 +559,11 @@ export function ContactsTab() {
                       )}>
                         {contact.name}
                       </p>
+                      {contact.senderType ? (
+                        <Badge variant="outline" className="hidden sm:inline-flex text-[10px] border-primary/20 text-primary shrink-0">
+                          {getContactSenderTypeLabel(contact.senderType, "ar")}
+                        </Badge>
+                      ) : null}
                       <span className="text-xs text-muted-foreground hidden sm:inline truncate">
                         — {contact.email || contact.phone || "—"}
                       </span>
@@ -682,6 +689,19 @@ export function ContactsTab() {
                 </div>
 
                 <Separator className="bg-[oklch(0.76_0.19_48/10%)]" />
+
+                {viewContact.senderType ? (
+                  <div>
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      {t("admin.contact_sender_type") || "التصنيف"}
+                    </span>
+                    <p className="mt-1.5">
+                      <Badge variant="outline" className="border-primary/20 text-primary">
+                        {getContactSenderTypeLabel(viewContact.senderType, viewContact.locale || "ar")}
+                      </Badge>
+                    </p>
+                  </div>
+                ) : null}
 
                 {/* Subject */}
                 <div>

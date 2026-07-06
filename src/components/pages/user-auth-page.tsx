@@ -1,12 +1,13 @@
 "use client"
 
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import { ArrowLeft, KeyRound, Mail, Phone, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "@/lib/router-context"
 import { useI18n } from "@/lib/i18n-context"
+import { consumePostAuthRedirect } from "@/lib/post-auth-redirect"
 
 export function UserAuthPage() {
   const { locale } = useI18n()
@@ -23,6 +24,23 @@ export function UserAuthPage() {
   const [registerMethod, setRegisterMethod] = useState<"phone" | "email" | "both">("phone")
 
   const isLogin = mode === "login"
+
+  useEffect(() => {
+    const savedMode = sessionStorage.getItem("ciar_auth_mode")
+    if (savedMode === "login" || savedMode === "register") {
+      setMode(savedMode)
+      sessionStorage.removeItem("ciar_auth_mode")
+    }
+  }, [])
+
+  const finishAuth = () => {
+    const redirect = consumePostAuthRedirect()
+    if (redirect === "advertise") {
+      navigate({ page: "advertise" })
+      return
+    }
+    navigate({ page: "home" })
+  }
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -48,7 +66,7 @@ export function UserAuthPage() {
           return
         }
       }
-      navigate({ page: "home" })
+      finishAuth()
     } catch {
       setError(locale === "ar" ? "حدث خطأ غير متوقع" : "Unexpected error")
     } finally {

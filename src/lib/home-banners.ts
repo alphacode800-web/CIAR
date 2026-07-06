@@ -1,5 +1,6 @@
 import type { NewsTickerStyle } from "@/lib/news-ticker"
 import { DEFAULT_NEWS_TICKER_ITEMS_AR, parseNewsTickerStyle } from "@/lib/news-ticker"
+import { resolveHeroSlidesFromSettings } from "@/lib/default-hero-images"
 
 export type HomeMediaType = "image" | "video"
 
@@ -57,9 +58,7 @@ export function parseHomeNewsTicker(raw: string | null): string[] {
 }
 
 export function resolveHeroSlides(settings: Record<string, string>): string[] {
-  return DEFAULT_HERO_IMAGES
-    .map((key) => clean(settings[key]))
-    .filter(Boolean)
+  return resolveHeroSlidesFromSettings(settings)
 }
 
 export function buildHomeBannersConfig(settings: Record<string, string>): HomeBannersConfig {

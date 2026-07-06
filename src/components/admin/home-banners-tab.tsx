@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, type ChangeEvent } from "react"
-import { Clapperboard, Loader2, Save, Pencil, Upload } from "lucide-react"
+import { Clapperboard, Loader2, Save, Pencil, Upload, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -503,22 +503,41 @@ export function HomeBannersTab() {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {configuredHeroSlides.map((slide) => (
               <div key={`hero-preview-${slide.index}`} className="rounded-lg border border-border/40 bg-background/40 p-3">
-                <div className="mb-2 flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between gap-2">
                   <p className="text-[11px] text-muted-foreground">Banner {slide.index}</p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5"
-                    onClick={() => {
-                      setEditingSlideIndex(slide.index - 1)
-                      setSlideDraftUrl(slide.url)
-                      setSlideDraftSource("link")
-                    }}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                    تعديل
-                  </Button>
+                  <div className="flex gap-1.5">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      onClick={() => {
+                        setEditingSlideIndex(slide.index - 1)
+                        setSlideDraftUrl(slide.url)
+                        setSlideDraftSource("link")
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      تعديل
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => {
+                        setState((prev) => {
+                          const next = [...prev.hero.imageSlides]
+                          next[slide.index - 1] = ""
+                          return { ...prev, hero: { ...prev.hero, imageSlides: next } }
+                        })
+                        toast.success("تم إزالة الصورة — احفظ التغييرات لتطبيقها على الموقع")
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      إزالة
+                    </Button>
+                  </div>
                 </div>
                 {isVideoUrl(slide.url) ? (
                   <video src={slide.url} className="h-44 w-full rounded object-cover" controls muted playsInline />
@@ -592,21 +611,43 @@ export function HomeBannersTab() {
               )
             ) : null}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingSlideIndex(null)}>إلغاء</Button>
+          <DialogFooter className="gap-2 sm:justify-between">
             <Button
+              type="button"
+              variant="destructive"
+              className="gap-1.5"
+              disabled={!slideDraftUrl.trim()}
               onClick={() => {
                 if (editingSlideIndex === null) return
                 setState((prev) => {
                   const next = [...prev.hero.imageSlides]
-                  next[editingSlideIndex] = slideDraftUrl.trim()
+                  next[editingSlideIndex] = ""
                   return { ...prev, hero: { ...prev.hero, imageSlides: next } }
                 })
                 setEditingSlideIndex(null)
+                setSlideDraftUrl("")
+                toast.success("تم إزالة الصورة — احفظ التغييرات لتطبيقها على الموقع")
               }}
             >
-              حفظ التعديل
+              <Trash2 className="h-3.5 w-3.5" />
+              إزالة الصورة
             </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditingSlideIndex(null)}>إلغاء</Button>
+              <Button
+                onClick={() => {
+                  if (editingSlideIndex === null) return
+                  setState((prev) => {
+                    const next = [...prev.hero.imageSlides]
+                    next[editingSlideIndex] = slideDraftUrl.trim()
+                    return { ...prev, hero: { ...prev.hero, imageSlides: next } }
+                  })
+                  setEditingSlideIndex(null)
+                }}
+              >
+                حفظ التعديل
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

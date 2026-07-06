@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion } from "framer-motion"
-import { Languages, Plus, Trash2 } from "lucide-react"
+import { Languages } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,7 +24,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { useI18n, ALL_LOCALES, LOCALE_NAMES } from "@/lib/i18n-context"
-import { ImageUpload } from "./image-upload"
+import { PlatformCardImagesEditor } from "./platform-card-images-editor"
+import {
+  mergePlatformImageSlots,
+  platformImageSlotsToPayload,
+  toPlatformImageSlots,
+} from "@/lib/platform-card-images"
+import { fetchPlatformBannerImageSlots } from "@/lib/sync-platform-banner-images"
 import type { Project } from "./projects-tab"
 
 interface ProjectDialogProps {
@@ -71,9 +77,13 @@ export function ProjectDialog({
         ? {
             slug: project.slug,
             imageUrl: project.imageUrl,
-            imageUrls: Array.isArray(project.imageUrls) && project.imageUrls.length > 0
-              ? project.imageUrls.slice(0, 5)
-              : (project.imageUrl ? [project.imageUrl] : []),
+            imageUrls: toPlatformImageSlots(
+              Array.isArray(project.imageUrls) && project.imageUrls.length > 0
+                ? project.imageUrls
+                : project.imageUrl
+                  ? [project.imageUrl]
+                  : []
+            ),
             category: project.category,
             externalUrl: project.externalUrl,
             tags: project.tags,
@@ -83,7 +93,7 @@ export function ProjectDialog({
         : {
             slug: "",
             imageUrl: "",
-            imageUrls: [""],
+            imageUrls: toPlatformImageSlots([]),
             category: "",
             externalUrl: "",
             tags: "[]",
@@ -94,37 +104,26 @@ export function ProjectDialog({
   )
 
   const [form, setForm] = useState(defaultForm)
-  const normalizedImageUrls = useMemo(
-    () => (Array.isArray(form.imageUrls) ? form.imageUrls : []),
-    [form.imageUrls]
-  )
 
-  const updateImageAt = (idx: number, url: string) => {
-    setForm((prev) => {
-      const arr = [...(Array.isArray(prev.imageUrls) ? prev.imageUrls : [])]
-      arr[idx] = url
-      return { ...prev, imageUrls: arr, imageUrl: arr.find((item) => item.trim()) || "" }
+  useEffect(() => {
+    if (!project || !open) return
+
+    const projectUrls =
+      Array.isArray(project.imageUrls) && project.imageUrls.length > 0
+        ? project.imageUrls
+        : project.imageUrl
+          ? [project.imageUrl]
+          : []
+
+    void fetchPlatformBannerImageSlots(project.slug).then((bannerUrls) => {
+      const merged = mergePlatformImageSlots(projectUrls, bannerUrls)
+      setForm((prev) => ({
+        ...prev,
+        imageUrls: merged,
+        imageUrl: merged.find((item) => item.trim()) || "",
+      }))
     })
-  }
-
-  const addImageSlot = () => {
-    setForm((prev) => {
-      const arr = [...(Array.isArray(prev.imageUrls) ? prev.imageUrls : [])]
-      if (arr.length >= 5) return prev
-      return { ...prev, imageUrls: [...arr, ""] }
-    })
-  }
-
-  const removeImageSlot = (idx: number) => {
-    setForm((prev) => {
-      const arr = [...(Array.isArray(prev.imageUrls) ? prev.imageUrls : [])]
-      arr.splice(idx, 1)
-      const next = arr.length > 0 ? arr : [""]
-      return { ...prev, imageUrls: next, imageUrl: next.find((item) => item.trim()) || "" }
-    })
-  }
-
-
+  }, [project, open])
   const updateForm = (key: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
@@ -182,11 +181,12 @@ export function ProjectDialog({
   }, [project?.id, open])
 
   const handleSubmit = () => {
+    const imagePayload = platformImageSlotsToPayload(form.imageUrls)
     onSave(
       {
         slug: form.slug,
-        imageUrls: normalizedImageUrls.map((item) => item.trim()).filter(Boolean).slice(0, 5),
-        imageUrl: normalizedImageUrls.map((item) => item.trim()).find(Boolean) || "",
+        imageUrls: imagePayload.imageUrls,
+        imageUrl: imagePayload.imageUrl,
         category: form.category,
         externalUrl: normalizeWebsiteUrl(form.externalUrl),
         tags: form.tags,
@@ -253,49 +253,26 @@ export function ProjectDialog({
             </div>
           </div>
 
-          {/* ── Multi Image Upload (up to 5) ── */}
+          {/* ── Platform card images (3 slots like frontend cards) ── */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>{t("admin.project_image") || "Project Images"}</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addImageSlot}
-                disabled={normalizedImageUrls.length >= 5}
-                className="gap-1.5"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                {(t("common.add") || "Add")} ({normalizedImageUrls.length}/5)
-              </Button>
+            <div>
+              <Label>{t("admin.project_images") || "صور كارت المنصة"}</Label>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {t("admin.project_images_hint") ||
+                  "ثلاث صور تظهر بالتناوب في كارت المنصة — يمكنك تعديل أي صورة أو إزالتها."}
+              </p>
             </div>
-            <div className="space-y-3">
-              {normalizedImageUrls.map((img, idx) => (
-                <div key={`image-slot-${idx}`} className="rounded-xl border border-border/40 p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      {(t("admin.project_image") || "Image")} {idx + 1}
-                    </span>
-                    {normalizedImageUrls.length > 1 && (
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => removeImageSlot(idx)}
-                        className="h-7 w-7 text-destructive"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                  </div>
-                  <ImageUpload
-                    value={img}
-                    onChange={(url) => updateImageAt(idx, url)}
-                    showUrlInput
-                  />
-                </div>
-              ))}
-            </div>
+            <PlatformCardImagesEditor
+              values={form.imageUrls}
+              onChange={(imageUrls) =>
+                setForm((prev) => ({
+                  ...prev,
+                  imageUrls,
+                  imageUrl: imageUrls.find((item) => item.trim()) || "",
+                }))
+              }
+              labels={["الصورة 1", "الصورة 2", "الصورة 3"]}
+            />
           </div>
 
           {/* ── Toggles ── */}

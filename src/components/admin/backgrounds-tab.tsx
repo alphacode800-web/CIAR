@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react"
-import { Image as ImageIcon, Save, Loader2, Search, Pencil, Upload, Layers } from "lucide-react"
+import { Image as ImageIcon, Save, Loader2, Search, Pencil, Upload, Layers, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -156,6 +156,7 @@ function BannerCard({
   onChange,
   onSave,
   onEdit,
+  onRemove,
   onBroken,
   extra,
 }: {
@@ -172,6 +173,7 @@ function BannerCard({
   onChange: (value: string) => void
   onSave: () => void
   onEdit?: () => void
+  onRemove?: () => void
   onBroken?: () => void
   extra?: ReactNode
 }) {
@@ -234,6 +236,19 @@ function BannerCard({
             <Button type="button" variant="outline" size="sm" className="h-8 gap-1 rounded-lg px-2.5" onClick={onEdit}>
               <Pencil className="h-3.5 w-3.5" />
               تعديل
+            </Button>
+          ) : null}
+          {onRemove && value.trim() ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1 rounded-lg px-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={onRemove}
+              disabled={isSaving}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              إزالة
             </Button>
           ) : null}
           <Button
@@ -431,6 +446,26 @@ export function BackgroundsTab() {
     }
   }
 
+  const removeKey = async (key: string) => {
+    setSavingKey(key)
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [key]: "" }),
+      })
+      if (!res.ok) throw new Error("remove failed")
+      setSettings((prev) => ({ ...prev, [key]: "" }))
+      setInitialSettings((prev) => ({ ...prev, [key]: "" }))
+      setBrokenPreviews((prev) => ({ ...prev, [key]: false }))
+      toast.success("تم إزالة الصورة")
+    } catch {
+      toast.error("فشل إزالة الصورة")
+    } finally {
+      setSavingKey(null)
+    }
+  }
+
   const saveAllChanged = async () => {
     if (changedKeys.length === 0) return
     setSavingAll(true)
@@ -487,6 +522,40 @@ export function BackgroundsTab() {
       toast.error("فشل رفع الملف")
     } finally {
       setUploadingImageDetails(false)
+    }
+  }
+
+  const removeImageDetails = async () => {
+    if (!selectedImage) return
+    setSavingImageDetails(true)
+    try {
+      if (selectedImage.sourceType === "setting" && selectedImage.settingKey) {
+        const key = selectedImage.settingKey
+        const res = await fetch("/api/settings", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ [key]: "" }),
+        })
+        if (!res.ok) throw new Error("remove failed")
+        setSettings((prev) => ({ ...prev, [key]: "" }))
+        setInitialSettings((prev) => ({ ...prev, [key]: "" }))
+      } else if (
+        selectedImage.sourceType === "platform-banner" &&
+        selectedImage.bannerId &&
+        selectedImage.bannerField
+      ) {
+        await savePlatformBannerField(selectedImage.bannerId, selectedImage.bannerField, "")
+      } else {
+        throw new Error("unsupported source")
+      }
+
+      setSelectedImage(null)
+      setSelectedImageUrl("")
+      toast.success("تم إزالة الصورة")
+    } catch {
+      toast.error("فشل إزالة الصورة")
+    } finally {
+      setSavingImageDetails(false)
     }
   }
 
@@ -647,7 +716,7 @@ export function BackgroundsTab() {
               value={savedValue}
               previewValue={previewValue}
               isDefaultPreview={isDefaultPreview}
-              placeholder="https://example.com/hero.jpg"
+              placeholder={isDefaultPreview ? "لا يوجد رابط محفوظ — الصورة الافتراضية معروضة" : "https://example.com/hero.jpg"}
               isChanged={savedValue !== (initialSettings[row.key] || "")}
               isSaving={savingKey === row.key}
               broken={brokenPreviews[row.key]}
@@ -662,6 +731,7 @@ export function BackgroundsTab() {
                 })
               }
               onBroken={() => setBrokenPreviews((prev) => ({ ...prev, [row.key]: true }))}
+              onRemove={savedValue.trim() ? () => void removeKey(row.key) : undefined}
             />
             )
           })}
@@ -700,6 +770,7 @@ export function BackgroundsTab() {
                 })
               }
               onBroken={() => setBrokenPreviews((prev) => ({ ...prev, [row.key]: true }))}
+              onRemove={(settings[row.key] || "").trim() ? () => void removeKey(row.key) : undefined}
               extra={
                 <select
                   className="h-8 w-full rounded-md border border-slate-200 bg-white px-2 text-[11px] dark:border-white/10 dark:bg-slate-900"
@@ -759,6 +830,7 @@ export function BackgroundsTab() {
                         bannerField: field,
                       })
                     }
+                    onRemove={value.trim() ? () => void savePlatformBannerField(banner.id, field, "") : undefined}
                   />
                 )
               })
@@ -927,9 +999,26 @@ export function BackgroundsTab() {
               </div>
 
               <DialogFooter className="shrink-0 gap-2 border-t border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-950 sm:justify-between">
-                <Button variant="outline" className="rounded-lg" onClick={() => setSelectedImage(null)}>
-                  إغلاق
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {(selectedImageUrl || selectedImage.value).trim() ? (
+                    <Button
+                      variant="destructive"
+                      className="gap-2 rounded-lg"
+                      onClick={() => void removeImageDetails()}
+                      disabled={savingImageDetails}
+                    >
+                      {savingImageDetails ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                      إزالة الصورة
+                    </Button>
+                  ) : null}
+                  <Button variant="outline" className="rounded-lg" onClick={() => setSelectedImage(null)}>
+                    إغلاق
+                  </Button>
+                </div>
                 <Button onClick={saveImageDetails} disabled={savingImageDetails} className="gap-2 rounded-lg">
                   {savingImageDetails ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   حفظ التعديل

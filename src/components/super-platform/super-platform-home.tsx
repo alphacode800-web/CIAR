@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { BadgeCheck, Globe2, ShieldCheck, Sparkles } from "lucide-react"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
+import { collectPlatformBannerImages, DEFAULT_HERO_IMAGE_URLS, mergeHeroSlideUrls } from "@/lib/default-hero-images"
 
 type Banner = {
   id: string
@@ -78,6 +79,7 @@ export function SuperPlatformHome() {
   const { navigate } = useRouter()
   const [modules, setModules] = useState<ModuleWithBanner[]>([])
   const [headerIndex, setHeaderIndex] = useState(0)
+  const [brokenHeaderUrls, setBrokenHeaderUrls] = useState<Set<string>>(() => new Set())
   const activeLocale: "en" | "ar" = locale === "ar" ? "ar" : "en"
 
   useEffect(() => {
@@ -151,48 +153,63 @@ export function SuperPlatformHome() {
     return () => clearTimeout(timer)
   }, [])
 
-  useEffect(() => {
-    const totalImages = modules
-      .flatMap((m) => (m.banner ? [m.banner.imageUrl1, m.banner.imageUrl2, m.banner.imageUrl3] : []))
-      .filter(Boolean)
-      .slice(0, 5).length
-    const interval = setInterval(() => {
-      setHeaderIndex((s) => (totalImages ? (s + 1) % totalImages : 0))
-    }, 3500)
-    return () => clearInterval(interval)
-  }, [modules])
-
-  useEffect(() => {
-    const images = modules
-      .flatMap((m) => (m.banner ? [m.banner.imageUrl1, m.banner.imageUrl2, m.banner.imageUrl3] : []))
-      .filter(Boolean)
-      .slice(0, 5)
-    images.forEach((src) => {
-      if (!src) return
-      const img = new Image()
-      img.src = src
-    })
-  }, [modules])
-
   const cards = useMemo(
     () =>
       modules.map((m) => {
         const banner = m.banner
-        const images = banner ? [banner.imageUrl1, banner.imageUrl2, banner.imageUrl3].filter(Boolean) : []
+        const images = banner
+          ? [banner.imageUrl1, banner.imageUrl2, banner.imageUrl3]
+              .map((url) => String(url || "").trim())
+              .filter(Boolean)
+          : []
         return { module: m, banner, images }
       }),
     [modules]
   )
 
-  const headerImages = cards.flatMap((c) => c.images).filter(Boolean).slice(0, 5)
+  const headerImages = useMemo(() => {
+    const bannerImages = collectPlatformBannerImages(
+      cards.map((card) => card.banner).filter(Boolean) as Array<{
+        imageUrl1?: string
+        imageUrl2?: string
+        imageUrl3?: string
+      }>
+    )
+    return mergeHeroSlideUrls(
+      bannerImages.length > 0 ? bannerImages : [...DEFAULT_HERO_IMAGE_URLS],
+      brokenHeaderUrls,
+      5,
+      20
+    )
+  }, [cards, brokenHeaderUrls])
+
+  useEffect(() => {
+    if (headerImages.length <= 1) return
+    const interval = setInterval(() => {
+      setHeaderIndex((s) => (s + 1) % headerImages.length)
+    }, 3500)
+    return () => clearInterval(interval)
+  }, [headerImages.length])
+
+  useEffect(() => {
+    setHeaderIndex(0)
+  }, [headerImages.length])
+
+  useEffect(() => {
+    headerImages.forEach((src) => {
+      if (!src) return
+      const img = new Image()
+      img.src = src
+    })
+  }, [headerImages])
 
   return (
     <div className="min-h-screen bg-background">
       <section className="relative min-h-[62vh] overflow-hidden bg-[oklch(0.10_0.025_265)]">
         {headerImages.length > 0 && (
-          <AnimatePresence mode="sync">
+          <AnimatePresence mode="wait">
             <motion.img
-              key={headerImages[headerIndex]}
+              key={`header-slide-${headerIndex}-${headerImages[headerIndex]}`}
               src={headerImages[headerIndex]}
               alt="CIAR Header"
               className="absolute inset-0 h-full w-full object-cover"
@@ -200,6 +217,16 @@ export function SuperPlatformHome() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8 }}
+              onError={() => {
+                const url = headerImages[headerIndex]
+                if (!url) return
+                setBrokenHeaderUrls((prev) => {
+                  if (prev.has(url)) return prev
+                  const next = new Set(prev)
+                  next.add(url)
+                  return next
+                })
+              }}
             />
           </AnimatePresence>
         )}

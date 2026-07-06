@@ -12,6 +12,8 @@ import {
   Eye,
   PauseCircle,
   Images,
+  Play,
+  Square,
 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -22,6 +24,8 @@ import { Slider } from "@/components/ui/slider"
 import { useI18n } from "@/lib/i18n-context"
 import { ImageStripBar } from "@/components/home/ImageStripBar"
 import { DEFAULT_IMAGE_STRIP_CONFIG, type ImageStripConfig } from "@/lib/image-strip"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 
 export function ImageStripTab() {
   const { t } = useI18n()
@@ -29,6 +33,7 @@ export function ImageStripTab() {
   const [siteImages, setSiteImages] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [togglingEnabled, setTogglingEnabled] = useState(false)
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
 
   useEffect(() => {
@@ -105,10 +110,10 @@ export function ImageStripTab() {
     }
   }
 
-  const save = async () => {
+  const save = async (nextConfig: ImageStripConfig = config) => {
     const payload: ImageStripConfig = {
-      ...config,
-      extraImages: config.extraImages.map((url) => url.trim()).filter(Boolean),
+      ...nextConfig,
+      extraImages: nextConfig.extraImages.map((url) => url.trim()).filter(Boolean),
     }
 
     setSaving(true)
@@ -126,10 +131,42 @@ export function ImageStripTab() {
       if (data?.config) setConfig(data.config)
       if (Array.isArray(data?.images)) setSiteImages(data.images)
       toast.success("تم حفظ شريط الصور")
+      return true
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل الحفظ")
+      return false
     } finally {
       setSaving(false)
+    }
+  }
+
+  const toggleEnabled = async () => {
+    const nextEnabled = !config.enabled
+    const nextConfig = { ...config, enabled: nextEnabled }
+    setConfig(nextConfig)
+    setTogglingEnabled(true)
+    try {
+      const payload: ImageStripConfig = {
+        ...nextConfig,
+        extraImages: nextConfig.extraImages.map((url) => url.trim()).filter(Boolean),
+      }
+      const res = await fetch("/api/admin/image-strip", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(typeof data?.error === "string" ? data.error : "فشل التحديث")
+      }
+      const data = await res.json()
+      if (data?.config) setConfig(data.config)
+      toast.success(nextEnabled ? "تم تشغيل شريط الصور في الموقع" : "تم إيقاف شريط الصور في الموقع")
+    } catch (error) {
+      setConfig((prev) => ({ ...prev, enabled: !nextEnabled }))
+      toast.error(error instanceof Error ? error.message : "فشل تحديث حالة الشريط")
+    } finally {
+      setTogglingEnabled(false)
     }
   }
 
@@ -156,24 +193,72 @@ export function ImageStripTab() {
               "يعرض الشريط تلقائياً كل صور الموقع (الهيرو، المنصات، المشاريع، مكتبة الوسائط). الصور غير المتاحة لا تُعرض."}
           </p>
         </div>
-        <Button onClick={save} disabled={saving} className="gap-2">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          حفظ التغييرات
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge
+            variant="outline"
+            className={cn(
+              "gap-1.5 px-3 py-1 text-xs font-semibold",
+              config.enabled
+                ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+                : "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+            )}
+          >
+            <span
+              className={cn(
+                "h-2 w-2 rounded-full",
+                config.enabled ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+              )}
+            />
+            {config.enabled ? "يعمل على الموقع" : "متوقف على الموقع"}
+          </Badge>
+          <Button
+            type="button"
+            variant={config.enabled ? "outline" : "default"}
+            disabled={togglingEnabled || saving}
+            onClick={() => void toggleEnabled()}
+            className={cn(
+              "gap-2",
+              !config.enabled && "bg-emerald-600 text-white hover:bg-emerald-700"
+            )}
+          >
+            {togglingEnabled ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : config.enabled ? (
+              <Square className="h-4 w-4" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+            {config.enabled ? "إيقاف الشريط" : "تشغيل الشريط"}
+          </Button>
+          <Button onClick={() => void save()} disabled={saving || togglingEnabled} className="gap-2">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            حفظ التغييرات
+          </Button>
+        </div>
       </div>
 
       <section className="space-y-3 rounded-xl border border-border/40 bg-card/30 p-4">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Eye className="h-4 w-4 text-primary" />
             معاينة مباشرة
+            {!config.enabled ? (
+              <Badge variant="secondary" className="text-[10px]">
+                الشريط متوقف — لن يظهر في الموقع
+              </Badge>
+            ) : null}
           </div>
           <span className="text-xs text-muted-foreground">
             {siteImages.length} {siteImages.length === 1 ? "صورة" : "صورة"} في الموقع
           </span>
         </div>
         {previewImages.length > 0 ? (
-          <div className="overflow-hidden rounded-xl border border-border/30">
+          <div
+            className={cn(
+              "overflow-hidden rounded-xl border border-border/30",
+              !config.enabled && "opacity-50 grayscale"
+            )}
+          >
             <ImageStripBar
               config={{ ...config, enabled: true }}
               images={previewImages}
@@ -189,9 +274,13 @@ export function ImageStripTab() {
         <div className="flex items-center justify-between gap-4 rounded-lg border border-border/30 bg-background/40 p-4">
           <div>
             <Label className="text-sm font-semibold">تفعيل الشريط</Label>
-            <p className="text-xs text-muted-foreground">إظهار أو إخفاء الشريط في الصفحة الرئيسية</p>
+            <p className="text-xs text-muted-foreground">نفس زر التشغيل/الإيقاف في الأعلى — يُحفظ فوراً</p>
           </div>
-          <Switch checked={config.enabled} onCheckedChange={(v) => updateConfig("enabled", v)} />
+          <Switch
+            checked={config.enabled}
+            disabled={togglingEnabled}
+            onCheckedChange={() => void toggleEnabled()}
+          />
         </div>
 
         <div className="flex items-center justify-between gap-4 rounded-lg border border-border/30 bg-background/40 p-4">

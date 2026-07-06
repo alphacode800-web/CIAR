@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
         { email: { contains: search } },
         { phone: { contains: search } },
         { subject: { contains: search } },
+        { senderType: { contains: search } },
       ]
     }
 

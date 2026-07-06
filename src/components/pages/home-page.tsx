@@ -11,7 +11,7 @@ import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
 import type { HomeBannersConfig } from "@/lib/home-banners"
-import { DEFAULT_HERO_IMAGE_URLS } from "@/lib/default-hero-images"
+import { DEFAULT_HERO_IMAGE_URLS, collectPlatformBannerImages, mergeHeroSlideUrls, resolveHeroSlidesFromSettings } from "@/lib/default-hero-images"
 import { MarqueeBanner } from "@/components/home/MarqueeBanner"
 import { AboutBrief } from "@/components/home/AboutBrief"
 import { ServicesGrid } from "@/components/home/ServicesGrid"
@@ -106,31 +106,37 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
   const heroTitle = locale === "ar" ? homeConfig?.hero?.title?.ar : homeConfig?.hero?.title?.en
   const heroSubtitle = locale === "ar" ? homeConfig?.hero?.subtitle?.ar : homeConfig?.hero?.subtitle?.en
 
-  const platformHeroImages = useMemo(() => {
-    const urls = platformBanners
-      .map((banner) => String(banner.imageUrl1 || "").trim())
-      .filter(Boolean)
-    return [...new Set(urls)].filter((url) => !brokenHeroUrls.has(url))
-  }, [platformBanners, brokenHeroUrls])
+  const platformHeroImages = useMemo(
+    () => collectPlatformBannerImages(platformBanners),
+    [platformBanners]
+  )
 
   const activeHeroImages = useMemo(() => {
     const fromConfig = Array.isArray(homeConfig?.hero?.imageSlides)
-      ? homeConfig.hero.imageSlides.map((url) => String(url || "").trim()).filter(Boolean)
+      ? homeConfig.hero.imageSlides.map((url, index) => {
+          const trimmed = String(url || "").trim()
+          return trimmed || DEFAULT_HERO_IMAGE_URLS[index % DEFAULT_HERO_IMAGE_URLS.length]
+        })
       : []
-    if (fromConfig.length > 0) {
-      return fromConfig.filter((url) => !brokenHeroUrls.has(url))
-    }
 
-    if (platformHeroImages.length > 0) return platformHeroImages
+    const fromSettings = heroImages.map((url, index) => {
+      const trimmed = String(url || "").trim()
+      return trimmed || DEFAULT_HERO_IMAGE_URLS[index % DEFAULT_HERO_IMAGE_URLS.length]
+    })
 
-    const cleaned = heroImages.map((url) => String(url || "").trim()).filter(Boolean)
-    const usable = cleaned.filter((url) => !brokenHeroUrls.has(url))
-    return usable.length > 0 ? usable : [...DEFAULT_HERO_IMAGE_URLS]
+    const sources =
+      fromConfig.length > 0
+        ? fromConfig
+        : platformHeroImages.length > 0
+          ? [...platformHeroImages, ...fromSettings]
+          : fromSettings
+
+    return mergeHeroSlideUrls(sources, brokenHeroUrls, 5, 20)
   }, [heroImages, homeConfig?.hero?.imageSlides, platformHeroImages, brokenHeroUrls])
 
   const HERO_SLIDE_INTERVAL_MS = 3500
 
-  const headerSlides = useMemo(() => activeHeroImages.slice(0, 5), [activeHeroImages])
+  const headerSlides = useMemo(() => activeHeroImages.slice(0, 20), [activeHeroImages])
 
   const displayTitle =
     heroTitle ||
@@ -167,14 +173,8 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
     fetch("/api/settings")
       .then((r) => r.json())
       .then((data) => {
-        const fromSettings = Array.from({ length: 20 }, (_, index) =>
-          String(data?.[`home_hero_image_${index + 1}`] || "").trim()
-        ).filter(Boolean)
-
-        if (fromSettings.length > 0) {
-          setHeroImages(fromSettings)
-          setCurrentSlide((prev) => prev % fromSettings.length)
-        }
+        setHeroImages(resolveHeroSlidesFromSettings(data))
+        setCurrentSlide(0)
       })
       .catch(() => {
         setHeroImages([...DEFAULT_HERO_IMAGE_URLS])
@@ -264,9 +264,9 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
           />
         ) : (
           headerSlides.length > 0 && (
-            <AnimatePresence mode="sync">
+            <AnimatePresence mode="wait">
               <motion.img
-                key={headerSlides[currentSlide]}
+                key={`hero-slide-${currentSlide}-${headerSlides[currentSlide]}`}
                 src={headerSlides[currentSlide]}
                 alt=""
                 aria-hidden

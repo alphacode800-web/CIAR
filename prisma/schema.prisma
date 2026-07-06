@@ -93,6 +93,7 @@ model User {
   products  Product[]
   orders    Order[]
   adminMember AdminMember?
+  adSubmissions AdSubmission[]
 
   @@index([email])
   @@index([phone])
@@ -166,18 +167,40 @@ model OrderItem {
 // =============================================================================
 
 model ContactSubmission {
-  id        String   @id @default(cuid())
-  name      String
-  email     String?
-  phone     String?
-  subject   String
-  message   String
-  locale    String   @default("en")
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  name       String
+  email      String?
+  phone      String?
+  senderType String   @default("person")
+  subject    String
+  message    String
+  locale     String   @default("en")
+  createdAt  DateTime @default(now())
 
   @@index([createdAt])
   @@index([email])
   @@index([phone])
+  @@index([senderType])
+}
+
+model AdSubmission {
+  id          String   @id @default(cuid())
+  userId      String   @db.Uuid
+  companyName String
+  senderType  String
+  title       String
+  description String
+  link        String   @default("")
+  imageUrl    String   @default("")
+  locale      String   @default("ar")
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 // =============================================================================

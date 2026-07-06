@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
+import { PlatformCardImagesEditor } from "@/components/admin/platform-card-images-editor"
 
 type ModuleRow = {
   id: string
@@ -352,16 +353,22 @@ export function SuperPlatformAdmin() {
                   <Input value={editing.ctaHref} onChange={(e) => setEditing({ ...editing, ctaHref: e.target.value })} dir="ltr" className="text-left" />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label>رابط الصورة 1</Label>
-                  <Input value={editing.imageUrl1} onChange={(e) => setEditing({ ...editing, imageUrl1: e.target.value })} dir="ltr" className="text-left" />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>رابط الصورة 2</Label>
-                  <Input value={editing.imageUrl2} onChange={(e) => setEditing({ ...editing, imageUrl2: e.target.value })} dir="ltr" className="text-left" />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>رابط الصورة 3</Label>
-                  <Input value={editing.imageUrl3} onChange={(e) => setEditing({ ...editing, imageUrl3: e.target.value })} dir="ltr" className="text-left" />
+                  <Label>صور كارت المنصة (3 صور)</Label>
+                  <p className="text-xs text-muted-foreground">
+                    الصور الثلاث التي تظهر بالتناوب في كارت المنصة على الواجهة — يمكن تعديلها أو إزالة أي منها.
+                  </p>
+                  <PlatformCardImagesEditor
+                    values={[editing.imageUrl1, editing.imageUrl2, editing.imageUrl3]}
+                    onChange={(vals) =>
+                      setEditing({
+                        ...editing,
+                        imageUrl1: vals[0] || "",
+                        imageUrl2: vals[1] || "",
+                        imageUrl3: vals[2] || "",
+                      })
+                    }
+                    labels={["الصورة 1", "الصورة 2", "الصورة 3"]}
+                  />
                 </div>
                 <div className="flex items-center gap-2 md:col-span-2">
                   <Label>بنر نشط</Label>

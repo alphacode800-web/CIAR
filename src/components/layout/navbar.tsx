@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Menu, X, ChevronDown, Globe, LogIn, LogOut } from "lucide-react"
+import { Menu, X, ChevronDown, Globe, LogIn, LogOut, Megaphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -174,6 +174,16 @@ export function Navbar({
 
         {/* Right side utilities */}
         <div className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate({ page: "advertise" })}
+            className={cn("gap-1.5 px-2.5 hidden sm:inline-flex", utilityBtnClass)}
+          >
+            <Megaphone className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-medium">{t("nav.advertise") || (locale === "ar" ? "أعلن معنا" : "Advertise")}</span>
+          </Button>
+
           {/* Currency dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -405,6 +415,15 @@ export function Navbar({
 
                 {/* Mobile utilities */}
                 <div className="pt-4 mt-4 border-t border-border/20 space-y-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { navigate({ page: "advertise" }); setMobileOpen(false) }}
+                    className="w-full text-sm h-10 gap-1.5 rounded-xl border-primary/30 text-primary hover:bg-primary/5"
+                  >
+                    <Megaphone className="h-3.5 w-3.5" />
+                    {t("nav.advertise") || (locale === "ar" ? "أعلن معنا" : "Advertise with us")}
+                  </Button>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-border/50 px-2.5 py-1">
                       <span>{currentCurrency.flag}</span>

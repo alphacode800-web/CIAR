@@ -5,6 +5,7 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "nav.projects": "Our Platforms",
     "nav.about": "About",
     "nav.contact": "Contact",
+    "nav.advertise": "Advertise with us",
     "nav.admin": "Admin",
 
     // ── Auth ─────────────────────────────────────────────────────────────────
@@ -301,6 +302,9 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "contact.success": "Message sent successfully! We'll get back to you soon.",
     "contact.error": "Failed to send message. Please try again.",
     "contact.validation_error": "Please check this field",
+    "contact.sender_type_label": "Your category",
+    "contact.sender_type_hint": "Select who you represent: individual, company, institution, or other.",
+    "contact.sender_type_required": "Please select your category",
     "contact.email": "azasnaa628@gmail.com",
     "contact.phone": "+963993153333",
     "contact.office_label": "Office",
@@ -476,6 +480,7 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "nav.projects": "منصاتنا",
     "nav.about": "عن CIAR",
     "nav.contact": "تواصل",
+    "nav.advertise": "أعلن معنا",
     "nav.admin": "الإدارة",
 
     // ── Auth ─────────────────────────────────────────────────────────────────
@@ -768,6 +773,9 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "contact.success": "تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.",
     "contact.error": "فشل إرسال الرسالة. يرجى المحاولة مجدداً.",
     "contact.validation_error": "يرجى التحقق من هذا الحقل",
+    "contact.sender_type_label": "تصنيفك",
+    "contact.sender_type_hint": "اختر الفئة التي تمثّلها: شخص، شركة، مؤسسة، أو غيرها.",
+    "contact.sender_type_required": "يرجى اختيار تصنيفك",
     "contact.email": "azasnaa628@gmail.com",
     "contact.phone": "+963993153333",
     "contact.office_label": "المكتب",

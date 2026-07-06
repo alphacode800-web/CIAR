@@ -14,12 +14,15 @@ import { useI18n } from "@/lib/i18n-context"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { SITE_CONTACT_DEFAULTS, whatsappHref as buildWhatsappHref } from "@/lib/site-contact"
+import { ContactSenderTypePicker } from "@/components/contact/contact-sender-type-picker"
+import { CONTACT_SENDER_TYPE_IDS, getContactSenderTypeLabel, type ContactSenderTypeId } from "@/lib/contact-sender-types"
 
 // ── Client-side Zod validation schema ───────────────────────────────────────
 const contactFormSchema = z.object({
   name: z.string().min(2),
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().regex(/^\+?[0-9]{8,15}$/).optional().or(z.literal("")),
+  senderType: z.enum(CONTACT_SENDER_TYPE_IDS),
   subject: z.string().min(2),
   message: z.string().min(10),
 }).refine((data) => Boolean(data.email || data.phone), {
@@ -29,10 +32,20 @@ const contactFormSchema = z.object({
 
 type ContactForm = z.infer<typeof contactFormSchema>
 
+type ContactFormState = {
+  name: string
+  email: string
+  phone: string
+  senderType: ContactSenderTypeId | ""
+  subject: string
+  message: string
+}
+
 interface FieldErrors {
   name?: string
   email?: string
   phone?: string
+  senderType?: string
   subject?: string
   message?: string
 }
@@ -103,10 +116,11 @@ function InfoCard({
 export function ContactPage() {
   const { t, locale, dir } = useI18n()
   const [sending, setSending] = useState(false)
-  const [form, setForm] = useState<ContactForm>({
+  const [form, setForm] = useState<ContactFormState>({
     name: "",
     email: "",
     phone: "",
+    senderType: "",
     subject: "",
     message: "",
   })
@@ -153,9 +167,8 @@ export function ContactPage() {
     void loadSocial()
   }, [])
 
-  const updateField = (field: keyof ContactForm, value: string) => {
+  const updateField = (field: keyof ContactFormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
-    // Clear field error on change
     setErrors((prev) => ({ ...prev, [field]: undefined }))
   }
 
@@ -166,7 +179,11 @@ export function ContactPage() {
       for (const issue of result.error.issues) {
         const path = issue.path[0] as keyof FieldErrors
         if (path && !fieldErrors[path]) {
-          fieldErrors[path] = t("contact.validation_error")
+          fieldErrors[path] =
+            path === "senderType"
+              ? t("contact.sender_type_required") ||
+                (locale === "ar" ? "يرجى اختيار تصنيفك" : "Please select your category")
+              : t("contact.validation_error")
         }
       }
       setErrors(fieldErrors)
@@ -190,7 +207,7 @@ export function ContactPage() {
       const data = await res.json()
       if (res.ok) {
         toast.success(t("contact.success"))
-        setForm({ name: "", email: "", phone: "", subject: "", message: "" })
+        setForm({ name: "", email: "", phone: "", senderType: "", subject: "", message: "" })
       } else {
         toast.error(data.error || t("contact.error"))
       }
@@ -213,7 +230,13 @@ export function ContactPage() {
   const inputClasses = (field: keyof FieldErrors) => cn(fieldClasses(field), "h-11")
 
   const buildContactText = () => {
+    const senderLabel = form.senderType
+      ? getContactSenderTypeLabel(form.senderType, locale)
+      : locale === "ar"
+        ? "غير محدد"
+        : "Not specified"
     const lines = [
+      `${locale === "ar" ? "التصنيف" : "Category"}: ${senderLabel}`,
       `${locale === "ar" ? "الاسم" : "Name"}: ${form.name || "-"}`,
       `${locale === "ar" ? "الموضوع" : "Subject"}: ${form.subject || "-"}`,
       `${locale === "ar" ? "الرسالة" : "Message"}: ${form.message || "-"}`,
@@ -390,6 +413,20 @@ export function ContactPage() {
           <AnimatedSection delay={0.2} className="lg:col-span-3">
             <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
               <form onSubmit={handleSubmit} className="space-y-5">
+                <ContactSenderTypePicker
+                  value={form.senderType}
+                  onChange={(senderType) => updateField("senderType", senderType)}
+                  locale={locale}
+                  label={t("contact.sender_type_label") || (locale === "ar" ? "تصنيفك" : "Your category")}
+                  hint={
+                    t("contact.sender_type_hint") ||
+                    (locale === "ar"
+                      ? "اختر الفئة التي تمثّلها: شخص، شركة، مؤسسة، أو غيرها."
+                      : "Select who you represent: individual, company, institution, or other.")
+                  }
+                  error={errors.senderType}
+                />
+
                 {/* Name + Email row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">

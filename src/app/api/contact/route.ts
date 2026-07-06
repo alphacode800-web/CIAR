@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { submitContact } from '@/services/contact.service'
+import { CONTACT_SENDER_TYPE_IDS } from '@/lib/contact-sender-types'
 
 // ── Validation Schemas ───────────────────────────────────────────────────────
 
@@ -8,6 +9,7 @@ const contactSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email().optional().or(z.literal("")).transform((value) => value || undefined),
   phone: z.string().trim().regex(/^\+?[0-9]{8,15}$/).optional().or(z.literal("")).transform((value) => value || undefined),
+  senderType: z.enum(CONTACT_SENDER_TYPE_IDS),
   subject: z.string().min(2).max(200),
   message: z.string().min(10).max(5000),
   locale: z.string().optional().default('en'),

@@ -29,6 +29,53 @@ export function getDefaultHeroImageUrl(index: number): string {
   return DEFAULT_HERO_IMAGE_URLS[index] ?? ""
 }
 
+/** Merge saved hero URLs with defaults so the slideshow always has enough slides. */
+export function resolveHeroSlidesFromSettings(settings: Record<string, string>): string[] {
+  return Array.from({ length: DEFAULT_HERO_IMAGE_URLS.length }, (_, index) => {
+    const saved = String(settings[`home_hero_image_${index + 1}`] ?? "").trim()
+    return saved || getDefaultHeroImageUrl(index)
+  })
+}
+
+export function mergeHeroSlideUrls(
+  sources: Array<string | null | undefined>,
+  broken: Set<string> = new Set(),
+  minSlides = 5,
+  maxSlides = 20
+): string[] {
+  const pool: string[] = []
+  const seen = new Set<string>()
+
+  for (const raw of sources) {
+    const url = String(raw ?? "").trim()
+    if (!url || seen.has(url) || broken.has(url)) continue
+    seen.add(url)
+    pool.push(url)
+    if (pool.length >= maxSlides) return pool
+  }
+
+  for (const url of DEFAULT_HERO_IMAGE_URLS) {
+    if (pool.length >= maxSlides) break
+    if (seen.has(url) || broken.has(url)) continue
+    seen.add(url)
+    pool.push(url)
+  }
+
+  const fallback = DEFAULT_HERO_IMAGE_URLS.filter((url) => !broken.has(url))
+  if (pool.length >= minSlides) return pool
+  return pool.length > 0 ? pool : fallback.length > 0 ? [...fallback] : [...DEFAULT_HERO_IMAGE_URLS]
+}
+
+export function collectPlatformBannerImages(
+  banners: Array<{ imageUrl1?: string; imageUrl2?: string; imageUrl3?: string }>
+): string[] {
+  return banners.flatMap((banner) =>
+    [banner.imageUrl1, banner.imageUrl2, banner.imageUrl3]
+      .map((url) => String(url ?? "").trim())
+      .filter(Boolean)
+  )
+}
+
 export function getHeroImageIndexFromKey(key: string): number {
   const match = key.match(/home_hero_image_(\d+)/)
   if (!match) return -1

@@ -21,6 +21,7 @@ const ProjectsPage = lazy(() => import("@/components/pages/projects-page").then(
 const ProjectDetailsPage = lazy(() => import("@/components/pages/project-details-page").then(m => ({ default: m.ProjectDetailsPage })))
 const AboutPage = lazy(() => import("@/components/pages/about-page").then(m => ({ default: m.AboutPage })))
 const ContactPage = lazy(() => import("@/components/pages/contact-page").then(m => ({ default: m.ContactPage })))
+const AdvertisePage = lazy(() => import("@/components/pages/advertise-page").then(m => ({ default: m.AdvertisePage })))
 const AdminPage = lazy(() => import("@/components/pages/admin-page").then(m => ({ default: m.AdminPage })))
 
 const DEFAULT_HOME_BANNERS: HomeBannersConfig = {
@@ -238,6 +239,20 @@ export default function Page() {
             >
               <Suspense fallback={<PageSkeleton />}>
                 <ContactPage />
+              </Suspense>
+            </motion.div>
+          )}
+
+          {route.page === "advertise" && (
+            <motion.div
+              key="advertise"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <AdvertisePage />
               </Suspense>
             </motion.div>
           )}
