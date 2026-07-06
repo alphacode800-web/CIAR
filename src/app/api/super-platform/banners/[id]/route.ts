@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { canAccessSuperAdmin } from "@/features/super-platform/authz"
+import { platformImageSlotsToPayload } from "@/lib/platform-card-images"
 
 export async function PUT(
   request: NextRequest,
@@ -13,6 +14,9 @@ export async function PUT(
 
   const { id } = await params
   const body = await request.json()
+  const imagePayload = Array.isArray(body.imageUrls)
+    ? platformImageSlotsToPayload(body.imageUrls)
+    : platformImageSlotsToPayload([body.imageUrl1, body.imageUrl2, body.imageUrl3])
 
   const banner = await prisma.platformBanner.update({
     where: { id },
@@ -24,9 +28,10 @@ export async function PUT(
       ctaTextEn: String(body.ctaTextEn || "Explore"),
       ctaTextAr: String(body.ctaTextAr || "استكشف"),
       ctaHref: String(body.ctaHref || "#"),
-      imageUrl1: String(body.imageUrl1 || ""),
-      imageUrl2: String(body.imageUrl2 || ""),
-      imageUrl3: String(body.imageUrl3 || ""),
+      imageUrls: imagePayload.imageUrls,
+      imageUrl1: imagePayload.imageUrl1,
+      imageUrl2: imagePayload.imageUrl2,
+      imageUrl3: imagePayload.imageUrl3,
       isActive: body.isActive !== false,
     },
   })

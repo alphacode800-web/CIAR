@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
 import { Mail, Phone, MapPin, Clock, Send, MessageCircle, SendHorizontal, Facebook, Instagram, Linkedin, Youtube, Music2, Ghost } from "lucide-react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
@@ -16,6 +15,8 @@ import { cn } from "@/lib/utils"
 import { SITE_CONTACT_DEFAULTS, whatsappHref as buildWhatsappHref } from "@/lib/site-contact"
 import { ContactSenderTypePicker } from "@/components/contact/contact-sender-type-picker"
 import { CONTACT_SENDER_TYPE_IDS, getContactSenderTypeLabel, type ContactSenderTypeId } from "@/lib/contact-sender-types"
+import { PageHeroHeader } from "@/components/layout/page-hero-header"
+import { DEFAULT_PAGE_HEADERS, type PageHeaderConfig } from "@/lib/page-headers"
 
 // ── Client-side Zod validation schema ───────────────────────────────────────
 const contactFormSchema = z.object({
@@ -113,7 +114,7 @@ function InfoCard({
 }
 
 // ── Contact page component ──────────────────────────────────────────────────
-export function ContactPage() {
+export function ContactPage({ headerConfig: initialHeaderConfig }: { headerConfig?: PageHeaderConfig } = {}) {
   const { t, locale, dir } = useI18n()
   const [sending, setSending] = useState(false)
   const [form, setForm] = useState<ContactFormState>({
@@ -139,6 +140,22 @@ export function ContactPage() {
 
   const [contactEmail, setContactEmail] = useState(SITE_CONTACT_DEFAULTS.contact_email)
   const [contactPhone, setContactPhone] = useState(SITE_CONTACT_DEFAULTS.contact_phone)
+  const [headerConfig, setHeaderConfig] = useState<PageHeaderConfig>(
+    initialHeaderConfig ?? DEFAULT_PAGE_HEADERS.contact
+  )
+
+  useEffect(() => {
+    if (initialHeaderConfig) setHeaderConfig(initialHeaderConfig)
+  }, [initialHeaderConfig])
+
+  useEffect(() => {
+    fetch("/api/page-headers?page=contact", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.header) setHeaderConfig(d.header as PageHeaderConfig)
+      })
+      .catch(() => setHeaderConfig(DEFAULT_PAGE_HEADERS.contact))
+  }, [])
 
   useEffect(() => {
     const loadSocial = async () => {
@@ -267,52 +284,10 @@ export function ContactPage() {
 
   return (
     <div dir={dir} className="relative overflow-hidden">
-      {/* ── Hero Header ───────────────────────────────────────────────────── */}
-      <section className="relative py-24 sm:py-32 overflow-hidden">
-        {/* Background image */}
-        <div className="absolute inset-0 pointer-events-none">
-          <img src="/images/headers/contact-header.png" alt="" className="w-full h-full object-cover opacity-40 scale-105" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
-        </div>
-        {/* Gradient mesh background */}
-        <div className="absolute inset-0 mesh-gradient" />
-        {/* Dot pattern overlay */}
-        <div className="absolute inset-0 dot-pattern" />
-        {/* Noise overlay wrapper */}
-        <div className="noise-overlay absolute inset-0" />
-
-        {/* Floating gradient orbs */}
-        <div
-          className={cn(
-            "absolute top-20 -start-32 h-[350px] w-[350px] rounded-full blur-3xl animate-float",
-            "bg-gradient-to-br from-[oklch(0.78_0.14_82/15%)] to-[oklch(0.72_0.12_75/10%)]"
-          )}
-        />
-        <div
-          className={cn(
-            "absolute bottom-10 -end-32 h-[300px] w-[300px] rounded-full blur-3xl animate-float-delayed",
-            "bg-gradient-to-br from-[oklch(0.55_0.15_280/10%)] to-[oklch(0.65_0.2_330/5%)]"
-          )}
-        />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection className="text-center">
-            <Badge
-              variant="secondary"
-              className="px-4 py-1.5 text-sm mb-6 glass-subtle border border-border/50"
-            >
-              {t("contact.badge")}
-            </Badge>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-              {t("contact.title_1")}{" "}
-              <span className="gradient-text">{t("contact.title_2")}</span>
-            </h1>
-            <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              {t("contact.subtitle")}
-            </p>
-          </AnimatedSection>
-        </div>
-      </section>
+      <PageHeroHeader
+        config={headerConfig}
+        locale={locale === "ar" ? "ar" : "en"}
+      />
 
       {/* ── Main Content ──────────────────────────────────────────────────── */}
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-24">

@@ -3,6 +3,7 @@ import { getSettings } from "@/services/settings.service"
 import { getMedia } from "@/services/media.service"
 import { buildHomeBannersConfig } from "@/lib/home-banners"
 import { DEFAULT_HERO_IMAGE_URLS } from "@/lib/default-hero-images"
+import { resolvePlatformCardImages } from "@/lib/platform-card-images"
 import { MODULE_BANNER_IMAGES, DEFAULT_BANNER_IMAGES } from "@/features/super-platform/config"
 import { getFallbackBanners } from "@/features/super-platform/server"
 
@@ -33,10 +34,15 @@ export function dedupeImageUrls(urls: unknown[]): string[] {
 
 function pushBannerImages(
   target: string[],
-  banner?: { imageUrl1?: string | null; imageUrl2?: string | null; imageUrl3?: string | null } | null
+  banner?: {
+    imageUrls?: unknown
+    imageUrl1?: string | null
+    imageUrl2?: string | null
+    imageUrl3?: string | null
+  } | null
 ) {
   if (!banner) return
-  target.push(banner.imageUrl1 ?? "", banner.imageUrl2 ?? "", banner.imageUrl3 ?? "")
+  target.push(...resolvePlatformCardImages(banner))
 }
 
 export async function collectSiteImages(extraImages: string[] = []): Promise<string[]> {

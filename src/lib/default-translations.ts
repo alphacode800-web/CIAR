@@ -8,6 +8,9 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "nav.advertise": "Advertise with us",
     "nav.admin": "Admin",
 
+    // ── Footer ───────────────────────────────────────────────────────────────
+    "footer.brand": "CIAR",
+
     // ── Auth ─────────────────────────────────────────────────────────────────
     "auth.login": "Login",
     "auth.phone": "Phone Number",
@@ -468,6 +471,11 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "admin.sections_save_failed": "Failed to save section order",
     "admin.sections_reset": "Sections reset to default order",
     "admin.sections_reset_failed": "Failed to reset sections",
+    "admin.project_order": "Order",
+    "admin.projects_order_saved": "Project order saved successfully",
+    "admin.projects_order_save_failed": "Failed to save project order",
+    "admin.clear_filters_to_reorder": "Clear search and filters to reorder projects",
+    "admin.unsaved_order_changes": "You have unsaved order changes",
     "admin.appearance_subtitle": "Customize the visual theme and layout of your platform.",
     "admin.settings_saved": "Appearance settings saved successfully",
     "admin.settings_save_failed": "Failed to save appearance settings",
@@ -482,6 +490,9 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "nav.contact": "تواصل",
     "nav.advertise": "أعلن معنا",
     "nav.admin": "الإدارة",
+
+    // ── Footer ───────────────────────────────────────────────────────────────
+    "footer.brand": "CIAR",
 
     // ── Auth ─────────────────────────────────────────────────────────────────
     "auth.login": "تسجيل الدخول",
@@ -958,6 +969,11 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "admin.sections_save_failed": "فشل حفظ ترتيب الأقسام",
     "admin.sections_reset": "تمت إعادة الأقسام للوضع الافتراضي",
     "admin.sections_reset_failed": "فشل إعادة ضبط الأقسام",
+    "admin.project_order": "الترتيب",
+    "admin.projects_order_saved": "تم حفظ ترتيب المنصات بنجاح",
+    "admin.projects_order_save_failed": "فشل حفظ ترتيب المنصات",
+    "admin.clear_filters_to_reorder": "امسح البحث والفلتر لتغيير ترتيب المنصات",
+    "admin.unsaved_order_changes": "لديك تغييرات ترتيب غير محفوظة",
     "admin.appearance_subtitle": "خصص النمط البصري وتخطيط منصتك.",
     "admin.settings_saved": "تم حفظ إعدادات المظهر بنجاح",
     "admin.settings_save_failed": "فشل حفظ إعدادات المظهر",

@@ -20,6 +20,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { PlatformCardImagesEditor } from "@/components/admin/platform-card-images-editor"
+import { platformImageSlotsToPayload, resolvePlatformCardImages } from "@/lib/platform-card-images"
 
 type ModuleRow = {
   id: string
@@ -42,6 +43,7 @@ type BannerRow = {
   imageUrl1: string
   imageUrl2: string
   imageUrl3: string
+  imageUrls?: string[]
   isActive?: boolean
   module?: { nameEn: string; nameAr: string }
 }
@@ -103,12 +105,17 @@ export function SuperPlatformAdmin() {
 
   async function saveBanner() {
     if (!editing) return
+    const imagePayload = platformImageSlotsToPayload(editing.imageUrls || [])
+    const payload = {
+      ...editing,
+      ...imagePayload,
+    }
     const method = editing.id ? "PUT" : "POST"
     const url = editing.id ? `/api/super-platform/banners/${editing.id}` : "/api/super-platform/banners"
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editing),
+      body: JSON.stringify(payload),
     })
     if (!res.ok) {
       toast.error("فشل حفظ البنر.")
@@ -142,6 +149,7 @@ export function SuperPlatformAdmin() {
     imageUrl1: "",
     imageUrl2: "",
     imageUrl3: "",
+    imageUrls: [],
     isActive: true,
   })
 
@@ -276,7 +284,7 @@ export function SuperPlatformAdmin() {
                     ) : null}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setEditing(banner)}>
+                    <Button size="sm" variant="outline" onClick={() => setEditing({ ...banner, imageUrls: resolvePlatformCardImages(banner) })}>
                       تعديل
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => removeBanner(banner.id)}>
@@ -353,21 +361,21 @@ export function SuperPlatformAdmin() {
                   <Input value={editing.ctaHref} onChange={(e) => setEditing({ ...editing, ctaHref: e.target.value })} dir="ltr" className="text-left" />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label>صور كارت المنصة (3 صور)</Label>
+                  <Label>صور كارت المنصة</Label>
                   <p className="text-xs text-muted-foreground">
-                    الصور الثلاث التي تظهر بالتناوب في كارت المنصة على الواجهة — يمكن تعديلها أو إزالة أي منها.
+                    أضف عدة صور وتغيّر ترتيبها — تظهر بالتناوب في كارت المنصة على الواجهة (حتى 20 صورة).
                   </p>
                   <PlatformCardImagesEditor
-                    values={[editing.imageUrl1, editing.imageUrl2, editing.imageUrl3]}
-                    onChange={(vals) =>
+                    values={editing.imageUrls || resolvePlatformCardImages(editing)}
+                    onChange={(imageUrls) =>
                       setEditing({
                         ...editing,
-                        imageUrl1: vals[0] || "",
-                        imageUrl2: vals[1] || "",
-                        imageUrl3: vals[2] || "",
+                        imageUrls,
+                        imageUrl1: imageUrls[0] || "",
+                        imageUrl2: imageUrls[1] || "",
+                        imageUrl3: imageUrls[2] || "",
                       })
                     }
-                    labels={["الصورة 1", "الصورة 2", "الصورة 3"]}
                   />
                 </div>
                 <div className="flex items-center gap-2 md:col-span-2">

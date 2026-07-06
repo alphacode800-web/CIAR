@@ -3,6 +3,7 @@ import { getSettings, updateSettings } from "@/services/settings.service"
 import {
   ABOUT_COMPANY_INTRO_AR_KEY,
   ABOUT_COMPANY_INTRO_EN_KEY,
+  ABOUT_COMPANY_INTRO_STYLE_KEY,
   aboutCompanyIntroSchema,
   buildAboutCompanyIntro,
 } from "@/lib/about-content"
@@ -30,11 +31,16 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const intro = parsed.data
+    const intro = {
+      ar: parsed.data.ar,
+      en: parsed.data.en,
+      style: parsed.data.style ?? buildAboutCompanyIntro({}).style,
+    }
 
     await updateSettings({
       [ABOUT_COMPANY_INTRO_AR_KEY]: intro.ar,
       [ABOUT_COMPANY_INTRO_EN_KEY]: intro.en,
+      [ABOUT_COMPANY_INTRO_STYLE_KEY]: JSON.stringify(intro.style),
     })
 
     return NextResponse.json({ success: true, intro })

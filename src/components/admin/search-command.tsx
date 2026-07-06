@@ -94,12 +94,28 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
     action: (nav) => nav?.("backgrounds"),
   },
   {
+    id: "page-headers",
+    labelKey: "admin.cmd_go_page_headers",
+    fallback: "Go to Page Headers",
+    icon: FileText,
+    group: "pages",
+    action: (nav) => nav?.("page-headers"),
+  },
+  {
     id: "news-ticker",
     labelKey: "admin.cmd_go_news_ticker",
     fallback: "Go to News Ticker",
     icon: Newspaper,
     group: "pages",
     action: (nav) => nav?.("news-ticker"),
+  },
+  {
+    id: "home-about-brief",
+    labelKey: "admin.cmd_go_home_about_brief",
+    fallback: "Go to Home About Brief",
+    icon: Building2,
+    group: "pages",
+    action: (nav) => nav?.("home-about-brief"),
   },
   {
     id: "about-content",

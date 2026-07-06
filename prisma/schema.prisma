@@ -18,6 +18,7 @@ model Project {
   featured    Boolean  @default(false)
   published   Boolean  @default(true)
   imageUrl    String   @default("")
+  imageUrls   Json     @default("[]")
   category    String   @default("")
   externalUrl String   @default("")
   tags        String   @default("[]")
@@ -337,6 +338,7 @@ model PlatformBanner {
   imageUrl1      String
   imageUrl2      String
   imageUrl3      String
+  imageUrls      Json           @default("[]")
   isActive       Boolean        @default(true)
   module         PlatformModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   createdAt      DateTime       @default(now())

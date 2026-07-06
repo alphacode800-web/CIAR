@@ -27,7 +27,7 @@ const imagePathSchema = z
 
 const updateProjectSchema = z.object({
   imageUrl: imagePathSchema.optional(),
-  imageUrls: z.array(imagePathSchema).max(5).optional(),
+  imageUrls: z.array(imagePathSchema).max(20).optional(),
   category: z.string().optional(),
   externalUrl: z.string().url().optional().or(z.literal('')),
   tags: z.string().optional(),

@@ -16,6 +16,9 @@ const ImageStripTab = lazy(() => import("@/components/admin/image-strip-tab").th
 const AboutContentTab = lazy(() =>
   import("@/components/admin/about-content-tab").then((m) => ({ default: m.AboutContentTab }))
 )
+const HomeAboutBriefTab = lazy(() =>
+  import("@/components/admin/home-about-brief-tab").then((m) => ({ default: m.HomeAboutBriefTab }))
+)
 const ContactsTab = lazy(() => import("@/components/admin/contacts-tab").then((m) => ({ default: m.ContactsTab })))
 const UsersTab = lazy(() => import("@/components/admin/users-tab").then((m) => ({ default: m.UsersTab })))
 const NewsTickerTab = lazy(() => import("@/components/admin/news-ticker-tab").then((m) => ({ default: m.NewsTickerTab })))
@@ -25,6 +28,9 @@ const SiteSettingsTab = lazy(() => import("@/components/admin/site-settings-tab"
 const DataExportTab = lazy(() => import("@/components/admin/data-export-tab").then((m) => ({ default: m.DataExportTab })))
 const SectionContentTab = lazy(() =>
   import("@/components/admin/section-content-tab").then((m) => ({ default: m.SectionContentTab }))
+)
+const PageHeadersTab = lazy(() =>
+  import("@/components/admin/page-headers-tab").then((m) => ({ default: m.PageHeadersTab }))
 )
 
 export function AdminTabSkeleton() {
@@ -57,12 +63,16 @@ export function AdminTabContent({ activeTab }: { activeTab: string }) {
       return <MediaTab />
     case "backgrounds":
       return <BackgroundsTab />
+    case "page-headers":
+      return <PageHeadersTab />
     case "home-banners":
       return <HomeBannersTab />
     case "image-strip":
       return <ImageStripTab />
     case "about-content":
       return <AboutContentTab />
+    case "home-about-brief":
+      return <HomeAboutBriefTab />
     case "contacts":
       return <ContactsTab />
     case "users":

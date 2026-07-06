@@ -26,6 +26,7 @@ import {
   Inbox,
   Search,
   Grid3X3,
+  Heading,
 } from "lucide-react"
 
 export type PageAdminId = "page-home" | "page-platforms" | "page-about" | "page-contact"
@@ -69,6 +70,15 @@ export const PAGE_ADMIN_CONFIG: Record<PageAdminId, PageAdminConfig> = {
         descAr: "العنوان، الوصف، الصور، الفيديو، الشعار، وأزرار الدعوة.",
         descEn: "Title, subtitle, slides, video, logo, and call-to-action buttons.",
         adminTab: "home-banners",
+      },
+      {
+        id: "hero-typography",
+        icon: Heading,
+        titleAr: "خطوط وألوان الهيدر",
+        titleEn: "Hero typography",
+        descAr: "نصوص وألوان وخطوط هيدر الصفحة الرئيسية.",
+        descEn: "Home hero texts, colors, and fonts.",
+        adminTab: "page-headers",
       },
       {
         id: "news-ticker",
@@ -233,7 +243,7 @@ export const PAGE_ADMIN_CONFIG: Record<PageAdminId, PageAdminConfig> = {
         titleEn: "Page title & subtitle",
         descAr: "العنوان الرئيسي والنص التمهيدي.",
         descEn: "Main heading and intro text.",
-        adminTab: "platforms-header",
+        adminTab: "page-headers",
         contentKeys: "projects.title, projects.subtitle",
       },
       {
@@ -300,7 +310,7 @@ export const PAGE_ADMIN_CONFIG: Record<PageAdminId, PageAdminConfig> = {
         titleEn: "Hero header",
         descAr: "الشارة، العنوان، والوصف التمهيدي.",
         descEn: "Badge, title, and subtitle.",
-        adminTab: "about-hero",
+        adminTab: "page-headers",
         contentKeys: "about.badge, about.title_*, about.subtitle",
       },
       {
@@ -378,7 +388,7 @@ export const PAGE_ADMIN_CONFIG: Record<PageAdminId, PageAdminConfig> = {
         titleEn: "Hero header",
         descAr: "العنوان والوصف في أعلى صفحة التواصل.",
         descEn: "Title and subtitle at top of contact page.",
-        adminTab: "contact-hero",
+        adminTab: "page-headers",
         contentKeys: "contact.badge, contact.title_*, contact.subtitle",
       },
       {

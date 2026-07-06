@@ -18,6 +18,10 @@ import {
   Sparkles,
   ImageIcon,
   FileStack,
+  ChevronUp,
+  ChevronDown,
+  Save,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -87,6 +91,12 @@ type ViewMode = "table" | "card"
 const LOCAL_PROJECTS_CACHE_KEY = "ciar-admin-projects-local-cache"
 const PROJECTS_VIEW_MODE_KEY = "ciar-admin-projects-view-mode"
 
+function sortProjectsByOrder(items: Project[]): Project[] {
+  return [...items].sort(
+    (a, b) => (a.order ?? 0) - (b.order ?? 0) || a.slug.localeCompare(b.slug),
+  )
+}
+
 // ─── Animation variants ──────────────────────────────────────────────────────
 
 const fadeUp = {
@@ -129,6 +139,8 @@ export function ProjectsTab() {
     return saved === "table" || saved === "card" ? saved : "card"
   })
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [orderDirty, setOrderDirty] = useState(false)
+  const [savingOrder, setSavingOrder] = useState(false)
 
   const cacheProjects = useCallback((nextProjects: Project[]) => {
     if (typeof window === "undefined") return
@@ -143,7 +155,7 @@ export function ProjectsTab() {
   const fetchProjects = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch("/api/projects?locale=en")
+      const res = await fetch("/api/projects?locale=en&all=true")
       const data = await res.json()
       let nextProjects = data.projects || []
 
@@ -165,7 +177,8 @@ export function ProjectsTab() {
         }
       }
 
-      setProjects(nextProjects)
+      setProjects(sortProjectsByOrder(nextProjects))
+      setOrderDirty(false)
       setCategories([...new Set(nextProjects.map((project: Project) => project.category).filter(Boolean))])
     } catch {
       // ignore
@@ -183,10 +196,14 @@ export function ProjectsTab() {
     localStorage.setItem(PROJECTS_VIEW_MODE_KEY, viewMode)
   }, [viewMode])
 
-  // ── Filtering ──
+  // ── Sorting & filtering ──
+  const sortedProjects = useMemo(() => sortProjectsByOrder(projects), [projects])
+
+  const canReorder = !search && filterCategory === "all"
+
   const filteredProjects = useMemo(
     () =>
-      projects.filter((p) => {
+      sortedProjects.filter((p) => {
         if (filterCategory !== "all" && p.category !== filterCategory) return false
         if (search) {
           const q = search.toLowerCase()
@@ -196,7 +213,7 @@ export function ProjectsTab() {
         }
         return true
       }),
-    [projects, filterCategory, search]
+    [sortedProjects, filterCategory, search]
   )
 
   // ── Stats ──
@@ -275,6 +292,121 @@ export function ProjectsTab() {
       setTogglingId(null)
     }
   }
+
+  // ── Reorder ──
+  const moveProject = (index: number, direction: "up" | "down") => {
+    if (!canReorder) {
+      toast.info(
+        t("admin.clear_filters_to_reorder") || "امسح البحث والفلتر لتغيير ترتيب المنصات"
+      )
+      return
+    }
+
+    setProjects((prev) => {
+      const sorted = sortProjectsByOrder(prev)
+      const target = direction === "up" ? index - 1 : index + 1
+      if (target < 0 || target >= sorted.length) return prev
+      ;[sorted[index], sorted[target]] = [sorted[target], sorted[index]]
+      return sorted.map((p, i) => ({ ...p, order: i + 1 }))
+    })
+    setOrderDirty(true)
+  }
+
+  const saveOrder = async () => {
+    setSavingOrder(true)
+    const orders = sortProjectsByOrder(projects).map((p, i) => ({
+      id: p.id,
+      order: i + 1,
+    }))
+
+    const applyLocalOrder = () => {
+      setProjects((prev) => {
+        const map = new Map(orders.map((o) => [o.id, o.order]))
+        const next = sortProjectsByOrder(
+          prev.map((p) => ({ ...p, order: map.get(p.id) ?? p.order }))
+        )
+        cacheProjects(next)
+        return next
+      })
+      setOrderDirty(false)
+      toast.success(t("admin.projects_order_saved") || "تم حفظ ترتيب المنصات بنجاح")
+    }
+
+    try {
+      const res = await fetch("/api/projects/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orders }),
+      })
+
+      if (res.ok) {
+        applyLocalOrder()
+        return
+      }
+
+      const allCiar = orders.every((o) => o.id.startsWith("ciar-"))
+      if (allCiar || res.status >= 500) {
+        applyLocalOrder()
+        return
+      }
+
+      throw new Error("save failed")
+    } catch {
+      const allCiar = orders.every((o) => o.id.startsWith("ciar-"))
+      if (allCiar) {
+        applyLocalOrder()
+      } else {
+        toast.error(t("admin.projects_order_save_failed") || "فشل حفظ ترتيب المنصات")
+      }
+    } finally {
+      setSavingOrder(false)
+    }
+  }
+
+  const renderReorderControls = (index: number, total: number) => (
+    <div className="flex items-center gap-0.5">
+      <TooltipProvider delayDuration={300}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              disabled={!canReorder || index === 0}
+              onClick={(e) => {
+                e.stopPropagation()
+                moveProject(index, "up")
+              }}
+              className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-[oklch(0.76_0.19_48/10%)] hover:text-[oklch(0.76_0.19_48)] disabled:pointer-events-none disabled:opacity-20"
+            >
+              <ChevronUp className="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs">
+            {t("admin.move_up") || "Move up"}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <TooltipProvider delayDuration={300}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              disabled={!canReorder || index === total - 1}
+              onClick={(e) => {
+                e.stopPropagation()
+                moveProject(index, "down")
+              }}
+              className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-[oklch(0.76_0.19_48/10%)] hover:text-[oklch(0.76_0.19_48)] disabled:pointer-events-none disabled:opacity-20"
+            >
+              <ChevronDown className="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs">
+            {t("admin.move_down") || "Move down"}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  )
 
   // ── CRUD handlers ──
   const handleSave = async (
@@ -577,6 +709,10 @@ export function ProjectsTab() {
               whileHover="hover"
               className="admin-3d-panel group glass-strong relative flex cursor-default flex-col overflow-hidden rounded-2xl border border-primary/18 transition-colors hover:border-primary/35"
             >
+              <div className="absolute start-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-lg bg-[oklch(0.76_0.19_48/12%)] text-[10px] font-bold text-[oklch(0.76_0.19_48)]">
+                {i + 1}
+              </div>
+
               <div className="flex gap-4 p-4">
                 <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-xl border border-primary/15 bg-muted/40 shadow-inner">
                   {p.imageUrl ? (
@@ -628,7 +764,8 @@ export function ProjectsTab() {
                       <Eye className="h-3.5 w-3.5 shrink-0" />
                       {p.views.toLocaleString()}
                     </span>
-                    <div className="flex shrink-0 gap-1">
+                    <div className="flex shrink-0 items-center gap-1">
+                      {renderReorderControls(i, filteredProjects.length)}
                       <Button
                         size="icon"
                         variant="outline"
@@ -685,6 +822,9 @@ export function ProjectsTab() {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-b border-white/10">
+              <TableHead className="w-24 text-center text-xs text-muted-foreground">
+                {t("admin.project_order") || "Order"}
+              </TableHead>
               <TableHead className="text-xs text-muted-foreground">
                 {t("admin.project_name") || "Name"}
               </TableHead>
@@ -720,6 +860,16 @@ export function ProjectsTab() {
                   layout
                   className="group border-b border-white/5 transition-colors hover:bg-white/[0.04] [&>td]:py-3"
                 >
+                  {/* Order */}
+                  <TableCell className="text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-[oklch(0.76_0.19_48/10%)] text-[11px] font-bold text-[oklch(0.76_0.19_48)]">
+                        {i + 1}
+                      </span>
+                      {renderReorderControls(i, filteredProjects.length)}
+                    </div>
+                  </TableCell>
+
                   {/* Thumbnail + Name */}
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -819,7 +969,7 @@ export function ProjectsTab() {
             {filteredProjects.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="h-48"
                 >
                   <div className="flex flex-col items-center justify-center text-muted-foreground">
@@ -985,6 +1135,36 @@ export function ProjectsTab() {
             </Button>
           </div>
         </div>
+
+        {!canReorder && projects.length > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {t("admin.clear_filters_to_reorder") || "امسح البحث والفلتر لتغيير ترتيب المنصات"}
+          </p>
+        )}
+
+        {orderDirty && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col gap-3 rounded-2xl border border-[oklch(0.76_0.19_48/20%)] bg-[oklch(0.76_0.19_48/8%)] p-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p className="text-sm text-foreground">
+              {t("admin.unsaved_order_changes") || "لديك تغييرات ترتيب غير محفوظة"}
+            </p>
+            <Button
+              onClick={saveOrder}
+              disabled={savingOrder}
+              className="gap-2 rounded-full bg-gradient-to-r from-[oklch(0.72_0.19_48)] to-[oklch(0.58_0.18_42)] font-semibold text-black"
+            >
+              {savingOrder ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              {t("admin.save_order") || "حفظ الترتيب"}
+            </Button>
+          </motion.div>
+        )}
 
         {/* ── Content: Loading / Table / Cards ── */}
         {loading ? (

@@ -1,5 +1,10 @@
 import { db } from '@/lib/db'
 import { CIAR_MODULES, MODULE_BANNER_IMAGES } from '@/features/super-platform/config'
+import {
+  getDefaultModuleBannerImages,
+  mergePlatformImageSlots,
+  normalizePlatformImageUrls,
+} from '@/lib/platform-card-images'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +18,7 @@ interface ProjectTranslationItem {
 const DEFAULT_PROJECTS_SEED: Array<{
   slug: string
   imageUrl: string
+  imageUrls: string[]
   category: string
   externalUrl: string
   tags: string
@@ -25,10 +31,12 @@ const DEFAULT_PROJECTS_SEED: Array<{
   .filter((platformModule) => platformModule.visibility === "VISIBLE")
   .map((platformModule) => {
     const slug = `ciar-${platformModule.slug.toLowerCase().replace(/_/g, "-")}`
-    const imageUrl = MODULE_BANNER_IMAGES[platformModule.slug]?.[0] || "/images/ecommerce.png"
+    const bannerImages = MODULE_BANNER_IMAGES[platformModule.slug] || []
+    const imageUrl = bannerImages[0] || "/images/ecommerce.png"
     return {
       slug,
       imageUrl,
+      imageUrls: [...bannerImages],
       category: platformModule.nameEn.replace(/^CIAR\s+/i, ""),
       externalUrl: `https://${slug}.ciar.com`,
       tags: JSON.stringify(["CIAR", platformModule.slug, "Platform"]),
@@ -143,16 +151,20 @@ function mapProject(row: {
   updatedAt: Date
   translations: { locale: string; name: string; tagline: string; description: string }[]
 }): ProjectWithTranslations {
+  let imageUrls = normalizePlatformImageUrls([
+    ...normalizePlatformImageUrls(row.imageUrls),
+    row.imageUrl,
+  ])
+
+  if (imageUrls.length < 3 && row.slug.startsWith('ciar-')) {
+    imageUrls = mergePlatformImageSlots(imageUrls, getDefaultModuleBannerImages(row.slug))
+  }
+
   return {
     id: row.id,
     slug: row.slug,
     imageUrl: row.imageUrl,
-    imageUrls:
-      Array.isArray(row.imageUrls) && row.imageUrls.length > 0
-        ? row.imageUrls
-        : row.imageUrl
-          ? [row.imageUrl]
-          : [],
+    imageUrls,
     category: row.category,
     featured: row.featured,
     published: row.published,
@@ -193,6 +205,7 @@ async function ensureSeedProjectsInFirebase(): Promise<void> {
         where: { slug: project.slug },
         update: {
           imageUrl: project.imageUrl,
+          imageUrls: project.imageUrls,
           category: project.category,
           externalUrl: project.externalUrl,
           tags: project.tags,
@@ -204,6 +217,7 @@ async function ensureSeedProjectsInFirebase(): Promise<void> {
         create: {
           slug: project.slug,
           imageUrl: project.imageUrl,
+          imageUrls: project.imageUrls,
           category: project.category,
           externalUrl: project.externalUrl,
           tags: project.tags,
@@ -253,7 +267,7 @@ export async function getProjects(
     search,
     category,
     featured,
-    published = true,
+    published,
     page = 1,
     limit = 12,
     all = false,
@@ -272,6 +286,8 @@ export async function getProjects(
 
   if (published !== undefined) {
     where.published = published
+  } else if (!all) {
+    where.published = true
   }
 
   // Search through translations
@@ -401,7 +417,7 @@ export async function createProject(
 ): Promise<ProjectWithTranslations> {
   const { translations = [], ...rawData } = input
   const normalizedImageUrls = Array.isArray(rawData.imageUrls)
-    ? rawData.imageUrls.map((item) => item.trim()).filter(Boolean).slice(0, 5)
+    ? rawData.imageUrls.map((item) => item.trim()).filter(Boolean).slice(0, 20)
     : []
   const data = {
     ...rawData,
@@ -470,7 +486,7 @@ export async function updateProject(
   input: UpdateProjectInput,
 ): Promise<ProjectWithTranslations> {
   const normalizedImageUrls = Array.isArray(input.imageUrls)
-    ? input.imageUrls.map((item) => item.trim()).filter(Boolean).slice(0, 5)
+    ? input.imageUrls.map((item) => item.trim()).filter(Boolean).slice(0, 20)
     : undefined
   const payload = {
     ...input,
@@ -548,4 +564,19 @@ export async function togglePublished(id: string): Promise<boolean> {
     data: { published: !project.published },
   })
   return updated.published
+}
+
+/**
+ * Bulk-update display order for projects.
+ */
+export async function reorderProjects(
+  orders: { id: string; order: number }[],
+): Promise<void> {
+  if (orders.length === 0) return
+
+  await db.$transaction(
+    orders.map(({ id, order }) =>
+      db.project.update({ where: { id }, data: { order } }),
+    ),
+  )
 }

@@ -8,6 +8,9 @@ import { BadgeCheck, Globe2, ShieldCheck, Sparkles } from "lucide-react"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { collectPlatformBannerImages, DEFAULT_HERO_IMAGE_URLS, mergeHeroSlideUrls } from "@/lib/default-hero-images"
+import { resolvePlatformCardImages } from "@/lib/platform-card-images"
+import { DEFAULT_PAGE_HEADERS, type PageHeaderConfig } from "@/lib/page-headers"
+import { PageHeaderOverlay, PageHeaderTextBlock } from "@/components/layout/page-hero-header"
 
 type Banner = {
   id: string
@@ -74,13 +77,35 @@ const whyChooseItems = [
   { icon: BadgeCheck, title: "Full Admin Control", text: "Manage modules, banners, users, content, and settings in one place." },
 ]
 
-export function SuperPlatformHome() {
+export function SuperPlatformHome({
+  headerConfig: initialHeaderConfig,
+}: {
+  headerConfig?: PageHeaderConfig
+} = {}) {
   const { locale, dir } = useI18n()
   const { navigate } = useRouter()
   const [modules, setModules] = useState<ModuleWithBanner[]>([])
   const [headerIndex, setHeaderIndex] = useState(0)
   const [brokenHeaderUrls, setBrokenHeaderUrls] = useState<Set<string>>(() => new Set())
+  const [headerConfig, setHeaderConfig] = useState<PageHeaderConfig>(
+    initialHeaderConfig ?? DEFAULT_PAGE_HEADERS.projects
+  )
   const activeLocale: "en" | "ar" = locale === "ar" ? "ar" : "en"
+
+  useEffect(() => {
+    if (initialHeaderConfig) setHeaderConfig(initialHeaderConfig)
+  }, [initialHeaderConfig])
+
+  useEffect(() => {
+    fetch("/api/page-headers?page=projects", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.header) setHeaderConfig(d.header as PageHeaderConfig)
+      })
+      .catch(() => {
+        setHeaderConfig(DEFAULT_PAGE_HEADERS.projects)
+      })
+  }, [])
 
   useEffect(() => {
     document.documentElement.lang = activeLocale
@@ -130,6 +155,7 @@ export function SuperPlatformHome() {
                           titleAr: ar?.name || moduleItem.banner.titleAr,
                           descriptionEn: en?.description || moduleItem.banner.descriptionEn,
                           descriptionAr: ar?.description || moduleItem.banner.descriptionAr,
+                          imageUrls: images,
                           imageUrl1: images[0] || moduleItem.banner.imageUrl1,
                           imageUrl2: images[1] || moduleItem.banner.imageUrl2,
                           imageUrl3: images[2] || moduleItem.banner.imageUrl3,
@@ -157,11 +183,7 @@ export function SuperPlatformHome() {
     () =>
       modules.map((m) => {
         const banner = m.banner
-        const images = banner
-          ? [banner.imageUrl1, banner.imageUrl2, banner.imageUrl3]
-              .map((url) => String(url || "").trim())
-              .filter(Boolean)
-          : []
+        const images = banner ? resolvePlatformCardImages(banner) : []
         return { module: m, banner, images }
       }),
     [modules]
@@ -230,19 +252,17 @@ export function SuperPlatformHome() {
             />
           </AnimatePresence>
         )}
-        <div className="absolute inset-0 bg-black/60" />
+        <PageHeaderOverlay config={headerConfig} />
 
         <div className="relative z-10 mx-auto flex min-h-[62vh] max-w-7xl items-center px-4 py-20">
-          <div className="max-w-4xl space-y-6 text-white">
-            <h1 className={`text-4xl font-bold leading-tight sm:text-6xl ${activeLocale === "ar" ? "font-arabic-display" : ""}`}>
-              {activeLocale === "ar" ? "منصتنا - منظومة CIAR المتكاملة" : "Our Platform - CIAR Integrated Ecosystem"}
-            </h1>
-            <p className="max-w-3xl text-lg text-white/85">
-              {activeLocale === "ar"
-                ? "جميع منصات CIAR في واجهة واحدة حديثة. كل منصة تُدار من لوحة الأدمن مع صور ومحتوى ديناميكي."
-                : "All CIAR platforms in one modern experience. Every platform card is managed dynamically from the admin panel."}
-            </p>
-            <div className="flex flex-wrap gap-2">
+          <div className="max-w-4xl">
+            <PageHeaderTextBlock
+              config={headerConfig}
+              locale={activeLocale}
+              align={headerConfig.layout === "platforms" ? "center" : "start"}
+            />
+
+            <div className="flex flex-wrap gap-2 pt-2">
               {headerImages.map((img, idx) => (
                 <button
                   key={`${img}-${idx}`}
@@ -257,13 +277,15 @@ export function SuperPlatformHome() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-10 text-center">
           <h2 className={`text-2xl font-bold sm:text-3xl ${activeLocale === "ar" ? "font-arabic-display" : ""}`}>
-            {activeLocale === "ar" ? "جميع منصاتنا" : "All Platform Cards"}
+            {activeLocale === "ar"
+              ? "منصاتنا تخدم الملايين حول العالم"
+              : "Our Platforms Serve Millions Worldwide"}
           </h2>
-          <span className="text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             {activeLocale === "ar" ? `${cards.length} منصة` : `${cards.length} modules`}
-          </span>
+          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">

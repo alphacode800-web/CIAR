@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ensureSuperPlatformSeed, getFallbackBanners } from "@/features/super-platform/server"
 import { canAccessSuperAdmin } from "@/features/super-platform/authz"
+import { platformImageSlotsToPayload } from "@/lib/platform-card-images"
+
+function buildBannerImagePayload(body: Record<string, unknown>) {
+  return Array.isArray(body.imageUrls)
+    ? platformImageSlotsToPayload(body.imageUrls as string[])
+    : platformImageSlotsToPayload([
+        String(body.imageUrl1 || ""),
+        String(body.imageUrl2 || ""),
+        String(body.imageUrl3 || ""),
+      ])
+}
 
 export async function GET() {
   try {
@@ -24,6 +35,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json()
   const moduleId = String(body.moduleId || "")
+  const imagePayload = buildBannerImagePayload(body)
 
   if (!moduleId) {
     return NextResponse.json({ error: "moduleId is required" }, { status: 400 })
@@ -39,9 +51,10 @@ export async function POST(request: NextRequest) {
       ctaTextEn: String(body.ctaTextEn || "Explore"),
       ctaTextAr: String(body.ctaTextAr || "استكشف"),
       ctaHref: String(body.ctaHref || "#"),
-      imageUrl1: String(body.imageUrl1 || ""),
-      imageUrl2: String(body.imageUrl2 || ""),
-      imageUrl3: String(body.imageUrl3 || ""),
+      imageUrls: imagePayload.imageUrls,
+      imageUrl1: imagePayload.imageUrl1,
+      imageUrl2: imagePayload.imageUrl2,
+      imageUrl3: imagePayload.imageUrl3,
       isActive: body.isActive !== false,
     },
     create: {
@@ -53,9 +66,10 @@ export async function POST(request: NextRequest) {
       ctaTextEn: String(body.ctaTextEn || "Explore"),
       ctaTextAr: String(body.ctaTextAr || "استكشف"),
       ctaHref: String(body.ctaHref || "#"),
-      imageUrl1: String(body.imageUrl1 || ""),
-      imageUrl2: String(body.imageUrl2 || ""),
-      imageUrl3: String(body.imageUrl3 || ""),
+      imageUrls: imagePayload.imageUrls,
+      imageUrl1: imagePayload.imageUrl1,
+      imageUrl2: imagePayload.imageUrl2,
+      imageUrl3: imagePayload.imageUrl3,
       isActive: body.isActive !== false,
     },
   })

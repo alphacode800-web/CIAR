@@ -5,6 +5,12 @@ import {
   buildHomeBannersConfig,
   HOME_BANNERS_SETTING_KEYS,
 } from "@/lib/home-banners"
+import {
+  homeHeaderLegacySyncFields,
+  resolvePageHeadersFromSettings,
+} from "@/lib/page-headers"
+
+export const dynamic = "force-dynamic"
 
 const mediaTypeSchema = z.enum(["image", "video"])
 
@@ -47,6 +53,16 @@ export async function GET() {
   try {
     const settings = await getSettings()
     const config = buildHomeBannersConfig(settings)
+    const homeHeader = resolvePageHeadersFromSettings(settings).home
+    const synced = homeHeaderLegacySyncFields(homeHeader)
+    config.hero.title = {
+      ar: synced.home_hero_title_ar,
+      en: synced.home_hero_title_en,
+    }
+    config.hero.subtitle = {
+      ar: synced.home_hero_subtitle_ar,
+      en: synced.home_hero_subtitle_en,
+    }
     return NextResponse.json({ config, settings: projectSettings(settings) })
   } catch (error) {
     console.error("GET /api/admin/home-banners error:", error)
@@ -71,16 +87,15 @@ export async function PUT(request: NextRequest) {
       slideSettings[`home_hero_image_${index + 1}`] = String(data.hero.imageSlides[index] ?? "")
     }
 
+    const settings = await getSettings()
+    const store = resolvePageHeadersFromSettings(settings)
+
     await updateSettings({
       home_nav_logo_type: data.nav.logoType,
       home_nav_logo_url: data.nav.logoUrl,
       home_nav_logo_video_url: data.nav.logoVideoUrl,
       home_nav_logo_alt_ar: data.nav.logoAltAr,
       home_nav_logo_alt_en: data.nav.logoAltEn,
-      home_hero_title_ar: data.hero.titleAr,
-      home_hero_title_en: data.hero.titleEn,
-      home_hero_subtitle_ar: data.hero.subtitleAr,
-      home_hero_subtitle_en: data.hero.subtitleEn,
       home_hero_cta_primary_ar: data.hero.ctaPrimaryAr,
       home_hero_cta_primary_en: data.hero.ctaPrimaryEn,
       home_hero_cta_primary_href: data.hero.ctaPrimaryHref,
@@ -90,6 +105,7 @@ export async function PUT(request: NextRequest) {
       home_hero_background_type: data.hero.backgroundType,
       home_hero_video_url: data.hero.videoUrl,
       home_hero_video_poster: data.hero.videoPoster,
+      ...homeHeaderLegacySyncFields(store.home),
       ...(data.newsTickerItems
         ? { home_news_ticker_items: JSON.stringify(data.newsTickerItems) }
         : {}),

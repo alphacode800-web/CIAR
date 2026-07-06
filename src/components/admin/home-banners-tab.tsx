@@ -5,6 +5,7 @@ import { Clapperboard, Loader2, Save, Pencil, Upload, Trash2 } from "lucide-reac
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
@@ -327,34 +328,25 @@ export function HomeBannersTab() {
 
       <section className="space-y-4 rounded-xl border border-border/40 bg-card/30 p-4">
         <h3 className="text-sm font-semibold">بنر Hero</h3>
+        <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+          نصوص العنوان والوصف تُعدَّل من تبويب «هيدر الصفحات → الصفحة الرئيسية». ما يظهر أدناه للعرض فقط.
+        </p>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="space-y-1">
             <Label>العنوان (AR)</Label>
-            <Input
-              value={state.hero.titleAr}
-              onChange={(e) => setState((prev) => ({ ...prev, hero: { ...prev.hero, titleAr: e.target.value } }))}
-            />
+            <Input value={state.hero.titleAr} readOnly className="bg-muted/20" />
           </div>
           <div className="space-y-1">
             <Label>Title (EN)</Label>
-            <Input
-              value={state.hero.titleEn}
-              onChange={(e) => setState((prev) => ({ ...prev, hero: { ...prev.hero, titleEn: e.target.value } }))}
-            />
+            <Input value={state.hero.titleEn} readOnly className="bg-muted/20" dir="ltr" />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 md:col-span-2">
             <Label>الوصف (AR)</Label>
-            <Input
-              value={state.hero.subtitleAr}
-              onChange={(e) => setState((prev) => ({ ...prev, hero: { ...prev.hero, subtitleAr: e.target.value } }))}
-            />
+            <Textarea value={state.hero.subtitleAr} readOnly className="min-h-[80px] bg-muted/20 resize-none" />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 md:col-span-2">
             <Label>Subtitle (EN)</Label>
-            <Input
-              value={state.hero.subtitleEn}
-              onChange={(e) => setState((prev) => ({ ...prev, hero: { ...prev.hero, subtitleEn: e.target.value } }))}
-            />
+            <Textarea value={state.hero.subtitleEn} readOnly className="min-h-[80px] bg-muted/20 resize-none" dir="ltr" />
           </div>
         </div>
 

@@ -15,6 +15,7 @@ import { AdminLoginPage } from "@/components/pages/admin-login-page"
 import { UserAuthPage } from "@/components/pages/user-auth-page"
 import type { HomeBannersConfig } from "@/lib/home-banners"
 import { DEFAULT_NEWS_TICKER_STYLE } from "@/lib/news-ticker"
+import { DEFAULT_PAGE_HEADERS, type PageHeadersStore } from "@/lib/page-headers"
 
 const HomePage = lazy(() => import("@/components/pages/home-page").then(m => ({ default: m.HomePage })))
 const ProjectsPage = lazy(() => import("@/components/pages/projects-page").then(m => ({ default: m.ProjectsPage })))
@@ -83,6 +84,7 @@ export default function Page() {
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [homeBanners, setHomeBanners] = useState<HomeBannersConfig>(DEFAULT_HOME_BANNERS)
+  const [pageHeaders, setPageHeaders] = useState<PageHeadersStore>(DEFAULT_PAGE_HEADERS)
 
   const fetchData = useCallback(async () => {
     try {
@@ -113,6 +115,16 @@ export default function Page() {
         }
       } catch {
         setHomeBanners(DEFAULT_HOME_BANNERS)
+      }
+
+      try {
+        const headersRes = await fetch("/api/page-headers", { cache: "no-store" })
+        const headersData = headersRes.ok ? await headersRes.json() : {}
+        if (headersData?.headers) {
+          setPageHeaders(headersData.headers)
+        }
+      } catch {
+        setPageHeaders(DEFAULT_PAGE_HEADERS)
       }
 
     } catch {
@@ -168,7 +180,11 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <HomePage featuredProjects={homeProjects} homeConfig={homeBanners} />
+                <HomePage
+                  featuredProjects={homeProjects}
+                  homeConfig={homeBanners}
+                  headerConfig={pageHeaders.home}
+                />
               </Suspense>
             </motion.div>
           )}
@@ -182,7 +198,7 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <SuperPlatformHome />
+                <SuperPlatformHome headerConfig={pageHeaders.projects} />
               </Suspense>
             </motion.div>
           )}
@@ -224,7 +240,7 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <AboutPage />
+                <AboutPage headerConfig={pageHeaders.about} />
               </Suspense>
             </motion.div>
           )}
@@ -238,7 +254,7 @@ export default function Page() {
               transition={{ duration: 0.3 }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <ContactPage />
+                <ContactPage headerConfig={pageHeaders.contact} />
               </Suspense>
             </motion.div>
           )}

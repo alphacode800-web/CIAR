@@ -1,10 +1,11 @@
-import { projectSlugToModuleSlug, toPlatformImageSlots } from "@/lib/platform-card-images"
+import { projectSlugToModuleSlug, platformImageSlotsToPayload, resolvePlatformCardImages } from "@/lib/platform-card-images"
 
 type PlatformBannerRow = {
   id: string
   imageUrl1?: string
   imageUrl2?: string
   imageUrl3?: string
+  imageUrls?: unknown
   titleEn?: string
   titleAr?: string
   descriptionEn?: string
@@ -20,7 +21,7 @@ export async function syncPlatformBannerImages(slug: string, imageUrls: string[]
   const moduleSlug = projectSlugToModuleSlug(slug)
   if (!moduleSlug) return
 
-  const slots = toPlatformImageSlots(imageUrls)
+  const payload = platformImageSlotsToPayload(imageUrls)
   const bannersRes = await fetch("/api/super-platform/banners")
   if (!bannersRes.ok) return
 
@@ -40,9 +41,10 @@ export async function syncPlatformBannerImages(slug: string, imageUrls: string[]
       ctaTextEn: banner.ctaTextEn || "Explore",
       ctaTextAr: banner.ctaTextAr || "استكشف",
       ctaHref: banner.ctaHref || "#",
-      imageUrl1: slots[0] || "",
-      imageUrl2: slots[1] || "",
-      imageUrl3: slots[2] || "",
+      imageUrls: payload.imageUrls,
+      imageUrl1: payload.imageUrl1,
+      imageUrl2: payload.imageUrl2,
+      imageUrl3: payload.imageUrl3,
       isActive: banner.isActive !== false,
     }),
   })
@@ -50,17 +52,17 @@ export async function syncPlatformBannerImages(slug: string, imageUrls: string[]
 
 export async function fetchPlatformBannerImageSlots(slug: string): Promise<string[]> {
   const moduleSlug = projectSlugToModuleSlug(slug)
-  if (!moduleSlug) return ["", "", ""]
+  if (!moduleSlug) return []
 
   try {
     const res = await fetch("/api/super-platform/banners")
-    if (!res.ok) return ["", "", ""]
+    if (!res.ok) return []
     const data = await res.json()
     const banners: PlatformBannerRow[] = Array.isArray(data?.banners) ? data.banners : []
     const banner = banners.find((row) => row.module?.slug === moduleSlug)
-    if (!banner) return ["", "", ""]
-    return toPlatformImageSlots([banner.imageUrl1 || "", banner.imageUrl2 || "", banner.imageUrl3 || ""])
+    if (!banner) return []
+    return resolvePlatformCardImages(banner)
   } catch {
-    return ["", "", ""]
+    return []
   }
 }

@@ -24,6 +24,7 @@ import {
   FileDown,
   PanelRightClose,
   PanelRightOpen,
+  Heading,
   type LucideIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -64,8 +65,10 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: "projects", icon: FolderOpen, labelKey: "admin.projects", fallback: "المشاريع والمنصات", group: "content" },
   { id: "media", icon: Image, labelKey: "admin.media", fallback: "مكتبة الوسائط", group: "content" },
   { id: "backgrounds", icon: Wallpaper, labelKey: "admin.backgrounds", fallback: "خلفيات الصفحات", group: "content" },
+  { id: "page-headers", icon: Heading, labelKey: "admin.page_headers", fallback: "هيدر الصفحات", group: "content" },
   { id: "home-banners", icon: Clapperboard, labelKey: "admin.home_banners", fallback: "بنرات الصفحة الرئيسية", group: "content" },
   { id: "image-strip", icon: Film, labelKey: "admin.image_strip", fallback: "شريط الصور", group: "content" },
+  { id: "home-about-brief", icon: Building2, labelKey: "admin.home_about_brief", fallback: "نبذة عن CIAR", group: "content" },
   { id: "about-content", icon: Building2, labelKey: "admin.about_content", fallback: "محتوى من نحن", group: "content" },
   { id: "contacts", icon: Mail, labelKey: "admin.contacts", fallback: "رسائل التواصل", group: "content" },
   { id: "users", icon: Users, labelKey: "admin.users", fallback: "المستخدمون والصلاحيات", group: "content" },

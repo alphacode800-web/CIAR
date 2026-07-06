@@ -26,7 +26,7 @@ const imagePathSchema = z
 const createProjectSchema = z.object({
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
   imageUrl: imagePathSchema.or(z.literal('')).optional(),
-  imageUrls: z.array(imagePathSchema).max(5).optional(),
+  imageUrls: z.array(imagePathSchema).max(20).optional(),
   category: z.string().max(100).optional(),
   externalUrl: z.string().url().optional().or(z.literal('')),
   tags: z.string().optional(),
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
     const publishedParam = searchParams.get('published')
     const page = parseInt(searchParams.get('page') || '1', 10)
     const limit = parseInt(searchParams.get('limit') || '12', 10)
+    const all = searchParams.get('all') === 'true'
 
     const result = await getProjects({
       locale,
@@ -66,6 +67,7 @@ export async function GET(request: NextRequest) {
       published: publishedParam ? publishedParam === 'true' : undefined,
       page,
       limit,
+      all,
     })
 
     return NextResponse.json(result)

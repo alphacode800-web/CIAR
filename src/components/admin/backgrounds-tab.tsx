@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react"
-import { Image as ImageIcon, Save, Loader2, Search, Pencil, Upload, Layers, Trash2 } from "lucide-react"
+import { Image as ImageIcon, Save, Loader2, Search, Pencil, Upload, Layers, Trash2, Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -231,11 +231,29 @@ function BannerCard({
 
         {extra}
 
-        <div className="mt-auto flex gap-2 pt-1">
+        <div className="mt-auto flex flex-wrap gap-2 pt-1">
           {onEdit ? (
-            <Button type="button" variant="outline" size="sm" className="h-8 gap-1 rounded-lg px-2.5" onClick={onEdit}>
-              <Pencil className="h-3.5 w-3.5" />
-              تعديل
+            <Button
+              type="button"
+              variant={isDefaultPreview ? "default" : "outline"}
+              size="sm"
+              className={cn(
+                "h-8 gap-1 rounded-lg px-2.5",
+                isDefaultPreview && "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
+              )}
+              onClick={onEdit}
+            >
+              {isDefaultPreview ? (
+                <>
+                  <Plus className="h-3.5 w-3.5" />
+                  إضافة صورة
+                </>
+              ) : (
+                <>
+                  <Pencil className="h-3.5 w-3.5" />
+                  تعديل
+                </>
+              )}
             </Button>
           ) : null}
           {onRemove && value.trim() ? (
@@ -495,6 +513,46 @@ export function BackgroundsTab() {
     setSelectedImageSource("link")
   }
 
+  const openNextEmptyHeroSlot = () => {
+    const emptyRow = heroRows.find((row) => !String(settings[row.key] || "").trim())
+    if (!emptyRow) {
+      toast.info("جميع بنرات الهيدر ممتلئة — يمكنك تعديل أي بنر موجود")
+      return
+    }
+    openImageDialog({
+      key: emptyRow.label,
+      value: "",
+      sourceType: "setting",
+      settingKey: emptyRow.key,
+    })
+  }
+
+  const uploadIntoHeroKey = async (event: ChangeEvent<HTMLInputElement>, key: string, label: string) => {
+    const file = event.target.files?.[0]
+    event.currentTarget.value = ""
+    if (!file) return
+
+    setSavingKey(key)
+    try {
+      const uploadedUrl = await uploadMediaFile(file)
+      if (!uploadedUrl) throw new Error("empty upload url")
+      setSettings((prev) => ({ ...prev, [key]: uploadedUrl }))
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [key]: uploadedUrl }),
+      })
+      if (!res.ok) throw new Error("save failed")
+      setInitialSettings((prev) => ({ ...prev, [key]: uploadedUrl }))
+      setBrokenPreviews((prev) => ({ ...prev, [key]: false }))
+      toast.success(`تمت إضافة صورة إلى ${label}`)
+    } catch {
+      toast.error("فشل رفع الصورة")
+    } finally {
+      setSavingKey(null)
+    }
+  }
+
   const uploadMediaFile = async (file: File) => {
     const formData = new FormData()
     formData.append("file", file)
@@ -690,16 +748,26 @@ export function BackgroundsTab() {
 
       {/* ── Homepage hero banners ── */}
       <section className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">بنرات هيدر الصفحة الرئيسية</h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {filteredHeroRows.length} بنر — المعاينة تعرض الصورة الافتراضية إن لم يُحفظ رابط مخصص.
+              {filteredHeroRows.length} بنر — اضغط «إضافة صورة» على البنر الفارغ أو استخدم الزر في الأعلى.
             </p>
           </div>
-          <span className="shrink-0 rounded-xl bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-600 dark:text-orange-300">
-            20 بنر
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              onClick={openNextEmptyHeroSlot}
+              className="gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
+            >
+              <Plus className="h-4 w-4" />
+              إضافة صورة للهيدر
+            </Button>
+            <span className="shrink-0 rounded-xl bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-600 dark:text-orange-300">
+              20 بنر
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -732,6 +800,42 @@ export function BackgroundsTab() {
               }
               onBroken={() => setBrokenPreviews((prev) => ({ ...prev, [row.key]: true }))}
               onRemove={savedValue.trim() ? () => void removeKey(row.key) : undefined}
+              extra={
+                <div className="space-y-2">
+                  <label className="inline-flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-orange-300/60 bg-orange-50/50 text-[11px] font-medium text-orange-700 hover:bg-orange-50 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-200">
+                    <input
+                      type="file"
+                      accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v"
+                      className="hidden"
+                      onChange={(e) => void uploadIntoHeroKey(e, row.key, row.label)}
+                    />
+                    {savingKey === row.key ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="h-3.5 w-3.5" />
+                    )}
+                    {isDefaultPreview ? "رفع صورة من الجهاز" : "استبدال برفع ملف"}
+                  </label>
+                  {configuredImages.length > 0 ? (
+                    <select
+                      className="h-8 w-full rounded-md border border-slate-200 bg-white px-2 text-[11px] dark:border-white/10 dark:bg-slate-900"
+                      defaultValue=""
+                      onChange={(e) => {
+                        if (!e.target.value) return
+                        updateLocal(row.key, e.target.value)
+                        e.currentTarget.value = ""
+                      }}
+                    >
+                      <option value="">اختر صورة جاهزة...</option>
+                      {configuredImages.map((img) => (
+                        <option key={`${row.key}-${img.key}`} value={img.value}>
+                          {img.key}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+                </div>
+              }
             />
             )
           })}

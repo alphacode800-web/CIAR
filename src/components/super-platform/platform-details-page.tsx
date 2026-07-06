@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { ExternalLink, Image as ImageIcon, Layers3, Sparkles } from "lucide-react"
+import { resolvePlatformCardImages } from "@/lib/platform-card-images"
 
 type PlatformModule = {
   id: string
@@ -29,6 +30,7 @@ type PlatformModule = {
     imageUrl1: string
     imageUrl2: string
     imageUrl3: string
+    imageUrls?: string[]
     isActive: boolean
   } | null
 }
@@ -56,7 +58,7 @@ export function PlatformDetailsPage({ slug }: { slug: string }) {
 
   const images = useMemo(() => {
     if (!module?.banner) return []
-    return [module.banner.imageUrl1, module.banner.imageUrl2, module.banner.imageUrl3].filter(Boolean)
+    return resolvePlatformCardImages(module.banner)
   }, [module])
 
   useEffect(() => {

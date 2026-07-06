@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useMemo, useCallback, useRef } from "react"
+import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { motion, AnimatePresence, useInView } from "framer-motion"
 import {
   Search,
   ExternalLink,
   Eye,
   Star,
-  Sparkles,
   ArrowRight,
   FolderOpen,
   Layers,
@@ -28,6 +27,8 @@ import { Input } from "@/components/ui/input"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
+import { PageHeroHeader } from "@/components/layout/page-hero-header"
+import { DEFAULT_PAGE_HEADERS, type PageHeaderConfig } from "@/lib/page-headers"
 
 export interface Project {
   id: string
@@ -78,12 +79,22 @@ const catIcons: Record<string, React.ComponentType<{ className?: string }>> = {
 /* ══════════════════════════════════════════════════════════════ */
 
 export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPageProps) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const { navigate } = useRouter()
   const [search, setSearch] = useState("")
   const [activeCategory, setActiveCategory] = useState("")
+  const [headerConfig, setHeaderConfig] = useState<PageHeaderConfig>(DEFAULT_PAGE_HEADERS.projects)
   const headerRef = useRef<HTMLDivElement>(null)
   const headerInView = useInView(headerRef, { once: true, margin: "-100px" })
+
+  useEffect(() => {
+    fetch("/api/page-headers?page=projects")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.header) setHeaderConfig(d.header as PageHeaderConfig)
+      })
+      .catch(() => setHeaderConfig(DEFAULT_PAGE_HEADERS.projects))
+  }, [])
 
   const filtered = useMemo(() => {
     let result = projects
@@ -133,67 +144,18 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
 
   return (
     <div className="relative">
-      {/* ══════════════════════════════════════════════════════════
-          HERO HEADER — Large elegant header
-      ══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 pointer-events-none">
-          <img src="/images/headers/projects-header.png" alt="" className="w-full h-full object-cover opacity-40 scale-105" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
-        </div>
-        <div className="absolute inset-0 mesh-gradient opacity-30 pointer-events-none" />
-
-        {/* Ambient light */}
-        <div className="absolute top-0 start-1/4 w-[500px] h-[300px] rounded-full bg-[oklch(0.78_0.14_82/5%)] blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 end-1/4 w-[400px] h-[250px] rounded-full bg-[oklch(0.20_0.04_265/10%)] blur-[100px] pointer-events-none" />
-
-        <div ref={headerRef} className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 pb-16 sm:pb-20">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={headerInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-            className="flex justify-center mb-6"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-subtle border border-border/20">
-              <Sparkles className="h-3.5 w-3.5 text-[oklch(0.78_0.14_82)]" />
-              <span className="text-xs font-medium text-muted-foreground tracking-wide">{t("projects.featured")}</span>
-            </div>
-          </motion.div>
-
-          {/* Title */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={headerInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-center font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
-          >
-            <span className="gradient-text">{t("projects.title")}</span>
-          </motion.h1>
-
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={headerInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="mt-5 text-center text-base sm:text-lg text-muted-foreground/70 max-w-2xl mx-auto leading-relaxed"
-          >
-            {t("projects.subtitle")}
-          </motion.p>
-
-          {/* Stats row */}
+      <PageHeroHeader config={headerConfig} locale={locale === "ar" ? "ar" : "en"}>
+        <div ref={headerRef} className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={headerInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.35 }}
-            className="mt-10 sm:mt-12 max-w-3xl mx-auto"
           >
             <div className="glass-strong rounded-2xl p-5 sm:p-6">
               <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/20">
                 {statCards.map((s) => (
                   <div key={s.label} className="flex flex-col items-center gap-1 px-3 first:ps-0 last:pe-0">
-                    <s.icon className="h-4 w-4 text-[oklch(0.78_0.14_82/50)] mb-1" />
+                    <s.icon className="h-4 w-4 text-[oklch(0.78_0.14_82/50%)] mb-1" />
                     <span className="text-xl sm:text-2xl font-heading font-bold tracking-tight text-foreground">
                       {s.value}
                     </span>
@@ -206,10 +168,9 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
             </div>
           </motion.div>
         </div>
+      </PageHeroHeader>
 
-        {/* Bottom glow line */}
-        <div className="glow-line-gold" />
-      </section>
+      <div className="glow-line-gold" />
 
       {/* ══════════════════════════════════════════════════════════
           FILTERS & SEARCH

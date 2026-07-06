@@ -26,9 +26,9 @@ import {
 import { useI18n, ALL_LOCALES, LOCALE_NAMES } from "@/lib/i18n-context"
 import { PlatformCardImagesEditor } from "./platform-card-images-editor"
 import {
-  mergePlatformImageSlots,
+  normalizePlatformImageUrls,
   platformImageSlotsToPayload,
-  toPlatformImageSlots,
+  resolveProjectEditImages,
 } from "@/lib/platform-card-images"
 import { fetchPlatformBannerImageSlots } from "@/lib/sync-platform-banner-images"
 import type { Project } from "./projects-tab"
@@ -77,7 +77,8 @@ export function ProjectDialog({
         ? {
             slug: project.slug,
             imageUrl: project.imageUrl,
-            imageUrls: toPlatformImageSlots(
+            imageUrls: resolveProjectEditImages(
+              project.slug,
               Array.isArray(project.imageUrls) && project.imageUrls.length > 0
                 ? project.imageUrls
                 : project.imageUrl
@@ -93,7 +94,7 @@ export function ProjectDialog({
         : {
             slug: "",
             imageUrl: "",
-            imageUrls: toPlatformImageSlots([]),
+            imageUrls: [] as string[],
             category: "",
             externalUrl: "",
             tags: "[]",
@@ -106,6 +107,10 @@ export function ProjectDialog({
   const [form, setForm] = useState(defaultForm)
 
   useEffect(() => {
+    setForm(defaultForm)
+  }, [defaultForm])
+
+  useEffect(() => {
     if (!project || !open) return
 
     const projectUrls =
@@ -116,7 +121,7 @@ export function ProjectDialog({
           : []
 
     void fetchPlatformBannerImageSlots(project.slug).then((bannerUrls) => {
-      const merged = mergePlatformImageSlots(projectUrls, bannerUrls)
+      const merged = resolveProjectEditImages(project.slug, projectUrls, bannerUrls)
       setForm((prev) => ({
         ...prev,
         imageUrls: merged,
@@ -259,7 +264,7 @@ export function ProjectDialog({
               <Label>{t("admin.project_images") || "صور كارت المنصة"}</Label>
               <p className="mt-1 text-[11px] text-muted-foreground">
                 {t("admin.project_images_hint") ||
-                  "ثلاث صور تظهر بالتناوب في كارت المنصة — يمكنك تعديل أي صورة أو إزالتها."}
+                  "أضف صوراً متعددة لكارت المنصة — يمكنك إضافتها وإعادة ترتيبها بالأسهم."}
               </p>
             </div>
             <PlatformCardImagesEditor
@@ -268,10 +273,9 @@ export function ProjectDialog({
                 setForm((prev) => ({
                   ...prev,
                   imageUrls,
-                  imageUrl: imageUrls.find((item) => item.trim()) || "",
+                  imageUrl: normalizePlatformImageUrls(imageUrls)[0] || "",
                 }))
               }
-              labels={["الصورة 1", "الصورة 2", "الصورة 3"]}
             />
           </div>
 

@@ -33,6 +33,14 @@ import {
 } from "@/components/ui/select"
 import { useI18n, ALL_LOCALES, LOCALE_NAMES } from "@/lib/i18n-context"
 import { toast } from "sonner"
+import { TypographyStyleFields, ColorField } from "@/components/admin/typography-style-fields"
+import {
+  DEFAULT_SITE_GENERAL_STYLE,
+  SITE_GENERAL_STYLE_KEY,
+  parseSiteGeneralStyle,
+  type SiteGeneralStyle,
+} from "@/lib/site-general-style"
+import { textStyleToCss, titleStyleToCss } from "@/lib/text-style"
 
 /* ─── Animation variants ────────────────────────────────────────────────── */
 
@@ -125,6 +133,7 @@ function SaveSectionButton({
 export function SiteSettingsTab() {
   const { t } = useI18n()
   const [settings, setSettings] = useState<Record<string, string>>({})
+  const [generalStyle, setGeneralStyle] = useState<SiteGeneralStyle>(DEFAULT_SITE_GENERAL_STYLE)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
 
@@ -133,6 +142,7 @@ export function SiteSettingsTab() {
       const res = await fetch("/api/settings")
       const data = await res.json()
       setSettings(data)
+      setGeneralStyle(parseSiteGeneralStyle(data[SITE_GENERAL_STYLE_KEY]))
     } catch {
       // silent
     } finally {
@@ -155,12 +165,16 @@ export function SiteSettingsTab() {
     }))
   }
 
-  const saveSection = async (keys: string[], sectionName: string) => {
-    setSaving(sectionName)
+  const saveSection = async (
+    keys: string[],
+    sectionId: string,
+    extra?: Record<string, string>
+  ) => {
+    setSaving(sectionId)
     try {
       const sectionData: Record<string, string> = {}
       keys.forEach((k) => {
-        sectionData[k] = settings[k] || ""
+        sectionData[k] = extra?.[k] ?? settings[k] ?? ""
       })
       const res = await fetch("/api/settings", {
         method: "PUT",
@@ -168,12 +182,12 @@ export function SiteSettingsTab() {
         body: JSON.stringify(sectionData),
       })
       if (res.ok) {
-        toast.success(`${sectionName} saved successfully`)
+        toast.success(`${sectionId} saved successfully`)
       } else {
-        toast.error(`Failed to save ${sectionName}`)
+        toast.error(`Failed to save ${sectionId}`)
       }
     } catch {
-      toast.error(`Failed to save ${sectionName}`)
+      toast.error(`Failed to save ${sectionId}`)
     } finally {
       setSaving(null)
     }
@@ -246,7 +260,8 @@ export function SiteSettingsTab() {
 
         {/* ── General Settings ── */}
         <TabsContent value="general">
-          <GlassCard>
+          <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+            <GlassCard>
             <SectionHeader
               icon={Building2}
               title={t("admin.general_settings") || "General Settings"}
@@ -280,6 +295,50 @@ export function SiteSettingsTab() {
                   placeholder="A brief description of your company..."
                   rows={3}
                   className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)] resize-none"
+                />
+              </motion.div>
+
+              <motion.div {...fadeInUp} className="space-y-4 rounded-xl border border-[oklch(0.76_0.19_48/10%)] p-4">
+                <Label className="text-sm font-semibold">الخطوط والألوان — اسم الموقع ووصفه</Label>
+                <TypographyStyleFields
+                  label="نمط اسم الموقع"
+                  value={generalStyle.siteName}
+                  onChange={(siteName) => setGeneralStyle((prev) => ({ ...prev, siteName: { ...prev.siteName, ...siteName } }))}
+                />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={generalStyle.siteName.useGradient}
+                      onCheckedChange={(useGradient) =>
+                        setGeneralStyle((prev) => ({
+                          ...prev,
+                          siteName: { ...prev.siteName, useGradient },
+                        }))
+                      }
+                    />
+                    <Label>تدرج لوني لاسم الموقع</Label>
+                  </div>
+                  <ColorField
+                    label="لون التدرج"
+                    value={generalStyle.siteName.accentColor}
+                    onChange={(accentColor) =>
+                      setGeneralStyle((prev) => ({
+                        ...prev,
+                        siteName: { ...prev.siteName, accentColor },
+                      }))
+                    }
+                  />
+                </div>
+                <TypographyStyleFields
+                  label="نمط وصف الموقع"
+                  value={generalStyle.siteDescription}
+                  onChange={(siteDescription) =>
+                    setGeneralStyle((prev) => ({
+                      ...prev,
+                      siteDescription: { ...prev.siteDescription, ...siteDescription },
+                    }))
+                  }
+                  showLineHeight
                 />
               </motion.div>
 
@@ -361,12 +420,34 @@ export function SiteSettingsTab() {
                     "company_email",
                     "company_phone",
                     "company_address",
+                    SITE_GENERAL_STYLE_KEY,
                   ],
-                  "General settings"
+                  "general",
+                  { [SITE_GENERAL_STYLE_KEY]: JSON.stringify(generalStyle) }
                 )
               }
             />
           </GlassCard>
+
+          <div className="space-y-3 xl:sticky xl:top-24 xl:self-start">
+            <Label className="text-sm font-semibold">معاينة (الفوتر)</Label>
+            <div className="rounded-2xl border border-border/40 bg-[oklch(0.08_0.025_265)] p-5">
+              <div style={titleStyleToCss(generalStyle.siteName)}>
+                {settings.site_name || "CIAR"}
+              </div>
+              <p
+                className="mt-3 max-w-xs"
+                style={{
+                  ...textStyleToCss(generalStyle.siteDescription),
+                  lineHeight: generalStyle.siteDescription.lineHeight,
+                }}
+              >
+                {settings.site_description ||
+                  "منصة CIAR المتكاملة تجمع التجارة والخدمات والفرص في تجربة رقمية حديثة."}
+              </p>
+            </div>
+          </div>
+          </div>
         </TabsContent>
 
         {/* ── Theme Settings ── */}
@@ -452,10 +533,7 @@ export function SiteSettingsTab() {
             <SaveSectionButton
               loading={saving === "theme"}
               onClick={() =>
-                saveSection(
-                  ["primary_color", "dark_mode", "enable_rtl"],
-                  "Theme settings"
-                )
+                saveSection(["primary_color", "dark_mode", "enable_rtl"], "theme")
               }
             />
           </GlassCard>
@@ -591,7 +669,7 @@ export function SiteSettingsTab() {
                     "announcement_link",
                     "announcement_color",
                   ],
-                  "Announcement settings"
+                  "announcement"
                 )
               }
             />
@@ -667,7 +745,7 @@ export function SiteSettingsTab() {
                     "footer_social_links",
                     "footer_newsletter",
                   ],
-                  "Footer settings"
+                  "footer"
                 )
               }
             />

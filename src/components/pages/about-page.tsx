@@ -3,12 +3,16 @@
 import { useEffect, useRef, useState } from "react"
 import { motion, useInView } from "framer-motion"
 import { Target, Lightbulb, Users, Rocket, Shield, Globe } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { useI18n } from "@/lib/i18n-context"
 import { cn } from "@/lib/utils"
+import { PageHeroHeader } from "@/components/layout/page-hero-header"
+import { DEFAULT_PAGE_HEADERS, type PageHeaderConfig } from "@/lib/page-headers"
 import {
   DEFAULT_ABOUT_COMPANY_INTRO,
   resolveAboutCompanyIntro,
+  resolveAboutSectionTitle,
+  aboutTitleStyleToCss,
+  aboutTextStyleToCss,
   type AboutCompanyIntro,
 } from "@/lib/about-content"
 
@@ -112,16 +116,38 @@ function SpotlightCard({
 }
 
 // ── About page component ────────────────────────────────────────────────────
-export function AboutPage() {
+export function AboutPage({ headerConfig: initialHeaderConfig }: { headerConfig?: PageHeaderConfig } = {}) {
   const { t, dir, locale } = useI18n()
   const [companyIntro, setCompanyIntro] = useState<AboutCompanyIntro>(DEFAULT_ABOUT_COMPANY_INTRO)
+  const [headerConfig, setHeaderConfig] = useState<PageHeaderConfig>(
+    initialHeaderConfig ?? DEFAULT_PAGE_HEADERS.about
+  )
+
+  useEffect(() => {
+    if (initialHeaderConfig) setHeaderConfig(initialHeaderConfig)
+  }, [initialHeaderConfig])
+
+  useEffect(() => {
+    fetch("/api/page-headers?page=about", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.header) setHeaderConfig(d.header as PageHeaderConfig)
+      })
+      .catch(() => {
+        setHeaderConfig(DEFAULT_PAGE_HEADERS.about)
+      })
+  }, [])
 
   useEffect(() => {
     fetch("/api/about/content")
       .then((r) => r.json())
       .then((d) => {
         if (d?.intro) {
-          setCompanyIntro(d.intro as AboutCompanyIntro)
+          setCompanyIntro({
+            ...DEFAULT_ABOUT_COMPANY_INTRO,
+            ...d.intro,
+            style: { ...DEFAULT_ABOUT_COMPANY_INTRO.style, ...(d.intro.style || {}) },
+          })
         }
       })
       .catch(() => {
@@ -134,52 +160,10 @@ export function AboutPage() {
 
   return (
     <div dir={dir} className="relative overflow-hidden">
-      {/* ── Hero Header ───────────────────────────────────────────────────── */}
-      <section className="relative py-24 sm:py-32 overflow-hidden">
-        {/* Background image */}
-        <div className="absolute inset-0 pointer-events-none">
-          <img src="/images/headers/about-header.png" alt="" className="w-full h-full object-cover opacity-40 scale-105" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
-        </div>
-        {/* Gradient mesh background */}
-        <div className="absolute inset-0 mesh-gradient" />
-        {/* Dot pattern overlay */}
-        <div className="absolute inset-0 dot-pattern" />
-        {/* Noise overlay wrapper */}
-        <div className="noise-overlay absolute inset-0" />
-
-        {/* Floating gradient orbs */}
-        <div
-          className={cn(
-            "absolute top-10 -end-32 h-[400px] w-[400px] rounded-full blur-3xl animate-float",
-            "bg-gradient-to-br from-[oklch(0.78_0.14_82/15%)] to-[oklch(0.72_0.12_75/10%)]"
-          )}
-        />
-        <div
-          className={cn(
-            "absolute bottom-10 -start-32 h-[350px] w-[350px] rounded-full blur-3xl animate-float-delayed",
-            "bg-gradient-to-br from-[oklch(0.55_0.15_280)]/10 to-[oklch(0.65_0.2_330)]/5"
-          )}
-        />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection className="text-center">
-            <Badge
-              variant="secondary"
-              className="px-4 py-1.5 text-sm mb-6 glass-subtle border border-border/50"
-            >
-              {t("about.badge")}
-            </Badge>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-              {t("about.title_1")}{" "}
-              <span className="gradient-text">{t("about.title_2")}</span>
-            </h1>
-            <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              {t("about.subtitle")}
-            </p>
-          </AnimatedSection>
-        </div>
-      </section>
+      <PageHeroHeader
+        config={headerConfig}
+        locale={locale === "ar" ? "ar" : "en"}
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-24">
         {/* ── Mission & Vision ─────────────────────────────────────────────── */}
@@ -218,10 +202,16 @@ export function AboutPage() {
 
         {/* ── Values heading ───────────────────────────────────────────────── */}
         <AnimatedSection className="text-center mb-12" delay={0.05}>
-          <h2 className="text-2xl sm:text-3xl font-bold">
-            {t("about.values_title")}
+          <h2 style={aboutTitleStyleToCss(companyIntro.style.title)}>
+            {resolveAboutSectionTitle(companyIntro, locale) || t("about.values_title")}
           </h2>
-          <p className="mx-auto mt-3 max-w-3xl text-base leading-relaxed text-muted-foreground">
+          <p
+            className="mx-auto mt-3 max-w-3xl"
+            style={{
+              ...aboutTextStyleToCss(companyIntro.style.body),
+              lineHeight: companyIntro.style.body.lineHeight,
+            }}
+          >
             {valuesIntro}
           </p>
         </AnimatedSection>

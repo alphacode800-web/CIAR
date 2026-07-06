@@ -25,6 +25,11 @@ import { NewsletterCTA } from "@/components/home/NewsletterCTA"
 import { PaymentMethods } from "@/components/home/PaymentMethods"
 import { ImageStripBar } from "@/components/home/ImageStripBar"
 import { DEFAULT_IMAGE_STRIP_CONFIG, type ImageStripConfig } from "@/lib/image-strip"
+import {
+  DEFAULT_PAGE_HEADERS,
+  type PageHeaderConfig,
+} from "@/lib/page-headers"
+import { PageHeaderOverlay, PageHeaderTextBlock } from "@/components/layout/page-hero-header"
 
 interface FeaturedProject {
   id: string
@@ -41,6 +46,7 @@ interface FeaturedProject {
 interface HomePageProps {
   featuredProjects?: FeaturedProject[]
   homeConfig?: HomeBannersConfig
+  headerConfig?: PageHeaderConfig
 }
 
 const fadeUp = (delay = 0) => ({
@@ -88,7 +94,11 @@ const FALLBACK_BANNERS: PlatformBanner[] = [
   { id: "investment", titleEn: "CIAR Investment", titleAr: "CiAr أسهم المنصة والمكافآت", descriptionEn: "Member shares and rewards in CIAR platform.", descriptionAr: "أسهم منصتنا الخاصة بالأعضاء والمكافآت.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(13, 14, 17) },
 ]
 
-export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
+export function HomePage({
+  featuredProjects = [],
+  homeConfig,
+  headerConfig: initialHeaderConfig,
+}: HomePageProps) {
   const { t, locale } = useI18n()
   const { navigate } = useRouter()
   const activeLocale = locale === "ar" ? "ar" : "en"
@@ -99,12 +109,13 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
   const [imageStripConfig, setImageStripConfig] = useState<ImageStripConfig>(DEFAULT_IMAGE_STRIP_CONFIG)
   const [imageStripImages, setImageStripImages] = useState<string[]>([...DEFAULT_HERO_IMAGE_URLS])
   const [brokenHeroUrls, setBrokenHeroUrls] = useState<Set<string>>(() => new Set())
+  const [headerConfig, setHeaderConfig] = useState<PageHeaderConfig>(
+    initialHeaderConfig ?? DEFAULT_PAGE_HEADERS.home
+  )
 
   const heroBackgroundType = homeConfig?.hero?.backgroundType === "video" ? "video" : "image"
   const heroVideoUrl = homeConfig?.hero?.backgroundVideoUrl || ""
   const heroVideoPoster = homeConfig?.hero?.backgroundVideoPoster || ""
-  const heroTitle = locale === "ar" ? homeConfig?.hero?.title?.ar : homeConfig?.hero?.title?.en
-  const heroSubtitle = locale === "ar" ? homeConfig?.hero?.subtitle?.ar : homeConfig?.hero?.subtitle?.en
 
   const platformHeroImages = useMemo(
     () => collectPlatformBannerImages(platformBanners),
@@ -138,16 +149,9 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
 
   const headerSlides = useMemo(() => activeHeroImages.slice(0, 20), [activeHeroImages])
 
-  const displayTitle =
-    heroTitle ||
-    (activeLocale === "ar" ? "منصتنا - منظومة رقمية متكاملة" : "Our Platform - Integrated Digital Ecosystem")
-
-  const displaySubtitle =
-    heroSubtitle ||
-    t("hero.subtitle") ||
-    (activeLocale === "ar"
-      ? "جميع المنصات في واجهة واحدة حديثة. كل منصة تُدار من لوحة الأدمن مع صور ومحتوى ديناميكي."
-      : "All platforms in one modern experience. Every card is managed dynamically from the admin panel.")
+  useEffect(() => {
+    if (initialHeaderConfig) setHeaderConfig(initialHeaderConfig)
+  }, [initialHeaderConfig])
 
   useEffect(() => {
     if (heroBackgroundType === "video" && heroVideoUrl) return
@@ -168,6 +172,17 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
       img.src = src
     })
   }, [headerSlides])
+
+  useEffect(() => {
+    fetch("/api/page-headers?page=home", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.header) setHeaderConfig(d.header)
+      })
+      .catch(() => {
+        setHeaderConfig(DEFAULT_PAGE_HEADERS.home)
+      })
+  }, [])
 
   useEffect(() => {
     fetch("/api/settings")
@@ -280,21 +295,11 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
             </AnimatePresence>
           )
         )}
-        <div className="absolute inset-0 bg-black/60" />
+        <PageHeaderOverlay config={headerConfig} />
 
         <div className="relative z-10 mx-auto flex min-h-[62vh] max-w-7xl items-center px-4 pb-20 sm:px-6 lg:px-8 pt-[calc(var(--site-header-offset)+2.5rem)]">
-          <div className="max-w-4xl space-y-6 text-white">
-            <h1
-              className={cn(
-                "text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)]",
-                activeLocale === "ar" && "font-arabic-display"
-              )}
-            >
-              {displayTitle}
-            </h1>
-            <p className="max-w-3xl text-lg text-white/90 leading-relaxed drop-shadow-[0_1px_10px_rgba(0,0,0,0.4)]">
-              {displaySubtitle}
-            </p>
+          <div className="max-w-4xl">
+            <PageHeaderTextBlock config={headerConfig} locale={activeLocale} align="start" />
 
             {headerSlides.length > 1 && heroBackgroundType !== "video" && (
               <div className="flex flex-wrap gap-2 pt-2">
@@ -331,7 +336,7 @@ export function HomePage({ featuredProjects = [], homeConfig }: HomePageProps) {
               {locale === "ar" ? "منصات CIAR" : "CIAR Platforms"}
             </span>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-              {locale === "ar" ? "جميع منصاتنا" : "All Our Platforms"}
+              {locale === "ar" ? "جميع منصاتنا في خدمتكم" : "All Our Platforms at Your Service"}
             </h2>
           </motion.div>
 

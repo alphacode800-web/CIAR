@@ -66,14 +66,17 @@ export function mergeHeroSlideUrls(
   return pool.length > 0 ? pool : fallback.length > 0 ? [...fallback] : [...DEFAULT_HERO_IMAGE_URLS]
 }
 
+import { resolvePlatformCardImages } from "@/lib/platform-card-images"
+
 export function collectPlatformBannerImages(
-  banners: Array<{ imageUrl1?: string; imageUrl2?: string; imageUrl3?: string }>
+  banners: Array<{
+    imageUrls?: unknown
+    imageUrl1?: string
+    imageUrl2?: string
+    imageUrl3?: string
+  }>
 ): string[] {
-  return banners.flatMap((banner) =>
-    [banner.imageUrl1, banner.imageUrl2, banner.imageUrl3]
-      .map((url) => String(url ?? "").trim())
-      .filter(Boolean)
-  )
+  return banners.flatMap((banner) => resolvePlatformCardImages(banner))
 }
 
 export function getHeroImageIndexFromKey(key: string): number {
