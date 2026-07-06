@@ -10,6 +10,8 @@ export type ImageStripConfig = {
   imageHeight: number
   borderRadius: number
   extraImages: string[]
+  hiddenImages: string[]
+  imageOverrides: Record<string, string>
 }
 
 export const DEFAULT_IMAGE_STRIP_CONFIG: ImageStripConfig = {
@@ -19,6 +21,8 @@ export const DEFAULT_IMAGE_STRIP_CONFIG: ImageStripConfig = {
   imageHeight: 144,
   borderRadius: 14,
   extraImages: [],
+  hiddenImages: [],
+  imageOverrides: {},
 }
 
 export const imageStripConfigSchema = z.object({
@@ -28,6 +32,8 @@ export const imageStripConfigSchema = z.object({
   imageHeight: z.number().min(80).max(220),
   borderRadius: z.number().min(0).max(32),
   extraImages: z.array(z.string().trim().max(500)).max(50).optional(),
+  hiddenImages: z.array(z.string().trim().max(500)).max(300).optional(),
+  imageOverrides: z.record(z.string(), z.string().trim().max(500)).optional(),
 })
 
 function extractLegacyGroupImages(parsed: Record<string, unknown>): string[] {
@@ -55,7 +61,16 @@ export function parseImageStripConfig(raw: string | null | undefined): ImageStri
     ])
 
     if (!result.success) {
-      return { ...DEFAULT_IMAGE_STRIP_CONFIG, extraImages }
+      return {
+        ...DEFAULT_IMAGE_STRIP_CONFIG,
+        extraImages,
+        hiddenImages: dedupeImageUrls(
+          Array.isArray(parsed.hiddenImages)
+            ? parsed.hiddenImages.map((url) => String(url ?? "").trim()).filter(Boolean)
+            : []
+        ),
+        imageOverrides: normalizeImageOverrides(parsed.imageOverrides),
+      }
     }
 
     return {
@@ -68,8 +83,40 @@ export function parseImageStripConfig(raw: string | null | undefined): ImageStri
         ...(result.data.extraImages ?? []),
         ...extractLegacyGroupImages(parsed),
       ]),
+      hiddenImages: dedupeImageUrls(result.data.hiddenImages ?? []),
+      imageOverrides: normalizeImageOverrides(result.data.imageOverrides ?? {}),
     }
   } catch {
     return DEFAULT_IMAGE_STRIP_CONFIG
   }
+}
+
+function normalizeImageOverrides(raw: unknown): Record<string, string> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {}
+  const out: Record<string, string> = {}
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    const from = String(key ?? "").trim()
+    const to = String(value ?? "").trim()
+    if (from && to) out[from] = to
+  }
+  return out
+}
+
+export function resolveImageStripImages(
+  rawImages: string[],
+  config: Pick<ImageStripConfig, "hiddenImages" | "imageOverrides">
+): string[] {
+  const hidden = new Set(config.hiddenImages.map((url) => url.trim()).filter(Boolean))
+
+  return dedupeImageUrls(
+    rawImages
+      .map((url) => {
+        const trimmed = url.trim()
+        if (!trimmed || hidden.has(trimmed)) return ""
+        const override = config.imageOverrides[trimmed]?.trim()
+        if (override) return hidden.has(override) ? "" : override
+        return trimmed
+      })
+      .filter(Boolean)
+  )
 }

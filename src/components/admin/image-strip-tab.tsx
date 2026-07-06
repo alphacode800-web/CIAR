@@ -5,7 +5,9 @@ import {
   Film,
   Gauge,
   Loader2,
+  Pencil,
   Plus,
+  RotateCcw,
   Save,
   Trash2,
   Upload,
@@ -21,6 +23,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { useI18n } from "@/lib/i18n-context"
 import { ImageStripBar } from "@/components/home/ImageStripBar"
 import { DEFAULT_IMAGE_STRIP_CONFIG, type ImageStripConfig } from "@/lib/image-strip"
@@ -31,10 +41,17 @@ export function ImageStripTab() {
   const { t } = useI18n()
   const [config, setConfig] = useState<ImageStripConfig>(DEFAULT_IMAGE_STRIP_CONFIG)
   const [siteImages, setSiteImages] = useState<string[]>([])
+  const [allImages, setAllImages] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [togglingEnabled, setTogglingEnabled] = useState(false)
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
+  const [editingImage, setEditingImage] = useState<{
+    url: string
+    draft: string
+    source: "link" | "upload"
+  } | null>(null)
+  const [uploadingEdit, setUploadingEdit] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -46,6 +63,11 @@ export function ImageStripTab() {
         }
         if (Array.isArray(data?.images)) {
           setSiteImages(data.images)
+        }
+        if (Array.isArray(data?.allImages)) {
+          setAllImages(data.allImages)
+        } else if (Array.isArray(data?.images)) {
+          setAllImages(data.images)
         }
       } catch {
         setConfig(DEFAULT_IMAGE_STRIP_CONFIG)
@@ -114,6 +136,12 @@ export function ImageStripTab() {
     const payload: ImageStripConfig = {
       ...nextConfig,
       extraImages: nextConfig.extraImages.map((url) => url.trim()).filter(Boolean),
+      hiddenImages: nextConfig.hiddenImages.map((url) => url.trim()).filter(Boolean),
+      imageOverrides: Object.fromEntries(
+        Object.entries(nextConfig.imageOverrides)
+          .map(([key, value]) => [key.trim(), value.trim()] as const)
+          .filter(([key, value]) => key && value)
+      ),
     }
 
     setSaving(true)
@@ -130,6 +158,7 @@ export function ImageStripTab() {
       const data = await res.json()
       if (data?.config) setConfig(data.config)
       if (Array.isArray(data?.images)) setSiteImages(data.images)
+      if (Array.isArray(data?.allImages)) setAllImages(data.allImages)
       toast.success("تم حفظ شريط الصور")
       return true
     } catch (error) {
@@ -149,6 +178,12 @@ export function ImageStripTab() {
       const payload: ImageStripConfig = {
         ...nextConfig,
         extraImages: nextConfig.extraImages.map((url) => url.trim()).filter(Boolean),
+        hiddenImages: nextConfig.hiddenImages.map((url) => url.trim()).filter(Boolean),
+        imageOverrides: Object.fromEntries(
+          Object.entries(nextConfig.imageOverrides)
+            .map(([key, value]) => [key.trim(), value.trim()] as const)
+            .filter(([key, value]) => key && value)
+        ),
       }
       const res = await fetch("/api/admin/image-strip", {
         method: "PUT",
@@ -170,6 +205,84 @@ export function ImageStripTab() {
     }
   }
 
+  const hideImage = async (url: string) => {
+    const trimmed = url.trim()
+    const isExtra = config.extraImages.some((item) => item.trim() === trimmed)
+    const nextConfig: ImageStripConfig = {
+      ...config,
+      hiddenImages: [...new Set([...config.hiddenImages.map((item) => item.trim()), trimmed])],
+      extraImages: isExtra
+        ? config.extraImages.filter((item) => item.trim() !== trimmed)
+        : config.extraImages,
+      imageOverrides: Object.fromEntries(
+        Object.entries(config.imageOverrides).filter(([key]) => key.trim() !== trimmed)
+      ),
+    }
+    setConfig(nextConfig)
+    const ok = await save(nextConfig)
+    if (ok) toast.success("تم إخفاء الصورة من الشريط")
+  }
+
+  const restoreImage = async (url: string) => {
+    const trimmed = url.trim()
+    const nextConfig: ImageStripConfig = {
+      ...config,
+      hiddenImages: config.hiddenImages.filter((item) => item.trim() !== trimmed),
+    }
+    setConfig(nextConfig)
+    const ok = await save(nextConfig)
+    if (ok) toast.success("تمت استعادة الصورة في الشريط")
+  }
+
+  const uploadIntoEditImage = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.currentTarget.value = ""
+    if (!file || !editingImage) return
+
+    setUploadingEdit(true)
+    try {
+      const uploadedUrl = await uploadMediaFile(file)
+      if (!uploadedUrl) throw new Error("empty url")
+      setEditingImage((prev) => (prev ? { ...prev, draft: uploadedUrl, source: "upload" } : prev))
+      toast.success("تم رفع الصورة")
+    } catch {
+      toast.error("فشل رفع الصورة")
+    } finally {
+      setUploadingEdit(false)
+    }
+  }
+
+  const applyImageEdit = async () => {
+    if (!editingImage) return
+    const original = editingImage.url.trim()
+    const nextUrl = editingImage.draft.trim()
+    if (!nextUrl) {
+      toast.error("أدخل رابط الصورة")
+      return
+    }
+
+    const extraIndex = config.extraImages.findIndex((item) => item.trim() === original)
+    const nextConfig: ImageStripConfig =
+      extraIndex >= 0
+        ? {
+            ...config,
+            extraImages: config.extraImages.map((item, index) =>
+              index === extraIndex ? nextUrl : item
+            ),
+            hiddenImages: config.hiddenImages.filter((item) => item.trim() !== original),
+          }
+        : {
+            ...config,
+            imageOverrides: { ...config.imageOverrides, [original]: nextUrl },
+            hiddenImages: config.hiddenImages.filter((item) => item.trim() !== original),
+          }
+
+    setConfig(nextConfig)
+    setEditingImage(null)
+    const ok = await save(nextConfig)
+    if (ok) toast.success("تم تحديث الصورة")
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-[280px] items-center justify-center">
@@ -179,6 +292,8 @@ export function ImageStripTab() {
   }
 
   const previewImages = siteImages.length > 0 ? siteImages : config.extraImages.filter(Boolean)
+  const hiddenSet = new Set(config.hiddenImages.map((url) => url.trim()).filter(Boolean))
+  const gridImages = allImages.length > 0 ? allImages : siteImages
 
   return (
     <div className="space-y-6">
@@ -347,21 +462,84 @@ export function ImageStripTab() {
       <section className="space-y-4 rounded-xl border border-border/40 bg-card/30 p-4">
         <div className="flex items-center gap-2">
           <Images className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold">صور الموقع التلقائية ({siteImages.length})</h3>
+          <h3 className="text-sm font-semibold">صور الموقع التلقائية ({gridImages.length})</h3>
         </div>
         <p className="text-xs text-muted-foreground">
-          تُجمع من: صور الهيرو، بنرات المنصات، المشاريع، ومكتبة الوسائط. تُعرض فقط الصور التي تُحمّل بنجاح.
+          تُجمع من: صور الهيرو، بنرات المنصات، المشاريع، ومكتبة الوسائط. مرّر الماوس على أي صورة للتعديل أو الإخفاء من الشريط.
         </p>
-        {siteImages.length > 0 ? (
+        {gridImages.length > 0 ? (
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-            {siteImages.map((url) => (
-              <div
-                key={url}
-                className="aspect-[3/4] overflow-hidden rounded-lg border border-border/30 bg-muted"
-              >
-                <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
-              </div>
-            ))}
+            {gridImages.map((url) => {
+              const trimmed = url.trim()
+              const hidden = hiddenSet.has(trimmed)
+              const overridden = config.imageOverrides[trimmed]?.trim()
+              const displayUrl = hidden ? trimmed : overridden || trimmed
+
+              return (
+                <div
+                  key={url}
+                  className={cn(
+                    "group relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted",
+                    hidden
+                      ? "border-dashed border-amber-400/50 opacity-50"
+                      : overridden
+                        ? "border-primary/40"
+                        : "border-border/30"
+                  )}
+                >
+                  <img src={displayUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  {hidden ? (
+                    <span className="absolute start-1 top-1 rounded bg-amber-500/90 px-1.5 py-0.5 text-[9px] font-semibold text-white">
+                      مخفية
+                    </span>
+                  ) : overridden ? (
+                    <span className="absolute start-1 top-1 rounded bg-primary/90 px-1.5 py-0.5 text-[9px] font-semibold text-white">
+                      معدّلة
+                    </span>
+                  ) : null}
+                  <div className="absolute inset-0 flex items-center justify-center gap-1.5 bg-black/55 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="secondary"
+                      className="h-8 w-8"
+                      onClick={() =>
+                        setEditingImage({
+                          url: trimmed,
+                          draft: overridden || trimmed,
+                          source: "link",
+                        })
+                      }
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    {hidden ? (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8"
+                        onClick={() => void restoreImage(trimmed)}
+                        disabled={saving}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        className="h-8 w-8"
+                        onClick={() => void hideImage(trimmed)}
+                        disabled={saving}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">لا توجد صور متاحة</p>
@@ -435,6 +613,83 @@ export function ImageStripTab() {
           ))
         )}
       </section>
+
+      <Dialog open={editingImage !== null} onOpenChange={(open) => !open && setEditingImage(null)}>
+        <DialogContent className="admin-solid-dialog max-w-xl border border-slate-200 !bg-white shadow-2xl dark:border-white/10 dark:!bg-slate-950">
+          <DialogHeader>
+            <DialogTitle>تعديل صورة الشريط</DialogTitle>
+            <DialogDescription>
+              استبدل الصورة برابط جديد أو ارفع ملفاً من جهازك. التغيير يُطبَّق على شريط الصور فقط.
+            </DialogDescription>
+          </DialogHeader>
+          {editingImage ? (
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={editingImage.source === "link" ? "default" : "outline"}
+                  onClick={() => setEditingImage((prev) => (prev ? { ...prev, source: "link" } : prev))}
+                >
+                  رابط
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={editingImage.source === "upload" ? "default" : "outline"}
+                  onClick={() => setEditingImage((prev) => (prev ? { ...prev, source: "upload" } : prev))}
+                >
+                  رفع من الجهاز
+                </Button>
+              </div>
+              {editingImage.source === "link" ? (
+                <Input
+                  value={editingImage.draft}
+                  onChange={(e) =>
+                    setEditingImage((prev) => (prev ? { ...prev, draft: e.target.value } : prev))
+                  }
+                  placeholder="https://..."
+                  dir="ltr"
+                  className="font-mono text-xs"
+                />
+              ) : (
+                <label className="flex h-24 cursor-pointer items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 text-xs text-muted-foreground hover:border-primary/50">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => void uploadIntoEditImage(e)}
+                  />
+                  {uploadingEdit ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Loader2 className="h-4 w-4 animate-spin" /> جاري الرفع...
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Upload className="h-4 w-4" /> اختر صورة
+                    </span>
+                  )}
+                </label>
+              )}
+              {editingImage.draft.trim() ? (
+                <img
+                  src={editingImage.draft.trim()}
+                  alt=""
+                  className="h-44 w-full rounded-md border border-border/30 object-cover"
+                />
+              ) : null}
+            </div>
+          ) : null}
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" onClick={() => setEditingImage(null)}>
+              إلغاء
+            </Button>
+            <Button type="button" onClick={() => void applyImageEdit()} disabled={saving || uploadingEdit}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "حفظ التعديل"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
