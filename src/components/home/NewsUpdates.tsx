@@ -24,9 +24,9 @@ const news = [
   },
   {
     date: "Nov 10, 2024",
-    title: "CIAR Health Introduces Telemedicine Features",
-    excerpt: "New virtual consultation capabilities now available, connecting patients with healthcare providers remotely.",
-    category: "Feature",
+    title: "CiAr VIP Launches Exclusive Membership Packages",
+    excerpt: "Premium tiers and tailored benefits are now available on the VIP platform within the CIAR digital ecosystem.",
+    category: "New Service",
     key: "home.news_3",
   },
 ]

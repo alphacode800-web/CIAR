@@ -198,11 +198,11 @@ export function Footer() {
                 </button>
               </div>
               <div className="mt-4 text-xs text-muted-foreground/80">
-                <button onClick={() => navigate({ page: "home" })} className="hover:text-primary">
+                <button onClick={() => navigate({ page: "privacy" })} className="hover:text-primary">
                   {isAr ? "سياسة الخصوصية" : "Privacy Policy"}
                 </button>
                 <span className="mx-2">•</span>
-                <button onClick={() => navigate({ page: "home" })} className="hover:text-primary">
+                <button onClick={() => navigate({ page: "terms" })} className="hover:text-primary">
                   {isAr ? "الشروط والأحكام" : "Terms & Conditions"}
                 </button>
               </div>

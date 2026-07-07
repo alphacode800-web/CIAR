@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { motion, useInView } from "framer-motion"
+import { useTheme } from "next-themes"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
@@ -12,7 +13,11 @@ import {
   pickLocalized,
   type HomeAboutBriefConfig,
 } from "@/lib/home-about-brief"
-import { textStyleToCss, titleStyleToCss } from "@/lib/text-style"
+import {
+  legalBodyStyleToCss,
+  legalTextStyleToCss,
+  legalTitleStyleToCss,
+} from "@/lib/legal-pages"
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -23,11 +28,19 @@ const fadeUp = (delay = 0) => ({
 
 export function AboutBrief() {
   const { dir, locale } = useI18n()
+  const { resolvedTheme } = useTheme()
   const { navigate } = useRouter()
   const activeLocale = locale === "ar" ? "ar" : "en"
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-80px" })
   const [config, setConfig] = useState<HomeAboutBriefConfig>(DEFAULT_HOME_ABOUT_BRIEF)
+  const [themeMounted, setThemeMounted] = useState(false)
+
+  useEffect(() => {
+    setThemeMounted(true)
+  }, [])
+
+  const isLightMode = !themeMounted || resolvedTheme !== "dark"
 
   useEffect(() => {
     fetch("/api/home/about-brief", { cache: "no-store" })
@@ -38,9 +51,7 @@ export function AboutBrief() {
       .catch(() => setConfig(DEFAULT_HOME_ABOUT_BRIEF))
   }, [])
 
-  const titleStyle = config.style.title.useGradient
-    ? titleStyleToCss(config.style.title)
-    : textStyleToCss(config.style.title)
+  const titleStyle = legalTitleStyleToCss(config.style.title, isLightMode)
 
   return (
     <section ref={ref} className="relative py-20 sm:py-28">
@@ -53,8 +64,16 @@ export function AboutBrief() {
             className={cn("space-y-6", dir === "rtl" ? "lg:order-2 text-end" : "lg:order-1 text-start")}
           >
             <div className={cn("flex items-center gap-4", dir === "rtl" ? "flex-row-reverse" : "")}>
-              <div className="h-px flex-1 max-w-16 bg-gradient-to-r from-[oklch(0.78_0.14_82/50%)] to-transparent" />
-              <span className="uppercase tracking-widest" style={textStyleToCss(config.style.label)}>
+              <div
+                className={cn(
+                  "h-px flex-1 max-w-16 bg-gradient-to-r to-transparent",
+                  isLightMode ? "from-black/30" : "from-[oklch(0.78_0.14_82/50%)]"
+                )}
+              />
+              <span
+                className="uppercase tracking-widest"
+                style={legalTextStyleToCss(config.style.label, isLightMode)}
+              >
                 {pickLocalized(config.content.label, activeLocale)}
               </span>
             </div>
@@ -63,12 +82,7 @@ export function AboutBrief() {
               {pickLocalized(config.content.title, activeLocale)}
             </h2>
 
-            <p
-              style={{
-                ...textStyleToCss(config.style.description),
-                lineHeight: config.style.description.lineHeight,
-              }}
-            >
+            <p style={legalBodyStyleToCss(config.style.description, isLightMode)}>
               {pickLocalized(config.content.description, activeLocale)}
             </p>
 
@@ -76,7 +90,7 @@ export function AboutBrief() {
               <Button
                 onClick={() => navigate({ page: "about" })}
                 className="gap-2 rounded-xl px-6 h-11 text-sm font-semibold btn-gold"
-                style={textStyleToCss(config.style.cta)}
+                style={legalTextStyleToCss(config.style.cta, isLightMode)}
               >
                 {pickLocalized(config.content.cta, activeLocale)}
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
@@ -96,18 +110,17 @@ export function AboutBrief() {
 
               <div className="relative z-10 flex flex-col items-center gap-6 text-center">
                 <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-[oklch(0.78_0.14_82/20%)] to-[oklch(0.72_0.13_75/8%)] flex items-center justify-center">
-                  <Building2 className="h-10 w-10 text-[oklch(0.78_0.14_82)]" />
+                  <Building2
+                    className={cn("h-10 w-10", isLightMode ? "text-black" : "text-[oklch(0.78_0.14_82)]")}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-semibold" style={textStyleToCss(config.style.cardTitle)}>
+                  <h3 className="font-semibold" style={legalTextStyleToCss(config.style.cardTitle, isLightMode)}>
                     {pickLocalized(config.content.cardTitle, activeLocale)}
                   </h3>
                   <p
                     className="max-w-xs mx-auto"
-                    style={{
-                      ...textStyleToCss(config.style.cardDescription),
-                      lineHeight: config.style.cardDescription.lineHeight,
-                    }}
+                    style={legalBodyStyleToCss(config.style.cardDescription, isLightMode)}
                   >
                     {pickLocalized(config.content.cardDescription, activeLocale)}
                   </p>
@@ -117,8 +130,8 @@ export function AboutBrief() {
                     <div key={`${stat.value}-${index}`} className="flex items-center gap-8">
                       {index > 0 ? <div className="h-12 w-px bg-[oklch(0.78_0.14_82/15%)]" /> : null}
                       <div className="text-center">
-                        <div style={textStyleToCss(config.style.statValue)}>{stat.value}</div>
-                        <div className="mt-1" style={textStyleToCss(config.style.statLabel)}>
+                        <div style={legalTextStyleToCss(config.style.statValue, isLightMode)}>{stat.value}</div>
+                        <div className="mt-1" style={legalTextStyleToCss(config.style.statLabel, isLightMode)}>
                           {pickLocalized(stat.label, activeLocale)}
                         </div>
                       </div>

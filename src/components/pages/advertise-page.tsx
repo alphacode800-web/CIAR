@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useRef, useState } from "react"
+import { FormEvent, useEffect, useRef, useState } from "react"
 import {
   ArrowLeft,
   Building2,
@@ -9,7 +9,9 @@ import {
   ImageIcon,
   Link2,
   LogIn,
+  Mail,
   Megaphone,
+  MessageCircle,
   Send,
   ShieldCheck,
   Sparkles,
@@ -33,6 +35,7 @@ import { ContactSenderTypePicker } from "@/components/contact/contact-sender-typ
 import { CONTACT_SENDER_TYPE_IDS, type ContactSenderTypeId } from "@/lib/contact-sender-types"
 import { setPostAuthRedirect } from "@/lib/post-auth-redirect"
 import { normalizeOptionalUrl } from "@/lib/optional-url"
+import type { AdNotifyChannel } from "@/lib/ad-notify"
 import { cn } from "@/lib/utils"
 
 const optionalUrlField = z.preprocess(
@@ -50,6 +53,7 @@ const adFormSchema = z.object({
     (value) => normalizeOptionalUrl(value),
     z.string().max(500)
   ).optional().default(""),
+  notifyVia: z.enum(["email", "whatsapp"]),
 })
 
 function AnimatedSection({
@@ -152,8 +156,15 @@ export function AdvertisePage() {
   const [description, setDescription] = useState("")
   const [link, setLink] = useState("")
   const [imageUrl, setImageUrl] = useState("")
+  const [notifyVia, setNotifyVia] = useState<AdNotifyChannel>("email")
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    if (!user) return
+    if (user.email) setNotifyVia("email")
+    else if (user.phone) setNotifyVia("whatsapp")
+  }, [user])
 
   const goSubscribe = (mode: "login" | "register") => {
     setPostAuthRedirect("advertise")
@@ -185,6 +196,7 @@ export function AdvertisePage() {
       description,
       link,
       imageUrl,
+      notifyVia,
     })
 
     if (!parsed.success) {
@@ -222,17 +234,38 @@ export function AdvertisePage() {
             ? isAr
               ? "تعذّر حفظ الطلب — جاري تحديث قاعدة البيانات، حاول بعد دقائق"
               : "Could not save your request — database is updating, try again shortly"
-            : typeof data?.error === "string"
-              ? data.error
-              : isAr
-                ? "فشل إرسال طلب الإعلان"
-                : "Failed to submit ad request"
+            : data?.code === "EMAIL_REQUIRED"
+              ? isAr
+                ? "أضف بريداً إلكترونياً لحسابك لإرسال الطلب عبر البريد"
+                : "Add an email to your account to send via email"
+              : data?.code === "PHONE_REQUIRED"
+                ? isAr
+                  ? "أضف رقم هاتف لحسابك لإرسال الطلب عبر واتساب"
+                  : "Add a phone number to your account to send via WhatsApp"
+                : typeof data?.error === "string"
+                  ? data.error
+                  : isAr
+                    ? "فشل إرسال طلب الإعلان"
+                    : "Failed to submit ad request"
         throw new Error(message)
       }
+
+      if (typeof data?.deliveryUrl === "string" && data.deliveryUrl) {
+        window.open(data.deliveryUrl, "_blank", "noopener,noreferrer")
+      }
+
       toast.success(
-        isAr
-          ? "تم إرسال طلب الإعلان بنجاح — سيتواصل معك فريقنا قريباً"
-          : "Your ad request was sent — our team will contact you soon"
+        data?.notifyVia === "whatsapp"
+          ? isAr
+            ? "تم حفظ الطلب — أكّد الإرسال عبر واتساب في النافذة المفتوحة"
+            : "Request saved — confirm sending via WhatsApp in the opened window"
+          : data?.notifyVia === "email"
+            ? isAr
+              ? "تم حفظ الطلب — أكّد الإرسال عبر البريد في تطبيق البريد"
+              : "Request saved — confirm sending via email in your mail app"
+            : isAr
+              ? "تم إرسال طلب الإعلان بنجاح — سيتواصل معك فريقنا قريباً"
+              : "Your ad request was sent — our team will contact you soon"
       )
       setCompanyName("")
       setSenderType("")
@@ -240,6 +273,7 @@ export function AdvertisePage() {
       setDescription("")
       setLink("")
       setImageUrl("")
+      setNotifyVia(user?.phone && !user?.email ? "whatsapp" : "email")
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -577,6 +611,61 @@ export function AdvertisePage() {
                         </div>
                       </div>
                     </div>
+                  </FormSection>
+
+                  <FormSection
+                    title={isAr ? "طريقة إرسال الطلب" : "How to send your request"}
+                    description={
+                      isAr
+                        ? "اختر إرسال الطلب إلى فريق CIAR عبر البريد الإلكتروني أو واتساب."
+                        : "Choose whether to send your request to the CIAR team via email or WhatsApp."
+                    }
+                  >
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={() => setNotifyVia("email")}
+                        disabled={!user?.email}
+                        className={cn(
+                          "flex items-center gap-3 rounded-xl border-2 p-4 text-start transition-all",
+                          notifyVia === "email"
+                            ? "border-primary bg-primary/8 shadow-sm"
+                            : "border-border/40 hover:border-border/70",
+                          !user?.email && "cursor-not-allowed opacity-50"
+                        )}
+                      >
+                        <Mail className="h-5 w-5 shrink-0 text-primary" />
+                        <div>
+                          <p className="text-sm font-semibold">{isAr ? "بريد إلكتروني" : "Email"}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {user?.email || (isAr ? "يتطلب بريداً في حسابك" : "Requires email on your account")}
+                          </p>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNotifyVia("whatsapp")}
+                        disabled={!user?.phone}
+                        className={cn(
+                          "flex items-center gap-3 rounded-xl border-2 p-4 text-start transition-all",
+                          notifyVia === "whatsapp"
+                            ? "border-primary bg-primary/8 shadow-sm"
+                            : "border-border/40 hover:border-border/70",
+                          !user?.phone && "cursor-not-allowed opacity-50"
+                        )}
+                      >
+                        <MessageCircle className="h-5 w-5 shrink-0 text-primary" />
+                        <div>
+                          <p className="text-sm font-semibold">{isAr ? "واتساب" : "WhatsApp"}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {user?.phone || (isAr ? "يتطلب رقم هاتف في حسابك" : "Requires phone on your account")}
+                          </p>
+                        </div>
+                      </button>
+                    </div>
+                    {errors.notifyVia ? (
+                      <p className="text-xs text-destructive">{errors.notifyVia}</p>
+                    ) : null}
                   </FormSection>
 
                   <div className="flex flex-col gap-3 border-t border-border/40 pt-6 sm:flex-row sm:items-center sm:justify-between">

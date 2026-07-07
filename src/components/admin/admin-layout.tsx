@@ -25,6 +25,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
   Heading,
+  Scale,
   type LucideIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -70,6 +71,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: "image-strip", icon: Film, labelKey: "admin.image_strip", fallback: "شريط الصور", group: "content" },
   { id: "home-about-brief", icon: Building2, labelKey: "admin.home_about_brief", fallback: "نبذة عن CIAR", group: "content" },
   { id: "about-content", icon: Building2, labelKey: "admin.about_content", fallback: "محتوى من نحن", group: "content" },
+  { id: "legal-pages", icon: Scale, labelKey: "admin.legal_pages", fallback: "الصفحات القانونية", group: "content" },
   { id: "contacts", icon: Mail, labelKey: "admin.contacts", fallback: "رسائل التواصل", group: "content" },
   { id: "users", icon: Users, labelKey: "admin.users", fallback: "المستخدمون والصلاحيات", group: "content" },
   { id: "news-ticker", icon: Newspaper, labelKey: "admin.news_ticker", fallback: "الشريط الإخباري", group: "system" },

@@ -200,10 +200,10 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "home.news_2_excerpt":
       "A major milestone for our property marketplace as demand continues to grow for digital real estate solutions.",
     "home.news_3_date": "Nov 10, 2024",
-    "home.news_3_category": "Feature",
-    "home.news_3_title": "CIAR Health Introduces Telemedicine Features",
+    "home.news_3_category": "New Service",
+    "home.news_3_title": "CiAr VIP Launches Exclusive Membership Packages",
     "home.news_3_excerpt":
-      "New virtual consultation capabilities now available, connecting patients with healthcare providers remotely.",
+      "Premium tiers and tailored benefits are now available on the VIP platform within the CIAR digital ecosystem.",
 
     // ── Home — FAQ ───────────────────────────────────────────────────────────
     "home.faq_title": "Frequently Asked Questions",
@@ -683,10 +683,10 @@ export const DEFAULT_TRANSLATIONS: Record<string, Record<string, string>> = {
     "home.news_2_excerpt":
       "إنجاز بارز لسوق العقارات لدينا مع استمرار الطلب على الحلول العقارية الرقمية في النمو.",
     "home.news_3_date": "10 نوفمبر 2024",
-    "home.news_3_category": "ميزة جديدة",
-    "home.news_3_title": "CIAR Health تُطلق ميزات الطب عن بُعد",
+    "home.news_3_category": "خدمة جديدة",
+    "home.news_3_title": "منصة CiAr VIP تطلق باقات العضويات الحصرية",
     "home.news_3_excerpt":
-      "قدرات استشارات افتراضية جديدة متاحة الآن، تربط المرضى بمقدمي الرعاية الصحية عن بُعد.",
+      "مستويات عضوية مميزة ومزايا مخصصة متاحة الآن عبر منصة VIP ضمن منظومة CIAR الرقمية.",
 
     // ── Home — FAQ ───────────────────────────────────────────────────────────
     "home.faq_title": "الأسئلة الشائعة",

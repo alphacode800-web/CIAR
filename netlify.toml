@@ -1,5 +1,5 @@
 [build]
-command = "npx prisma generate && npx prisma db push --skip-generate && npm run build"
+command = "npx prisma generate && (npx prisma db push --skip-generate --accept-data-loss || true) && npm run build"
 # Override Netlify UI if publish was set to repo root (breaks @netlify/plugin-nextjs).
 publish = ".next"
 

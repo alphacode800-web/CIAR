@@ -32,6 +32,9 @@ const SectionContentTab = lazy(() =>
 const PageHeadersTab = lazy(() =>
   import("@/components/admin/page-headers-tab").then((m) => ({ default: m.PageHeadersTab }))
 )
+const LegalPagesTab = lazy(() =>
+  import("@/components/admin/legal-pages-tab").then((m) => ({ default: m.LegalPagesTab }))
+)
 
 export function AdminTabSkeleton() {
   return (
@@ -73,6 +76,8 @@ export function AdminTabContent({ activeTab }: { activeTab: string }) {
       return <AboutContentTab />
     case "home-about-brief":
       return <HomeAboutBriefTab />
+    case "legal-pages":
+      return <LegalPagesTab />
     case "contacts":
       return <ContactsTab />
     case "users":

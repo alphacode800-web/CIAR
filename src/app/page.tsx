@@ -23,6 +23,8 @@ const ProjectDetailsPage = lazy(() => import("@/components/pages/project-details
 const AboutPage = lazy(() => import("@/components/pages/about-page").then(m => ({ default: m.AboutPage })))
 const ContactPage = lazy(() => import("@/components/pages/contact-page").then(m => ({ default: m.ContactPage })))
 const AdvertisePage = lazy(() => import("@/components/pages/advertise-page").then(m => ({ default: m.AdvertisePage })))
+const PrivacyPolicyPage = lazy(() => import("@/components/pages/legal-page").then(m => ({ default: m.PrivacyPolicyPage })))
+const TermsPage = lazy(() => import("@/components/pages/legal-page").then(m => ({ default: m.TermsPage })))
 const AdminPage = lazy(() => import("@/components/pages/admin-page").then(m => ({ default: m.AdminPage })))
 
 const DEFAULT_HOME_BANNERS: HomeBannersConfig = {
@@ -269,6 +271,34 @@ export default function Page() {
             >
               <Suspense fallback={<PageSkeleton />}>
                 <AdvertisePage />
+              </Suspense>
+            </motion.div>
+          )}
+
+          {route.page === "privacy" && (
+            <motion.div
+              key="privacy"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <PrivacyPolicyPage />
+              </Suspense>
+            </motion.div>
+          )}
+
+          {route.page === "terms" && (
+            <motion.div
+              key="terms"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <TermsPage />
               </Suspense>
             </motion.div>
           )}

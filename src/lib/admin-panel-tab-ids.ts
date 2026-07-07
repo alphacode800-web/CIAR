@@ -13,6 +13,7 @@ export const ADMIN_PANEL_TAB_IDS = [
   "home-banners",
   "image-strip",
   "about-content",
+  "legal-pages",
   "contacts",
   "users",
   "news-ticker",

@@ -20,6 +20,7 @@ import {
   Wallpaper,
   Film,
   Clapperboard,
+  Scale,
 } from "lucide-react"
 import {
   CommandDialog,
@@ -108,6 +109,14 @@ const COMMAND_ITEMS: CommandItemConfig[] = [
     icon: Newspaper,
     group: "pages",
     action: (nav) => nav?.("news-ticker"),
+  },
+  {
+    id: "legal-pages",
+    labelKey: "admin.cmd_go_legal_pages",
+    fallback: "Go to Legal Pages",
+    icon: Scale,
+    group: "pages",
+    action: (nav) => nav?.("legal-pages"),
   },
   {
     id: "home-about-brief",
