@@ -1163,11 +1163,8 @@ body:has([data-admin-lux-layout]) {
   animation: news-ticker-marquee-ltr var(--ticker-duration, 24s) linear infinite;
 }
 
-/* Legacy alias — same motion as LTR (scroll away from badge in RTL layouts) */
 .news-ticker-track-rtl {
-  animation: news-ticker-marquee-ltr var(--ticker-duration, 24s) linear infinite;
-  flex-direction: row;
-  direction: ltr;
+  animation: news-ticker-marquee-rtl var(--ticker-duration, 24s) linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

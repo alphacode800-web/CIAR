@@ -78,7 +78,7 @@ export function Navbar({
 
   const currentPage = route.page === "project" ? "projects" : route.page
 
-  const overDarkHero = !scrolled && (currentPage === "home" || currentPage === "projects")
+  const overDarkHero = !scrolled && currentPage === "projects"
 
   const navLinkClass = (isActive: boolean) =>
     cn(
@@ -340,7 +340,7 @@ export function Navbar({
           style={newsTickerStyle}
           locale={locale === "ar" ? "ar" : "en"}
           dir={dir}
-          className="relative z-40 w-full backdrop-blur-md"
+          className="relative z-40 w-full"
         />
       ) : null}
 

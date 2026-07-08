@@ -30,6 +30,7 @@ type PageHeaderTextBlockProps = {
   align?: "start" | "center"
   animated?: boolean
   inView?: boolean
+  onLightBackground?: boolean
 }
 
 export function PageHeaderTextBlock({
@@ -39,6 +40,7 @@ export function PageHeaderTextBlock({
   align = "center",
   animated = false,
   inView = true,
+  onLightBackground = false,
 }: PageHeaderTextBlockProps) {
   const isPlatforms = config.layout === "platforms"
   const textAlign = align === "center" || isPlatforms ? "center" : "start"
@@ -76,6 +78,13 @@ export function PageHeaderTextBlock({
         transition: { duration: 0.6 },
       }
     : {}
+
+  const titleShadow = onLightBackground
+    ? "drop-shadow-[0_1px_3px_rgba(255,255,255,0.9)]"
+    : "drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)]"
+  const subtitleShadow = onLightBackground
+    ? "drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)]"
+    : "drop-shadow-[0_1px_10px_rgba(0,0,0,0.4)]"
 
   return (
     <div
@@ -121,7 +130,8 @@ export function PageHeaderTextBlock({
         <TitleTag
           {...titleProps}
           className={cn(
-            "font-bold leading-tight tracking-tight drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)]",
+            "font-bold leading-tight tracking-tight",
+            titleShadow,
             textAlign === "center" && "mx-auto"
           )}
           style={textStyleToCss(config.titleStyle)}
@@ -143,7 +153,8 @@ export function PageHeaderTextBlock({
         <SubtitleTag
           {...subtitleProps}
           className={cn(
-            "max-w-3xl leading-relaxed drop-shadow-[0_1px_10px_rgba(0,0,0,0.4)]",
+            "max-w-3xl leading-relaxed",
+            subtitleShadow,
             textAlign === "center" ? "mx-auto mt-5 max-w-2xl" : "mt-3"
           )}
           style={textStyleToCss(config.subtitleStyle)}

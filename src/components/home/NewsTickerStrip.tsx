@@ -22,16 +22,20 @@ type NewsTickerStripProps = {
 function TickerSegment({
   items,
   separatorColor,
+  locale,
   ariaHidden,
 }: {
   items: string[]
   separatorColor: string
+  locale: "ar" | "en"
   ariaHidden?: boolean
 }) {
+  const textDir = locale === "ar" ? "rtl" : "ltr"
+
   return (
-    <div className="flex shrink-0 items-center" aria-hidden={ariaHidden || undefined}>
+    <div className="flex shrink-0 items-center" dir={textDir} aria-hidden={ariaHidden || undefined}>
       {items.map((item, index) => (
-        <span key={`${item}-${index}`} className="inline-flex shrink-0 items-center">
+        <span key={`${item}-${index}`} className="inline-flex shrink-0 items-center whitespace-nowrap">
           <span className="px-4 sm:px-5">{item}</span>
           <span style={{ color: separatorColor }} aria-hidden>
             •
@@ -46,7 +50,6 @@ export function NewsTickerStrip({
   items,
   style = DEFAULT_NEWS_TICKER_STYLE,
   locale = "ar",
-  dir = "rtl",
   className,
   preview = false,
 }: NewsTickerStripProps) {
@@ -63,10 +66,12 @@ export function NewsTickerStrip({
 
   const badgeLabel = locale === "ar" ? style.badgeLabelAr : style.badgeLabelEn
   const fontStack = getNewsTickerFontStack(style.fontFamily)
+  const isArabic = locale === "ar"
+  const trackClass = isArabic ? "news-ticker-track-rtl" : "news-ticker-track-ltr"
 
   return (
     <div
-      dir={dir}
+      dir="ltr"
       className={cn("relative w-full", preview ? "overflow-hidden rounded-xl shadow-lg" : "", className)}
       style={{
         minHeight: `${style.stripHeight}px`,
@@ -76,7 +81,12 @@ export function NewsTickerStrip({
       }}
       aria-label={locale === "ar" ? "الشريط الإخباري" : "News ticker"}
     >
-      <div className="mx-auto flex h-full min-h-[inherit] max-w-7xl items-stretch">
+      <div
+        className={cn(
+          "mx-auto flex h-full min-h-[inherit] max-w-7xl items-stretch",
+          isArabic && "flex-row-reverse"
+        )}
+      >
         <div
           className="relative z-10 flex shrink-0 items-center px-2.5 py-1 sm:px-3"
           style={{
@@ -94,9 +104,9 @@ export function NewsTickerStrip({
           </span>
         </div>
 
-        <div className="relative min-w-0 flex-1 overflow-hidden py-1" dir="ltr">
+        <div className="relative min-w-0 flex-1 overflow-hidden py-1">
           <div
-            className="news-ticker-track news-ticker-track-ltr"
+            className={cn("news-ticker-track", trackClass)}
             style={{
               ["--ticker-duration" as string]: `${style.scrollDuration}s`,
               color: style.textColor,
@@ -106,8 +116,8 @@ export function NewsTickerStrip({
               letterSpacing: "0.02em",
             }}
           >
-            <TickerSegment items={segmentItems} separatorColor={style.separatorColor} />
-            <TickerSegment items={segmentItems} separatorColor={style.separatorColor} ariaHidden />
+            <TickerSegment items={segmentItems} separatorColor={style.separatorColor} locale={locale} />
+            <TickerSegment items={segmentItems} separatorColor={style.separatorColor} locale={locale} ariaHidden />
           </div>
         </div>
       </div>

@@ -27,9 +27,10 @@ import { ImageStripBar } from "@/components/home/ImageStripBar"
 import { DEFAULT_IMAGE_STRIP_CONFIG, type ImageStripConfig } from "@/lib/image-strip"
 import {
   DEFAULT_PAGE_HEADERS,
+  homeHeroHeaderOnLightBackground,
   type PageHeaderConfig,
 } from "@/lib/page-headers"
-import { PageHeaderOverlay, PageHeaderTextBlock } from "@/components/layout/page-hero-header"
+import { PageHeaderTextBlock } from "@/components/layout/page-hero-header"
 
 interface FeaturedProject {
   id: string
@@ -148,6 +149,10 @@ export function HomePage({
   const HERO_SLIDE_INTERVAL_MS = 3500
 
   const headerSlides = useMemo(() => activeHeroImages.slice(0, 20), [activeHeroImages])
+  const heroHeaderConfig = useMemo(
+    () => homeHeroHeaderOnLightBackground(headerConfig),
+    [headerConfig]
+  )
 
   useEffect(() => {
     if (initialHeaderConfig) setHeaderConfig(initialHeaderConfig)
@@ -279,27 +284,32 @@ export function HomePage({
           />
         ) : (
           headerSlides.length > 0 && (
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={`hero-slide-${currentSlide}-${headerSlides[currentSlide]}`}
-                src={headerSlides[currentSlide]}
-                alt=""
-                aria-hidden
-                className="absolute inset-0 h-full w-full object-cover"
-                initial={{ opacity: 0, scale: 1.04 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8 }}
-                onError={() => markHeroImageBroken(headerSlides[currentSlide])}
-              />
-            </AnimatePresence>
+            <div className="absolute inset-0 z-[1]">
+              {headerSlides.map((src, idx) => (
+                <img
+                  key={`${src}-${idx}`}
+                  src={src}
+                  alt=""
+                  aria-hidden={idx !== currentSlide}
+                  className={cn(
+                    "absolute inset-0 h-full w-full object-cover [filter:none] transition-opacity duration-700 ease-in-out",
+                    idx === currentSlide ? "opacity-100" : "opacity-0"
+                  )}
+                  onError={() => markHeroImageBroken(src)}
+                />
+              ))}
+            </div>
           )
         )}
-        <PageHeaderOverlay config={headerConfig} />
 
         <div className="relative z-10 mx-auto flex min-h-[62vh] max-w-7xl items-center px-4 pb-20 sm:px-6 lg:px-8 pt-[calc(var(--site-header-offset)+2.5rem)]">
           <div className="max-w-4xl">
-            <PageHeaderTextBlock config={headerConfig} locale={activeLocale} align="start" />
+            <PageHeaderTextBlock
+              config={heroHeaderConfig}
+              locale={activeLocale}
+              align="start"
+              onLightBackground
+            />
 
             {headerSlides.length > 1 && heroBackgroundType !== "video" && (
               <div className="flex flex-wrap gap-2 pt-2">
@@ -309,7 +319,7 @@ export function HomePage({
                     type="button"
                     className={cn(
                       "h-2 rounded-full transition-all duration-300",
-                      idx === currentSlide ? "w-10 bg-primary shadow-[0_0_12px_oklch(0.78_0.14_82/50%)]" : "w-4 bg-white/40 hover:bg-white/60"
+                      idx === currentSlide ? "w-10 bg-primary shadow-[0_0_12px_oklch(0.78_0.14_82/50%)]" : "w-4 bg-foreground/35 hover:bg-foreground/55"
                     )}
                     onClick={() => setCurrentSlide(idx)}
                     aria-label={`${activeLocale === "ar" ? "صورة" : "Image"} ${idx + 1}`}

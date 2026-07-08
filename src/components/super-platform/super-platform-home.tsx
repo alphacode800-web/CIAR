@@ -11,6 +11,7 @@ import { collectPlatformBannerImages, DEFAULT_HERO_IMAGE_URLS, mergeHeroSlideUrl
 import { resolvePlatformCardImages } from "@/lib/platform-card-images"
 import { DEFAULT_PAGE_HEADERS, type PageHeaderConfig } from "@/lib/page-headers"
 import { PageHeaderOverlay, PageHeaderTextBlock } from "@/components/layout/page-hero-header"
+import { cn } from "@/lib/utils"
 
 type Banner = {
   id: string
@@ -229,28 +230,29 @@ export function SuperPlatformHome({
     <div className="min-h-screen bg-background">
       <section className="relative min-h-[62vh] overflow-hidden bg-[oklch(0.10_0.025_265)]">
         {headerImages.length > 0 && (
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={`header-slide-${headerIndex}-${headerImages[headerIndex]}`}
-              src={headerImages[headerIndex]}
-              alt="CIAR Header"
-              className="absolute inset-0 h-full w-full object-cover"
-              initial={{ opacity: 0, scale: 1.04 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
-              onError={() => {
-                const url = headerImages[headerIndex]
-                if (!url) return
-                setBrokenHeaderUrls((prev) => {
-                  if (prev.has(url)) return prev
-                  const next = new Set(prev)
-                  next.add(url)
-                  return next
-                })
-              }}
-            />
-          </AnimatePresence>
+          <div className="absolute inset-0 z-[1]">
+            {headerImages.map((src, idx) => (
+              <img
+                key={`${src}-${idx}`}
+                src={src}
+                alt=""
+                aria-hidden={idx !== headerIndex}
+                className={cn(
+                  "absolute inset-0 h-full w-full object-cover [filter:none] transition-opacity duration-700 ease-in-out",
+                  idx === headerIndex ? "opacity-100" : "opacity-0"
+                )}
+                onError={() => {
+                  if (!src) return
+                  setBrokenHeaderUrls((prev) => {
+                    if (prev.has(src)) return prev
+                    const next = new Set(prev)
+                    next.add(src)
+                    return next
+                  })
+                }}
+              />
+            ))}
+          </div>
         )}
         <PageHeaderOverlay config={headerConfig} />
 

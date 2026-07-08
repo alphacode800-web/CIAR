@@ -140,19 +140,19 @@ export const DEFAULT_PAGE_HEADERS: PageHeadersStore = {
     titleLine1: { ar: "منصتنا", en: "Our Platform" },
     titleLine2: { ar: "منظومة رقمية متكاملة", en: "Integrated Digital Ecosystem" },
     titleSplit: true,
-    titleAccentUseGradient: true,
-    titleStyle: { ...defaultTitleStyle(), fontSize: 56 },
-    titleAccentStyle: defaultAccentStyle(),
+    titleAccentUseGradient: false,
+    titleStyle: { ...defaultTitleStyle(), fontSize: 56, color: "#111827" },
+    titleAccentStyle: { ...defaultAccentStyle(), color: "#111827" },
     subtitle: {
       ar: "جميع المنصات في واجهة واحدة حديثة. كل منصة تُدار من لوحة الأدمن مع صور ومحتوى ديناميكي.",
       en: "All platforms in one modern experience. Every card is managed dynamically from the admin panel.",
     },
-    subtitleStyle: { ...defaultSubtitleStyle(), fontSize: 18 },
+    subtitleStyle: { ...defaultSubtitleStyle(), fontSize: 18, color: "#374151" },
     backgroundImage: "",
-    backgroundOpacity: 0,
-    overlayFromColor: "rgba(0,0,0,0.6)",
-    overlayToColor: "rgba(0,0,0,0.6)",
-    overlayOpacity: 100,
+    backgroundOpacity: 100,
+    overlayFromColor: "transparent",
+    overlayToColor: "transparent",
+    overlayOpacity: 0,
     paddingTop: 96,
     paddingBottom: 80,
   },
@@ -246,6 +246,17 @@ export function mergePageHeaderConfig(
     titleStyle: { ...base.titleStyle, ...(patch.titleStyle ?? {}) },
     titleAccentStyle: { ...base.titleAccentStyle, ...(patch.titleAccentStyle ?? {}) },
     subtitleStyle: { ...base.subtitleStyle, ...(patch.subtitleStyle ?? {}) },
+  }
+}
+
+/** Home hero shows photo backgrounds without dark overlay — force readable dark text. */
+export function homeHeroHeaderOnLightBackground(config: PageHeaderConfig): PageHeaderConfig {
+  return {
+    ...config,
+    titleAccentUseGradient: false,
+    titleStyle: { ...config.titleStyle, color: "#111827" },
+    titleAccentStyle: { ...config.titleAccentStyle, color: "#111827" },
+    subtitleStyle: { ...config.subtitleStyle, color: "#374151" },
   }
 }
 
