@@ -12,6 +12,7 @@ import {
 import { submitContact } from "@/services/contact.service"
 import { getSettings } from "@/services/settings.service"
 import { withSiteContactDefaults } from "@/lib/site-contact"
+import { adProductDetailsSchema } from "@/lib/ad-product-details"
 
 const optionalUrlSchema = z.preprocess(
   (value) => normalizeOptionalUrl(value),
@@ -30,6 +31,7 @@ const adSchema = z.object({
     .default(""),
   locale: z.string().optional().default("ar"),
   notifyVia: z.enum(["email", "whatsapp"]),
+  productDetails: adProductDetailsSchema.optional(),
 })
 
 function channelLabel(channel: AdNotifyChannel) {
@@ -47,6 +49,15 @@ function buildAdMessage(user: AuthUser, data: z.infer<typeof adSchema>) {
     `التصنيف: ${data.senderType}`,
     `الرابط: ${data.link || "—"}`,
     `صورة: ${data.imageUrl || "—"}`,
+    data.productDetails?.fabricTypes?.length ? `الأقمشة: ${data.productDetails.fabricTypes.join("، ")}` : null,
+    data.productDetails?.colors?.length ? `الألوان: ${data.productDetails.colors.join("، ")}` : null,
+    data.productDetails?.sizes?.length ? `المقاسات: ${data.productDetails.sizes.join("، ")}` : null,
+    typeof data.productDetails?.stockRemaining === "number" ? `المتبقي: ${data.productDetails.stockRemaining}` : null,
+    typeof data.productDetails?.price === "number" ? `السعر: ${data.productDetails.price} ${data.productDetails.currency || "SAR"}` : null,
+    typeof data.productDetails?.discountPercent === "number" ? `الحسم: ${data.productDetails.discountPercent}%` : null,
+    data.productDetails?.shippingInfo ? `الشحن: ${data.productDetails.shippingInfo}` : null,
+    data.productDetails?.contactPhone ? `هاتف: ${data.productDetails.contactPhone}` : null,
+    data.productDetails?.whatsappLink ? `واتساب: ${data.productDetails.whatsappLink}` : null,
     "",
     data.description,
   ]
@@ -131,6 +142,7 @@ export async function POST(request: NextRequest) {
           link: data.link || "",
           imageUrl: data.imageUrl || "",
           locale: data.locale,
+          productDetails: data.productDetails,
         })
         adId = submission.id
       } catch (adError) {
@@ -177,6 +189,7 @@ export async function POST(request: NextRequest) {
         imageUrl: data.imageUrl || "",
         locale: data.locale,
         notifyVia: data.notifyVia,
+        productDetails: data.productDetails,
       })
       return NextResponse.json({
         success: true,

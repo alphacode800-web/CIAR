@@ -1,5 +1,7 @@
 import { db } from "@/lib/db"
 import type { AdNotifyChannel } from "@/lib/ad-notify"
+import type { AdProductDetails } from "@/lib/ad-product-details"
+import { serializeAdProductDetails } from "@/lib/ad-product-details"
 import { getSettings, updateSettings } from "@/services/settings.service"
 
 export const PENDING_AD_REQUESTS_KEY = "pending_ad_requests"
@@ -18,6 +20,7 @@ export type PendingAdRequest = {
   imageUrl: string
   locale: string
   notifyVia: AdNotifyChannel
+  productDetails?: AdProductDetails
   createdAt: string
 }
 
@@ -30,6 +33,7 @@ export async function createAdSubmission(data: {
   link?: string
   imageUrl?: string
   locale?: string
+  productDetails?: AdProductDetails
 }) {
   return db.adSubmission.create({
     data: {
@@ -40,6 +44,7 @@ export async function createAdSubmission(data: {
       description: data.description,
       link: data.link || "",
       imageUrl: data.imageUrl || "",
+      details: serializeAdProductDetails(data.productDetails),
       locale: data.locale || "ar",
       status: "pending",
     },

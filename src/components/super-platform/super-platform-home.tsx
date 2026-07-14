@@ -11,6 +11,8 @@ import { collectPlatformBannerImages, DEFAULT_HERO_IMAGE_URLS, mergeHeroSlideUrl
 import { resolvePlatformCardImages } from "@/lib/platform-card-images"
 import { DEFAULT_PAGE_HEADERS, type PageHeaderConfig } from "@/lib/page-headers"
 import { PageHeaderOverlay, PageHeaderTextBlock } from "@/components/layout/page-hero-header"
+import { SiteAdSlot } from "@/components/ads/site-ad-slot"
+import { AiRecommendationsSection } from "@/components/home/ai-recommendations-section"
 import { cn } from "@/lib/utils"
 
 type Banner = {
@@ -301,6 +303,16 @@ export function SuperPlatformHome({
           ))}
         </div>
       </section>
+
+      <div className="mx-auto max-w-7xl px-4">
+        <SiteAdSlot placement="home_after_platforms" position="slot_1" locale={activeLocale} className="pb-8" />
+      </div>
+
+      <AiRecommendationsSection />
+
+      <div className="mx-auto max-w-7xl px-4 pb-4">
+        <SiteAdSlot placement="home_before_why" position="slot_2" locale={activeLocale} />
+      </div>
 
       <section className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-10 text-center">

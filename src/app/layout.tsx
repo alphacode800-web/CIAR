@@ -9,6 +9,7 @@ import { AuthProvider } from "@/lib/auth-context"
 import { CurrencyProvider } from "@/lib/currency-context"
 import { AuthModalProvider } from "@/lib/auth-modal-context"
 import { AuthModalWrapper } from "@/components/layout/auth-modal-wrapper"
+import { AiAssistantWidget } from "@/components/layout/ai-assistant-widget"
 import { ThemeSettingsApplier } from "@/components/theme-settings-applier"
 
 const geistSans = Geist({
@@ -128,6 +129,7 @@ export default function RootLayout({
                     <ThemeSettingsApplier />
                     <AuthModalWrapper />
                     {children}
+                    <AiAssistantWidget />
                     <Toaster position="bottom-right" richColors />
                   </AuthModalProvider>
                 </RouterProvider>

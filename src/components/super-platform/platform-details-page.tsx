@@ -7,6 +7,8 @@ import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { ExternalLink, Image as ImageIcon, Layers3, Sparkles } from "lucide-react"
 import { resolvePlatformCardImages } from "@/lib/platform-card-images"
+import { SiteAdSlot } from "@/components/ads/site-ad-slot"
+import { AiRecommendationsSection } from "@/components/home/ai-recommendations-section"
 
 type PlatformModule = {
   id: string
@@ -196,6 +198,12 @@ export function PlatformDetailsPage({ slug }: { slug: string }) {
           </div>
         )}
       </section>
+
+      <div className="mx-auto max-w-7xl px-4 pb-8">
+        <SiteAdSlot placement="platform_details" position="slot_1" locale={activeLocale} />
+      </div>
+
+      <AiRecommendationsSection seedId={slug} />
     </div>
   )
 }

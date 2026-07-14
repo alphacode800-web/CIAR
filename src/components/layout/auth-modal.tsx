@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth-context"
 import { useAuthModal } from "@/lib/auth-modal-context"
 import { useI18n } from "@/lib/i18n-context"
 import { toast } from "sonner"
+import { SocialAuthButtons } from "@/components/auth/social-auth-buttons"
 
 interface AuthModalProps {
   mode: "login" | "register"
@@ -17,7 +18,7 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const { login, register } = useAuth()
   const { mode, openLogin, openRegister } = useAuthModal()
   const [loading, setLoading] = useState(false)
@@ -104,13 +105,20 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
               </div>
             )}
             {isLogin ? (
-              <div className="space-y-2">
-                <Label>{t("auth.email") || "Email / Phone"}</Label>
-                <div className="relative">
-                  <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                  <Input type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="you@example.com or +9665..." className="ps-10 rounded-xl" required />
+              <>
+                <div className="space-y-2">
+                  <Label>{t("auth.email") || "Email / Phone"}</Label>
+                  <div className="relative">
+                    <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                    <Input type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="you@example.com or +9665..." className="ps-10 rounded-xl" required />
+                  </div>
                 </div>
-              </div>
+                <SocialAuthButtons
+                  locale={locale}
+                  variant="compact"
+                  title={t("auth.social_login") || (locale === "ar" ? "دخول سريع عبر المنصات" : "Quick sign in via platforms")}
+                />
+              </>
             ) : (
               <>
                 <div className="space-y-2">
@@ -145,14 +153,11 @@ export function AuthModal({ mode: initialMode, onClose }: AuthModalProps) {
                   </div>
                 </div>
                 ) : null}
-                <div className="space-y-2">
-                  <Label>{t("auth.social_register") || "Social Registration"}</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <a href="https://facebook.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-2 py-1.5 text-[11px] text-center hover:bg-muted/30">Facebook</a>
-                    <a href="https://accounts.google.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-2 py-1.5 text-[11px] text-center hover:bg-muted/30">Google</a>
-                    <a href="https://appleid.apple.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-2 py-1.5 text-[11px] text-center hover:bg-muted/30">Apple</a>
-                  </div>
-                </div>
+                <SocialAuthButtons
+                  locale={locale}
+                  variant="compact"
+                  title={t("auth.social_register") || (locale === "ar" ? "تسجيل سريع عبر المنصات" : "Quick sign up via platforms")}
+                />
               </>
             )}
             <div className="space-y-2">

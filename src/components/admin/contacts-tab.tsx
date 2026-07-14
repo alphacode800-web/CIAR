@@ -21,6 +21,7 @@ import {
   ExternalLink,
   Circle,
   User,
+  Sparkles,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -49,6 +50,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { BulkActionsBar } from "./bulk-actions-bar"
 import { getContactSenderTypeLabel } from "@/lib/contact-sender-types"
+import type { SentimentResult } from "@/features/ai/sentiment"
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 
@@ -170,6 +172,11 @@ export function ContactsTab() {
   const [deleteTarget, setDeleteTarget] = useState<ContactMessage | null>(null)
   const [deleteMultiple, setDeleteMultiple] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [sentiment, setSentiment] = useState<SentimentResult | null>(null)
+  const [sentimentLoading, setSentimentLoading] = useState(false)
+  const [sentimentMap, setSentimentMap] = useState<Record<string, SentimentResult>>({})
+  const [bulkSentimentLoading, setBulkSentimentLoading] = useState(false)
+  const [sentimentFilter, setSentimentFilter] = useState<"all" | SentimentResult["label"]>("all")
 
   /* ── Fetch contacts ── */
 
@@ -207,18 +214,24 @@ export function ContactsTab() {
 
   useEffect(() => {
     setPage(1)
-  }, [search, dateFilter])
+  }, [search, dateFilter, sentimentFilter])
 
   /* ── Client-side date filter for pill buttons ── */
 
   const getFilteredContacts = () => {
-    if (dateFilter === "all") return contacts
-    return contacts.filter((c) => {
-      if (dateFilter === "today") return isToday(c.createdAt)
-      if (dateFilter === "week") return isThisWeek(c.createdAt)
-      if (dateFilter === "month") return isThisMonth(c.createdAt)
-      return true
-    })
+    let rows = contacts
+    if (dateFilter !== "all") {
+      rows = rows.filter((c) => {
+        if (dateFilter === "today") return isToday(c.createdAt)
+        if (dateFilter === "week") return isThisWeek(c.createdAt)
+        if (dateFilter === "month") return isThisMonth(c.createdAt)
+        return true
+      })
+    }
+    if (sentimentFilter !== "all") {
+      rows = rows.filter((c) => sentimentMap[c.id]?.label === sentimentFilter)
+    }
+    return rows
   }
 
   const filteredContacts = getFilteredContacts()
@@ -299,8 +312,66 @@ export function ContactsTab() {
 
   const openContactDetail = (contact: ContactMessage) => {
     setViewContact(contact)
+    setSentiment(sentimentMap[contact.id] || null)
     setSlideOverOpen(true)
   }
+
+  const analyzeAllSentiment = async () => {
+    setBulkSentimentLoading(true)
+    try {
+      const res = await fetch("/api/ai/sentiment/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ limit: 30 }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "failed")
+      const nextMap: Record<string, SentimentResult> = {}
+      for (const item of data.results || []) {
+        if (item.id && item.result) nextMap[item.id] = item.result
+      }
+      setSentimentMap(nextMap)
+      toast.success(
+        t("admin.sentiment_batch_done") ||
+          `تم تحليل ${data.total || 0} رسالة`
+      )
+    } catch {
+      toast.error(t("admin.sentiment_batch_failed") || "فشل التحليل الجماعي")
+    } finally {
+      setBulkSentimentLoading(false)
+    }
+  }
+
+  const analyzeSentiment = async () => {
+    if (!viewContact) return
+    setSentimentLoading(true)
+    try {
+      const res = await fetch("/api/ai/sentiment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: `${viewContact.subject}\n${viewContact.message}`,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "failed")
+      setSentiment(data.result)
+      if (viewContact) {
+        setSentimentMap((prev) => ({ ...prev, [viewContact.id]: data.result }))
+      }
+    } catch {
+      toast.error(t("admin.ai_load_failed") || "تعذر تحليل المشاعر")
+    } finally {
+      setSentimentLoading(false)
+    }
+  }
+
+  const sentimentLabel =
+    sentiment?.label === "positive"
+      ? t("admin.sentiment_positive") || "إيجابي"
+      : sentiment?.label === "negative"
+        ? t("admin.sentiment_negative") || "سلبي"
+        : t("admin.sentiment_neutral") || "محايد"
 
   /* ── Date filter pills ── */
 
@@ -431,31 +502,73 @@ export function ContactsTab() {
       />
 
       {/* Search + Date filter pills */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <div className="relative flex-1 w-full sm:max-w-sm">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("admin.search_contacts") || "Search by name, email, subject..."}
-            className="ps-9 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border-[oklch(0.76_0.19_48/10%)]"
-          />
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="relative flex-1 w-full sm:max-w-sm">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("admin.search_contacts") || "Search by name, email, subject..."}
+              className="ps-9 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border-[oklch(0.76_0.19_48/10%)]"
+            />
+          </div>
+          <Button
+            variant="outline"
+            onClick={analyzeAllSentiment}
+            disabled={bulkSentimentLoading}
+            className="gap-2 rounded-xl shrink-0"
+          >
+            {bulkSentimentLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
+            )}
+            {bulkSentimentLoading
+              ? t("admin.sentiment_analyzing") || "جاري التحليل..."
+              : t("admin.analyze_all_sentiment") || "تحليل كل الرسائل"}
+          </Button>
         </div>
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]">
-          {dateFilterPills.map((pill) => (
-            <button
-              key={pill.value}
-              onClick={() => setDateFilter(pill.value)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
-                dateFilter === pill.value
-                  ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/5%)]"
-              )}
-            >
-              {pill.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]">
+            {dateFilterPills.map((pill) => (
+              <button
+                key={pill.value}
+                onClick={() => setDateFilter(pill.value)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+                  dateFilter === pill.value
+                    ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/5%)]"
+                )}
+              >
+                {pill.label}
+              </button>
+            ))}
+          </div>
+          {Object.keys(sentimentMap).length > 0 ? (
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[oklch(0.14_0.028_265/40%)] border border-[oklch(0.76_0.19_48/8%)]">
+              {[
+                { value: "all" as const, label: t("admin.all_sentiments") || "كل المشاعر" },
+                { value: "positive" as const, label: t("admin.sentiment_positive") || "إيجابي" },
+                { value: "neutral" as const, label: t("admin.sentiment_neutral") || "محايد" },
+                { value: "negative" as const, label: t("admin.sentiment_negative") || "سلبي" },
+              ].map((pill) => (
+                <button
+                  key={pill.value}
+                  onClick={() => setSentimentFilter(pill.value)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+                    sentimentFilter === pill.value
+                      ? "bg-[oklch(0.76_0.19_48/15%)] text-[oklch(0.76_0.19_48)] shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-[oklch(0.76_0.19_48/5%)]"
+                  )}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -562,6 +675,24 @@ export function ContactsTab() {
                       {contact.senderType ? (
                         <Badge variant="outline" className="hidden sm:inline-flex text-[10px] border-primary/20 text-primary shrink-0">
                           {getContactSenderTypeLabel(contact.senderType, "ar")}
+                        </Badge>
+                      ) : null}
+                      {sentimentMap[contact.id] ? (
+                        <Badge
+                          variant={
+                            sentimentMap[contact.id].label === "positive"
+                              ? "default"
+                              : sentimentMap[contact.id].label === "negative"
+                                ? "destructive"
+                                : "secondary"
+                          }
+                          className="text-[10px] shrink-0"
+                        >
+                          {sentimentMap[contact.id].label === "positive"
+                            ? t("admin.sentiment_positive") || "إيجابي"
+                            : sentimentMap[contact.id].label === "negative"
+                              ? t("admin.sentiment_negative") || "سلبي"
+                              : t("admin.sentiment_neutral") || "محايد"}
                         </Badge>
                       ) : null}
                       <span className="text-xs text-muted-foreground hidden sm:inline truncate">
@@ -728,6 +859,53 @@ export function ContactsTab() {
                       {viewContact.message}
                     </p>
                   </motion.div>
+                </div>
+
+                <div className="rounded-xl border border-[oklch(0.76_0.19_48/10%)] bg-[oklch(0.76_0.19_48/3%)] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        {t("admin.ai_sentiment") || "تحليل المشاعر"}
+                      </span>
+                      {sentiment ? (
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant={
+                              sentiment.label === "positive"
+                                ? "default"
+                                : sentiment.label === "negative"
+                                  ? "destructive"
+                                  : "secondary"
+                            }
+                          >
+                            {sentimentLabel}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {Math.round(sentiment.score * 100)}%
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={analyzeSentiment}
+                      disabled={sentimentLoading}
+                      className="gap-2"
+                    >
+                      {sentimentLoading ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-3.5 w-3.5" />
+                      )}
+                      {sentimentLoading
+                        ? t("admin.sentiment_analyzing") || "جاري التحليل..."
+                        : t("admin.analyze_sentiment") || "تحليل المشاعر"}
+                    </Button>
+                  </div>
+                  {sentiment?.summary ? (
+                    <p className="mt-3 text-sm text-muted-foreground">{sentiment.summary}</p>
+                  ) : null}
                 </div>
               </div>
 

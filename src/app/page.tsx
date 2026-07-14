@@ -23,6 +23,7 @@ const ProjectDetailsPage = lazy(() => import("@/components/pages/project-details
 const AboutPage = lazy(() => import("@/components/pages/about-page").then(m => ({ default: m.AboutPage })))
 const ContactPage = lazy(() => import("@/components/pages/contact-page").then(m => ({ default: m.ContactPage })))
 const AdvertisePage = lazy(() => import("@/components/pages/advertise-page").then(m => ({ default: m.AdvertisePage })))
+const AdsPage = lazy(() => import("@/components/pages/ads-page").then(m => ({ default: m.AdsPage })))
 const PrivacyPolicyPage = lazy(() => import("@/components/pages/legal-page").then(m => ({ default: m.PrivacyPolicyPage })))
 const TermsPage = lazy(() => import("@/components/pages/legal-page").then(m => ({ default: m.TermsPage })))
 const AdminPage = lazy(() => import("@/components/pages/admin-page").then(m => ({ default: m.AdminPage })))
@@ -271,6 +272,20 @@ export default function Page() {
             >
               <Suspense fallback={<PageSkeleton />}>
                 <AdvertisePage />
+              </Suspense>
+            </motion.div>
+          )}
+
+          {route.page === "ads" && (
+            <motion.div
+              key="ads"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Suspense fallback={<PageSkeleton />}>
+                <AdsPage />
               </Suspense>
             </motion.div>
           )}

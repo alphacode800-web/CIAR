@@ -193,6 +193,7 @@ model AdSubmission {
   description String
   link        String   @default("")
   imageUrl    String   @default("")
+  details     String   @default("{}")
   locale      String   @default("ar")
   status      String   @default("pending")
   createdAt   DateTime @default(now())

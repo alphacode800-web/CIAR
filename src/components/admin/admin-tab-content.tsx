@@ -20,8 +20,11 @@ const HomeAboutBriefTab = lazy(() =>
   import("@/components/admin/home-about-brief-tab").then((m) => ({ default: m.HomeAboutBriefTab }))
 )
 const ContactsTab = lazy(() => import("@/components/admin/contacts-tab").then((m) => ({ default: m.ContactsTab })))
+const AdsTab = lazy(() => import("@/components/admin/ads-tab").then((m) => ({ default: m.AdsTab })))
+const CampaignsTab = lazy(() => import("@/components/admin/campaigns-tab").then((m) => ({ default: m.CampaignsTab })))
 const UsersTab = lazy(() => import("@/components/admin/users-tab").then((m) => ({ default: m.UsersTab })))
 const NewsTickerTab = lazy(() => import("@/components/admin/news-ticker-tab").then((m) => ({ default: m.NewsTickerTab })))
+const AiTab = lazy(() => import("@/components/admin/ai-tab").then((m) => ({ default: m.AiTab })))
 const SeoTab = lazy(() => import("@/components/admin/seo-tab").then((m) => ({ default: m.SeoTab })))
 const AppearanceTab = lazy(() => import("@/components/admin/appearance-tab").then((m) => ({ default: m.AppearanceTab })))
 const SiteSettingsTab = lazy(() => import("@/components/admin/site-settings-tab").then((m) => ({ default: m.SiteSettingsTab })))
@@ -80,10 +83,16 @@ export function AdminTabContent({ activeTab }: { activeTab: string }) {
       return <LegalPagesTab />
     case "contacts":
       return <ContactsTab />
+    case "ads":
+      return <AdsTab />
+    case "campaigns":
+      return <CampaignsTab />
     case "users":
       return <UsersTab />
     case "news-ticker":
       return <NewsTickerTab />
+    case "ai":
+      return <AiTab />
     case "seo":
       return <SeoTab />
     case "appearance":

@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "@/lib/router-context"
 import { useI18n } from "@/lib/i18n-context"
 import { consumePostAuthRedirect } from "@/lib/post-auth-redirect"
+import { SocialAuthButtons } from "@/components/auth/social-auth-buttons"
 
 export function UserAuthPage() {
   const { locale } = useI18n()
@@ -152,24 +153,30 @@ export function UserAuthPage() {
         )}
 
         {isLogin ? (
-          <div className="space-y-2">
-            <label htmlFor="user-identifier" className="text-sm font-medium">
-              {locale === "ar" ? "البريد الإلكتروني أو الهاتف" : "Email or Phone"}
-            </label>
-            <div className="relative">
-              <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-              <Input
-                id="user-identifier"
-                type="text"
-                value={identifier}
-                onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="you@example.com or +9665..."
-                required
-                autoComplete="username"
-                className="ps-9"
-              />
+          <>
+            <div className="space-y-2">
+              <label htmlFor="user-identifier" className="text-sm font-medium">
+                {locale === "ar" ? "البريد الإلكتروني أو الهاتف" : "Email or Phone"}
+              </label>
+              <div className="relative">
+                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                <Input
+                  id="user-identifier"
+                  type="text"
+                  value={identifier}
+                  onChange={(event) => setIdentifier(event.target.value)}
+                  placeholder="you@example.com or +9665..."
+                  required
+                  autoComplete="username"
+                  className="ps-9"
+                />
+              </div>
             </div>
-          </div>
+            <SocialAuthButtons
+              locale={locale}
+              title={locale === "ar" ? "دخول سريع عبر المنصات" : "Quick sign in via platforms"}
+            />
+          </>
         ) : (
           <div className="grid grid-cols-1 gap-3">
             <div className="space-y-2">
@@ -237,22 +244,7 @@ export function UserAuthPage() {
               </div>
             </div>
             ) : null}
-            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-2">
-              <p className="text-xs text-muted-foreground">
-                {locale === "ar" ? "تسجيل سريع عبر المنصات" : "Quick sign up via platforms"}
-              </p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-3 py-2 text-xs text-center hover:bg-muted/40">
-                  {locale === "ar" ? "فيسبوك" : "Facebook"}
-                </a>
-                <a href="https://accounts.google.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-3 py-2 text-xs text-center hover:bg-muted/40">
-                  {locale === "ar" ? "جوجل" : "Google"}
-                </a>
-                <a href="https://appleid.apple.com" target="_blank" rel="noreferrer" className="rounded-lg border border-border px-3 py-2 text-xs text-center hover:bg-muted/40">
-                  {locale === "ar" ? "آبل" : "Apple"}
-                </a>
-              </div>
-            </div>
+            <SocialAuthButtons locale={locale} />
           </div>
         )}
 

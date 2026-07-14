@@ -11,6 +11,8 @@ import {
   Menu,
   X,
   Mail,
+  Megaphone,
+  SendHorizonal,
   Users,
   Image,
   Wallpaper,
@@ -21,6 +23,7 @@ import {
   Film,
   Building2,
   Newspaper,
+  Bot,
   FileDown,
   PanelRightClose,
   PanelRightOpen,
@@ -73,8 +76,11 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: "about-content", icon: Building2, labelKey: "admin.about_content", fallback: "محتوى من نحن", group: "content" },
   { id: "legal-pages", icon: Scale, labelKey: "admin.legal_pages", fallback: "الصفحات القانونية", group: "content" },
   { id: "contacts", icon: Mail, labelKey: "admin.contacts", fallback: "رسائل التواصل", group: "content" },
+  { id: "ads", icon: Megaphone, labelKey: "admin.ads", fallback: "إدارة الإعلانات", group: "content" },
+  { id: "campaigns", icon: SendHorizonal, labelKey: "admin.campaigns", fallback: "حملات البريد", group: "content" },
   { id: "users", icon: Users, labelKey: "admin.users", fallback: "المستخدمون والصلاحيات", group: "content" },
   { id: "news-ticker", icon: Newspaper, labelKey: "admin.news_ticker", fallback: "الشريط الإخباري", group: "system" },
+  { id: "ai", icon: Bot, labelKey: "admin.ai", fallback: "الذكاء الاصطناعي", group: "system" },
   { id: "seo", icon: Globe, labelKey: "admin.seo", fallback: "تهيئة محركات البحث", group: "system" },
   { id: "appearance", icon: Palette, labelKey: "admin.appearance", fallback: "المظهر والألوان", group: "system" },
   { id: "settings", icon: Settings, labelKey: "admin.settings", fallback: "إعدادات الموقع", group: "system" },
@@ -96,6 +102,7 @@ function SidebarNav({
   collapsed,
   activityCount,
   unreadContacts,
+  pendingAdsCount,
 }: {
   activeTab: string
   setTab: (tab: string) => void
@@ -103,6 +110,7 @@ function SidebarNav({
   collapsed: boolean
   activityCount: number
   unreadContacts: boolean
+  pendingAdsCount: number
 }) {
   const { t } = useI18n()
 
@@ -123,7 +131,7 @@ function SidebarNav({
               onNavigate={onNavigate}
               t={t}
               collapsed={collapsed}
-              activityCount={tab.id === "activity" ? activityCount : 0}
+              activityCount={tab.id === "activity" ? activityCount : tab.id === "ads" ? pendingAdsCount : 0}
               showDot={tab.id === "contacts" && unreadContacts}
             />
           ))}
@@ -142,7 +150,7 @@ function SidebarNav({
             onNavigate={onNavigate}
             t={t}
             collapsed={collapsed}
-            activityCount={tab.id === "activity" ? activityCount : 0}
+            activityCount={tab.id === "activity" ? activityCount : tab.id === "ads" ? pendingAdsCount : 0}
             showDot={tab.id === "contacts" && unreadContacts}
           />
         ))}
@@ -348,8 +356,9 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [activityCount, setActivityCount] = useState(0)
   const [unreadContacts, setUnreadContacts] = useState(false)
+  const [pendingAdsCount, setPendingAdsCount] = useState(0)
 
-  // Fetch activity count and unread contacts on mount
+  // Fetch activity count, unread contacts, and pending ad requests on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -368,6 +377,15 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
         setUnreadContacts(
           Array.isArray(contacts) && contacts.some((c: { read?: boolean }) => !c.read)
         )
+      } catch {
+        // silent
+      }
+
+      try {
+        const res = await fetch("/api/admin/ads")
+        const data = await res.json()
+        const pending = data.pending || []
+        setPendingAdsCount(Array.isArray(pending) ? pending.length : 0)
       } catch {
         // silent
       }
@@ -443,6 +461,7 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
           collapsed={sidebarCollapsed}
           activityCount={activityCount}
           unreadContacts={unreadContacts}
+          pendingAdsCount={pendingAdsCount}
         />
 
         {/* Sidebar footer */}
@@ -536,6 +555,7 @@ export function AdminLayout({ children, activeTab, setTab }: AdminLayoutProps) {
           collapsed={false}
           activityCount={activityCount}
           unreadContacts={unreadContacts}
+          pendingAdsCount={pendingAdsCount}
         />
         <div className="mt-auto space-y-2 border-t border-slate-200 p-3 dark:border-white/10">
           <button

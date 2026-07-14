@@ -14,6 +14,7 @@ import {
   Eye,
   FileText,
   Code2,
+  Sparkles,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -103,6 +104,8 @@ export function SeoTab() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
   const [ogPreviewUrl, setOgPreviewUrl] = useState("")
+  const [aiSuggesting, setAiSuggesting] = useState(false)
+  const [suggestedKeywords, setSuggestedKeywords] = useState<string[]>([])
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -146,6 +149,50 @@ export function SeoTab() {
       toast.error(`Failed to save ${sectionName}`)
     } finally {
       setSaving(null)
+    }
+  }
+
+  const handleAiSuggest = async () => {
+    setAiSuggesting(true)
+    try {
+      const content = [
+        settings.seo_meta_title,
+        settings.seo_meta_description,
+        settings.seo_og_title,
+        settings.seo_og_description,
+      ]
+        .filter(Boolean)
+        .join("\n")
+
+      const res = await fetch("/api/ai/seo-suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pageName: "CIAR",
+          content: content || "CIAR digital platforms and services",
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "failed")
+
+      setSettings((prev) => ({
+        ...prev,
+        seo_meta_title: data.suggestion?.title || prev.seo_meta_title,
+        seo_meta_description: data.suggestion?.description || prev.seo_meta_description,
+        seo_og_title: data.suggestion?.title || prev.seo_og_title,
+        seo_og_description: data.suggestion?.description || prev.seo_og_description,
+        seo_meta_keywords: Array.isArray(data.suggestion?.keywords)
+          ? data.suggestion.keywords.join(", ")
+          : prev.seo_meta_keywords,
+      }))
+      if (Array.isArray(data.suggestion?.keywords)) {
+        setSuggestedKeywords(data.suggestion.keywords)
+      }
+      toast.success(t("admin.seo_ai_applied") || "تم تطبيق اقتراحات SEO")
+    } catch {
+      toast.error(t("admin.seo_ai_failed") || "فشل توليد اقتراحات SEO")
+    } finally {
+      setAiSuggesting(false)
     }
   }
 
@@ -260,11 +307,29 @@ export function SeoTab() {
         {/* ── Page SEO Settings ── */}
         <TabsContent value="page-seo">
           <GlassCard>
-            <SectionHeader
-              icon={Globe}
-              title={t("admin.page_seo") || "Page SEO Settings"}
-              badge={t("admin.page_seo_desc") || "Configure meta tags for search engine optimization"}
-            />
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+              <SectionHeader
+                icon={Globe}
+                title={t("admin.page_seo") || "Page SEO Settings"}
+                badge={t("admin.page_seo_desc") || "Configure meta tags for search engine optimization"}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAiSuggest}
+                disabled={aiSuggesting}
+                className="gap-2 rounded-xl border-[oklch(0.76_0.19_48/20%)]"
+              >
+                {aiSuggesting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4 text-[oklch(0.76_0.19_48)]" />
+                )}
+                {aiSuggesting
+                  ? t("admin.seo_ai_suggesting") || "جاري توليد الاقتراحات..."
+                  : t("admin.seo_ai_suggest") || "اقتراح ذكي"}
+              </Button>
+            </div>
             <motion.div
               variants={stagger}
               initial="initial"
@@ -335,6 +400,27 @@ export function SeoTab() {
                 <p className="text-xs text-muted-foreground">
                   Optimal length: 150-160 characters.
                 </p>
+              </motion.div>
+
+              <motion.div {...fadeInUp} className="space-y-2">
+                <Label className="text-sm font-medium">
+                  {t("admin.meta_keywords") || "الكلمات المفتاحية"}
+                </Label>
+                <Input
+                  value={settings.seo_meta_keywords || ""}
+                  onChange={(e) => update("seo_meta_keywords", e.target.value)}
+                  placeholder="ciar, منصة, تجارة, خدمات رقمية"
+                  className="rounded-xl bg-[oklch(0.14_0.028_265/60%)] border-[oklch(0.76_0.19_48/10%)]"
+                />
+                {suggestedKeywords.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {suggestedKeywords.map((keyword) => (
+                      <Badge key={keyword} variant="secondary" className="text-xs">
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : null}
               </motion.div>
 
               {/* OG Image */}
@@ -454,6 +540,7 @@ export function SeoTab() {
                     [
                       "seo_meta_title",
                       "seo_meta_description",
+                      "seo_meta_keywords",
                       "seo_og_image",
                       "seo_canonical",
                       "seo_robots_index",

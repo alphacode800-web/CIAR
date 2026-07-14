@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useRef, useState } from "react"
 import {
   ArrowLeft,
   Building2,
-  CheckCircle2,
   Globe,
   ImageIcon,
   Link2,
@@ -27,7 +26,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "@/lib/router-context"
 import { useI18n } from "@/lib/i18n-context"
@@ -36,7 +34,10 @@ import { CONTACT_SENDER_TYPE_IDS, type ContactSenderTypeId } from "@/lib/contact
 import { setPostAuthRedirect } from "@/lib/post-auth-redirect"
 import { normalizeOptionalUrl } from "@/lib/optional-url"
 import type { AdNotifyChannel } from "@/lib/ad-notify"
+import { AdvertiserPanel } from "@/components/pages/advertiser-panel"
+import { AdProductDetailsForm } from "@/components/ads/ad-product-details-form"
 import { cn } from "@/lib/utils"
+import { adProductDetailsSchema, emptyAdProductDetails, type AdProductDetails } from "@/lib/ad-product-details"
 
 const optionalUrlField = z.preprocess(
   (value) => normalizeOptionalUrl(value),
@@ -54,6 +55,7 @@ const adFormSchema = z.object({
     z.string().max(500)
   ).optional().default(""),
   notifyVia: z.enum(["email", "whatsapp"]),
+  productDetails: adProductDetailsSchema.optional(),
 })
 
 function AnimatedSection({
@@ -157,6 +159,7 @@ export function AdvertisePage() {
   const [link, setLink] = useState("")
   const [imageUrl, setImageUrl] = useState("")
   const [notifyVia, setNotifyVia] = useState<AdNotifyChannel>("email")
+  const [productDetails, setProductDetails] = useState<AdProductDetails>(emptyAdProductDetails())
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -197,6 +200,7 @@ export function AdvertisePage() {
       link,
       imageUrl,
       notifyVia,
+      productDetails,
     })
 
     if (!parsed.success) {
@@ -273,6 +277,7 @@ export function AdvertisePage() {
       setDescription("")
       setLink("")
       setImageUrl("")
+      setProductDetails(emptyAdProductDetails())
       setNotifyVia(user?.phone && !user?.email ? "whatsapp" : "email")
     } catch (error) {
       toast.error(
@@ -286,15 +291,6 @@ export function AdvertisePage() {
       setSubmitting(false)
     }
   }
-
-  const userInitials = user?.name
-    ? user.name
-        .split(" ")
-        .slice(0, 2)
-        .map((part) => part[0])
-        .join("")
-        .toUpperCase()
-    : "?"
 
   return (
     <div dir={dir} className="min-h-screen bg-background">
@@ -457,27 +453,10 @@ export function AdvertisePage() {
                 </div>
               </div>
             ) : (
+              <div className="space-y-6">
+                <AdvertiserPanel />
               <div className="overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm">
-                {/* User welcome strip */}
-                <div className="flex items-center gap-4 border-b border-border/40 bg-gradient-to-r from-[oklch(0.78_0.14_82/8%)] to-transparent px-6 py-4 sm:px-8">
-                  <Avatar className="h-11 w-11 border-2 border-[oklch(0.78_0.14_82/30%)]">
-                    <AvatarFallback className="bg-[oklch(0.78_0.14_82/15%)] text-sm font-semibold text-[oklch(0.78_0.14_82)]">
-                      {userInitials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-foreground">{user.name}</p>
-                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                      {isAr ? "حسابك مفعّل — جاهز لإرسال طلب الإعلان" : "Account active — ready to submit your ad"}
-                    </p>
-                  </div>
-                  <Badge variant="secondary" className="hidden shrink-0 gap-1 sm:inline-flex glass-subtle">
-                    <Megaphone className="h-3 w-3" />
-                    {isAr ? "مُعلِن" : "Advertiser"}
-                  </Badge>
-                </div>
-
+                {/* User welcome strip removed — replaced by AdvertiserPanel above */}
                 <form onSubmit={onSubmit} className="space-y-8 p-6 sm:p-8">
                   <FormSection
                     title={isAr ? "تصنيف المُعلِن" : "Advertiser category"}
@@ -571,6 +550,23 @@ export function AdvertisePage() {
                         ) : null}
                       </div>
                     </div>
+                  </FormSection>
+
+                  <FormSection
+                    title={isAr ? "تفاصيل المنتج / البسة" : "Product / clothing details"}
+                    description={
+                      isAr
+                        ? "مثال: معلن بسة — أضف القماش، الألوان، المقاسات، السعر، الشحن، والدفع."
+                        : "Example: clothing ad — add fabric, colors, sizes, price, shipping, and payment."
+                    }
+                  >
+                    <AdProductDetailsForm
+                      value={productDetails}
+                      onChange={setProductDetails}
+                      isAr={isAr}
+                      showPlacement
+                      showPayment
+                    />
                   </FormSection>
 
                   <FormSection
@@ -689,6 +685,7 @@ export function AdvertisePage() {
                     </Button>
                   </div>
                 </form>
+              </div>
               </div>
             )}
           </AnimatedSection>

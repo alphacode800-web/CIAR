@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { CIAR_MODULES } from '@/features/super-platform/config'
 import { localizeAdminCategory, localizeAdminPlatformName } from '@/lib/admin-analytics-labels'
+import { listPendingAdRequests } from '@/services/site-ads.service'
 
 function buildFallbackAnalytics() {
   const modules = CIAR_MODULES.filter((module) => module.visibility === 'VISIBLE')
@@ -42,6 +43,8 @@ function buildFallbackAnalytics() {
     recentContacts: [],
     topProjects: [...topProjects].sort((a, b) => b.views - a.views).slice(0, 10),
     monthlyTrend: monthSlots.map((slot) => ({ month: slot.label, count: 0 })),
+    pendingAdRequests: [],
+    pendingAdsCount: 0,
     isFallback: true,
   }
 }
@@ -107,6 +110,7 @@ export async function GET() {
       topProjects,
       recentProjects,
       localeStats,
+      pendingAdRequests,
     ] = await Promise.all([
       db.project.count(),
       db.project.count({ where: { published: true } }),
@@ -194,6 +198,8 @@ export async function GET() {
         by: ['locale'],
         _count: { id: true },
       }),
+
+      listPendingAdRequests(),
     ])
 
     const avgViews = totalProjects > 0 ? Math.round(totalViews / totalProjects) : 0
@@ -203,7 +209,19 @@ export async function GET() {
     const translationCoverage = totalPossible > 0 ? Math.round((totalActual / totalPossible) * 100) : 0
 
     if (totalProjects === 0) {
-      return NextResponse.json(buildFallbackAnalytics())
+      const fallback = buildFallbackAnalytics()
+      return NextResponse.json({
+        ...fallback,
+        pendingAdRequests: pendingAdRequests.slice(0, 10).map((item) => ({
+          id: item.id,
+          source: item.source,
+          title: item.title,
+          companyName: item.companyName,
+          userName: item.userName,
+          createdAt: item.createdAt,
+        })),
+        pendingAdsCount: pendingAdRequests.length,
+      })
     }
 
     return NextResponse.json({
@@ -225,6 +243,15 @@ export async function GET() {
       recentContacts,
       topProjects,
       monthlyTrend: buildMonthlyTrend(monthSlots, recentProjects),
+      pendingAdRequests: pendingAdRequests.slice(0, 10).map((item) => ({
+        id: item.id,
+        source: item.source,
+        title: item.title,
+        companyName: item.companyName,
+        userName: item.userName,
+        createdAt: item.createdAt,
+      })),
+      pendingAdsCount: pendingAdRequests.length,
     })
   } catch (error) {
     console.error('GET /api/admin/analytics error:', error)

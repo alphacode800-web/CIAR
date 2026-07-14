@@ -56,6 +56,7 @@ export function Footer() {
   const quickLinks = [
     { label: isAr ? "الرئيسية" : "Home", page: "home" as const },
     { label: isAr ? "منصتنا" : "Our Platforms", page: "projects" as const },
+    { label: isAr ? "الإعلانات" : "Ads", page: "ads" as const },
     { label: isAr ? "من نحن" : "About", page: "about" as const },
     { label: isAr ? "تواصل معنا" : "Contact", page: "contact" as const },
   ]

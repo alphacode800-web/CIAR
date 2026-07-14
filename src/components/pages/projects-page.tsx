@@ -28,6 +28,7 @@ import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
 import { cn } from "@/lib/utils"
 import { PageHeroHeader } from "@/components/layout/page-hero-header"
+import { SiteAdSlot } from "@/components/ads/site-ad-slot"
 import { DEFAULT_PAGE_HEADERS, type PageHeaderConfig } from "@/lib/page-headers"
 
 export interface Project {
@@ -171,6 +172,10 @@ export function ProjectsPage({ projects, categories, onRefresh }: ProjectsPagePr
       </PageHeroHeader>
 
       <div className="glow-line-gold" />
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+        <SiteAdSlot placement="projects_top" position="slot_1" locale={locale === "ar" ? "ar" : "en"} />
+      </div>
 
       {/* ══════════════════════════════════════════════════════════
           FILTERS & SEARCH
