@@ -5,7 +5,7 @@
 CIAR is a production Next.js application that unifies a corporate portfolio, a multi-module business platform, marketplace commerce, and advertiser workflows under a single design system. Content, translations, banners, ads, and campaigns are persisted in PostgreSQL and surfaced through a typed service layer — so operators control the live site from the admin panel while engineers keep strict boundaries between UI, API routes, and data access.
 
 <!-- Replace with a real screenshot or demo GIF -->
-![CIAR Platform Preview](./public/logo.svg)
+![CIAR Platform Preview]()
 > **Demo media placeholder** — replace the image above with a 1440×900 screenshot or short GIF of the Super Platform home + Admin panel.
 
 ---
