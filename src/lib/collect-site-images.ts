@@ -6,6 +6,8 @@ import { DEFAULT_HERO_IMAGE_URLS } from "@/lib/default-hero-images"
 import { resolvePlatformCardImages } from "@/lib/platform-card-images"
 import { MODULE_BANNER_IMAGES, DEFAULT_BANNER_IMAGES } from "@/features/super-platform/config"
 import { getFallbackBanners } from "@/features/super-platform/server"
+import { parseSiteAds, SITE_ADS_SETTINGS_KEY } from "@/lib/site-ads"
+import { PENDING_AD_REQUESTS_KEY } from "@/services/advertise.service"
 
 const VIDEO_EXT = /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i
 
@@ -43,6 +45,47 @@ function pushBannerImages(
 ) {
   if (!banner) return
   target.push(...resolvePlatformCardImages(banner))
+}
+
+export async function collectAdImages(): Promise<string[]> {
+  const urls: string[] = []
+
+  try {
+    const settings = await getSettings()
+    const ads = parseSiteAds(settings[SITE_ADS_SETTINGS_KEY])
+    for (const ad of ads) {
+      if (ad.status === "rejected") continue
+      urls.push(ad.imageUrl)
+    }
+
+    const queueRaw = settings[PENDING_AD_REQUESTS_KEY]
+    if (queueRaw) {
+      try {
+        const queue = JSON.parse(queueRaw) as { imageUrl?: string }[]
+        if (Array.isArray(queue)) {
+          for (const item of queue) urls.push(item.imageUrl ?? "")
+        }
+      } catch {
+        // ignore invalid queue
+      }
+    }
+  } catch {
+    // settings unavailable
+  }
+
+  try {
+    const rows = await prisma.adSubmission.findMany({
+      where: { status: { in: ["pending", "approved"] } },
+      select: { imageUrl: true },
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    })
+    for (const row of rows) urls.push(row.imageUrl)
+  } catch {
+    // database unavailable
+  }
+
+  return dedupeImageUrls(urls)
 }
 
 export async function collectSiteImages(extraImages: string[] = []): Promise<string[]> {
@@ -114,6 +157,12 @@ export async function collectSiteImages(extraImages: string[] = []): Promise<str
   }
 
   urls.push(...extraImages)
+
+  try {
+    urls.push(...(await collectAdImages()))
+  } catch {
+    // ignore ad image collection errors
+  }
 
   return dedupeImageUrls(urls)
 }
