@@ -28,6 +28,7 @@ const PrivacyPolicyPage = lazy(() => import("@/components/pages/legal-page").the
 const TermsPage = lazy(() => import("@/components/pages/legal-page").then(m => ({ default: m.TermsPage })))
 const SubscriptionPage = lazy(() => import("@/components/pages/subscription-page").then(m => ({ default: m.SubscriptionPage })))
 const SubscriptionPaymentPage = lazy(() => import("@/components/pages/subscription-payment-page").then(m => ({ default: m.SubscriptionPaymentPage })))
+const AdminPage = lazy(() => import("@/components/pages/admin-page").then(m => ({ default: m.AdminPage })))
 
 const DEFAULT_HOME_BANNERS: HomeBannersConfig = {
   nav: {
