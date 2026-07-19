@@ -2,28 +2,34 @@
 
 import { useEffect, useState } from "react"
 import { useI18n } from "@/lib/i18n-context"
-import { SITE_CONTACT_DEFAULTS, whatsappHref } from "@/lib/site-contact"
+import { SITE_CONTACT_DEFAULTS, whatsappHref, whatsappDigits } from "@/lib/site-contact"
 import { cn } from "@/lib/utils"
+
+function buildDefaultHref(isAr: boolean) {
+  return whatsappHref(
+    SITE_CONTACT_DEFAULTS.social_whatsapp,
+    isAr ? "مرحباً، أود التواصل مع فريق CIAR" : "Hello, I would like to contact the CIAR team"
+  )
+}
 
 export function FloatingWhatsAppButton() {
   const { locale } = useI18n()
   const isAr = locale === "ar"
-  const [href, setHref] = useState(() =>
-    whatsappHref(
-      SITE_CONTACT_DEFAULTS.social_whatsapp,
-      isAr ? "مرحباً، أود التواصل مع فريق CIAR" : "Hello, I would like to contact the CIAR team"
-    )
-  )
+  const [href, setHref] = useState(() => buildDefaultHref(isAr))
 
   useEffect(() => {
+    setHref(buildDefaultHref(isAr))
+
     const load = async () => {
       try {
         const res = await fetch("/api/settings")
         if (!res.ok) return
         const data = await res.json()
         const number = String(data?.social_whatsapp || data?.contact_phone || SITE_CONTACT_DEFAULTS.social_whatsapp)
+        if (!whatsappDigits(number)) return
         const message = isAr ? "مرحباً، أود التواصل مع فريق CIAR" : "Hello, I would like to contact the CIAR team"
-        setHref(whatsappHref(number, message))
+        const nextHref = whatsappHref(number, message)
+        if (nextHref) setHref(nextHref)
       } catch {
         // keep default
       }
@@ -31,16 +37,14 @@ export function FloatingWhatsAppButton() {
     void load()
   }, [isAr])
 
-  if (!href) return null
-
   return (
     <a
-      href={href}
+      href={href || buildDefaultHref(isAr)}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={isAr ? "تواصل عبر واتساب" : "Contact us on WhatsApp"}
       className={cn(
-        "fixed bottom-5 end-5 z-50 flex h-14 w-14 items-center justify-center rounded-full",
+        "fixed bottom-5 end-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full",
         "bg-[#25D366] text-white shadow-lg shadow-[#25D366]/35",
         "transition-transform duration-200 hover:scale-105 hover:shadow-xl hover:shadow-[#25D366]/40",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2"

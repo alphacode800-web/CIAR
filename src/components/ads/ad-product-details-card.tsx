@@ -4,17 +4,20 @@ import { Badge } from "@/components/ui/badge"
 import {
   getPlacementLabel,
   getPositionLabel,
-  type SiteAdRecord,
   type PendingAdRequestItem,
+  type SiteAdRecord,
 } from "@/lib/site-ads"
 import {
+  collectVideoUrls,
   getListingTypeLabel,
   getPaymentMethodLabel,
   getPaymentStatusLabel,
-  joinList,
+  type AdListingType,
   type AdProductDetails,
 } from "@/lib/ad-product-details"
+import { getFieldDisplayValue, getListingTypeConfig } from "@/lib/ad-listing-fields"
 import { whatsappHref } from "@/lib/site-contact"
+import { AdVideoPreview } from "@/components/ads/ad-video-preview"
 
 type AdProductDetailsCardProps = {
   details?: AdProductDetails
@@ -35,17 +38,18 @@ function DetailRow({ label, value }: { label: string; value?: string | number | 
 export function AdProductDetailsCard({ details, isAr, compact = false }: AdProductDetailsCardProps) {
   if (!details || Object.keys(details).length === 0) return null
 
+  const listingType = (details.listingType || "general") as AdListingType
+  const typeConfig = getListingTypeConfig(listingType)
   const priceLabel =
     typeof details.price === "number"
       ? `${details.price.toLocaleString()} ${details.currency || "SAR"}`
       : undefined
+  const videoUrls = collectVideoUrls(details)
 
   return (
     <div className={`rounded-xl border border-border/40 bg-muted/10 ${compact ? "p-3 space-y-2" : "p-4 space-y-3"}`}>
       <div className="flex flex-wrap gap-2">
-        {details.listingType ? (
-          <Badge variant="outline">{getListingTypeLabel(details.listingType, isAr)}</Badge>
-        ) : null}
+        <Badge variant="outline">{getListingTypeLabel(listingType, isAr)}</Badge>
         {typeof details.discountPercent === "number" && details.discountPercent > 0 ? (
           <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
             {isAr ? `خصم ${details.discountPercent}%` : `${details.discountPercent}% off`}
@@ -56,12 +60,21 @@ export function AdProductDetailsCard({ details, isAr, compact = false }: AdProdu
         ) : null}
       </div>
 
-      <DetailRow label={isAr ? "أنواع القماش" : "Fabrics"} value={joinList(details.fabricTypes)} />
-      <DetailRow label={isAr ? "الألوان" : "Colors"} value={joinList(details.colors)} />
-      <DetailRow label={isAr ? "المقاسات" : "Sizes"} value={joinList(details.sizes)} />
-      <DetailRow label={isAr ? "المتبقي" : "Stock"} value={details.stockRemaining} />
+      {typeConfig.fields.map((field) => (
+        <DetailRow
+          key={String(field.key)}
+          label={isAr ? field.labelAr : field.labelEn}
+          value={getFieldDisplayValue(details, field)}
+        />
+      ))}
+
+      {typeConfig.showStock !== false ? (
+        <DetailRow label={isAr ? "المتبقي" : "Stock"} value={details.stockRemaining} />
+      ) : null}
       <DetailRow label={isAr ? "السعر" : "Price"} value={priceLabel} />
-      <DetailRow label={isAr ? "الشحن" : "Shipping"} value={details.shippingInfo} />
+      {typeConfig.showShipping !== false ? (
+        <DetailRow label={isAr ? "الشحن" : "Shipping"} value={details.shippingInfo} />
+      ) : null}
       <DetailRow label={isAr ? "الهاتف" : "Phone"} value={details.contactPhone} />
       <DetailRow label={isAr ? "طريقة الدفع" : "Payment"} value={getPaymentMethodLabel(details.paymentMethod, isAr)} />
       {typeof details.paymentAmount === "number" ? (
@@ -79,6 +92,14 @@ export function AdProductDetailsCard({ details, isAr, compact = false }: AdProdu
       ) : null}
       {details.requestedDurationDays ? (
         <DetailRow label={isAr ? "المدة" : "Duration"} value={`${details.requestedDurationDays} ${isAr ? "يوم" : "days"}`} />
+      ) : null}
+
+      {videoUrls.length > 0 ? (
+        <div className="space-y-2 pt-1">
+          {videoUrls.map((url) => (
+            <AdVideoPreview key={url} url={url} compact={compact} />
+          ))}
+        </div>
       ) : null}
 
       {details.whatsappLink || details.contactPhone ? (
