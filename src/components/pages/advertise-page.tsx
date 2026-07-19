@@ -553,11 +553,11 @@ export function AdvertisePage() {
                   </FormSection>
 
                   <FormSection
-                    title={isAr ? "تفاصيل المنتج / البسة" : "Product / clothing details"}
+                    title={isAr ? "تفاصيل الإعلان حسب النوع" : "Listing details by type"}
                     description={
                       isAr
-                        ? "مثال: معلن بسة — أضف القماش، الألوان، المقاسات، السعر، الشحن، والدفع."
-                        : "Example: clothing ad — add fabric, colors, sizes, price, shipping, and payment."
+                        ? "اختر نوع الإعلان لتظهر الحقول المناسبة — أزياء، عقارات، إلكترونيات، خدمات، وغيرها."
+                        : "Pick a listing type to show the right fields — fashion, real estate, electronics, services, and more."
                     }
                   >
                     <AdProductDetailsForm
@@ -566,6 +566,7 @@ export function AdvertisePage() {
                       isAr={isAr}
                       showPlacement
                       showPayment
+                      pricingMode="advertiser"
                     />
                   </FormSection>
 

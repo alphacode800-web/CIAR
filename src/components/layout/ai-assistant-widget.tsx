@@ -148,7 +148,7 @@ export function AiAssistantWidget() {
   if (!bootstrapped || !enabled) return null
 
   return (
-    <div className="pointer-events-none fixed bottom-5 z-[60] end-5 flex flex-col items-end gap-3">
+    <div className="pointer-events-none fixed bottom-5 z-[60] start-5 flex flex-col items-start gap-3">
       {open ? (
         <div className="pointer-events-auto flex h-[min(560px,calc(100vh-6rem))] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-[oklch(0.76_0.19_48/20%)] bg-white shadow-2xl dark:bg-[oklch(0.12_0.03_265/98%)]">
           <div className="flex items-center justify-between gap-3 border-b border-[oklch(0.76_0.19_48/12%)] bg-gradient-to-r from-[oklch(0.76_0.19_48)] to-[oklch(0.58_0.17_38)] px-4 py-3 text-[oklch(0.15_0.04_80)]">

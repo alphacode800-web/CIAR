@@ -15,6 +15,8 @@ import {
   upsertManagedAd,
 } from "@/services/site-ads.service"
 import { adProductDetailsSchema } from "@/lib/ad-product-details"
+import { adPricingConfigSchema } from "@/lib/ad-pricing"
+import { getAdPricingConfig, saveAdPricingConfig } from "@/services/ad-pricing.service"
 
 const upsertSchema = z.object({
   id: z.string().optional(),
@@ -58,8 +60,12 @@ const rejectSchema = z.object({
 
 export async function GET() {
   try {
-    const [ads, pending] = await Promise.all([listManagedAds(), listPendingAdRequests()])
-    return NextResponse.json({ ads, pending })
+    const [ads, pending, pricing] = await Promise.all([
+      listManagedAds(),
+      listPendingAdRequests(),
+      getAdPricingConfig(),
+    ])
+    return NextResponse.json({ ads, pending, pricing })
   } catch (error) {
     console.error("GET /api/admin/ads error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -86,6 +92,15 @@ export async function POST(request: NextRequest) {
       }
       await rejectPendingRequest(parsed.data)
       return NextResponse.json({ success: true })
+    }
+
+    if (body.action === "save_pricing") {
+      const parsed = adPricingConfigSchema.safeParse(body.pricing)
+      if (!parsed.success) {
+        return NextResponse.json({ error: "Validation error" }, { status: 400 })
+      }
+      const pricing = await saveAdPricingConfig(parsed.data)
+      return NextResponse.json({ success: true, pricing })
     }
 
     const parsed = upsertSchema.safeParse(body)

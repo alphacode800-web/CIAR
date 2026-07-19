@@ -12,7 +12,8 @@ import {
 import { submitContact } from "@/services/contact.service"
 import { getSettings } from "@/services/settings.service"
 import { withSiteContactDefaults } from "@/lib/site-contact"
-import { adProductDetailsSchema } from "@/lib/ad-product-details"
+import { adProductDetailsSchema, formatProductDetailsForMessage } from "@/lib/ad-product-details"
+import { applyAdminPricingToDetails, quoteAdFromDetails } from "@/services/ad-pricing.service"
 
 const optionalUrlSchema = z.preprocess(
   (value) => normalizeOptionalUrl(value),
@@ -49,15 +50,7 @@ function buildAdMessage(user: AuthUser, data: z.infer<typeof adSchema>) {
     `التصنيف: ${data.senderType}`,
     `الرابط: ${data.link || "—"}`,
     `صورة: ${data.imageUrl || "—"}`,
-    data.productDetails?.fabricTypes?.length ? `الأقمشة: ${data.productDetails.fabricTypes.join("، ")}` : null,
-    data.productDetails?.colors?.length ? `الألوان: ${data.productDetails.colors.join("، ")}` : null,
-    data.productDetails?.sizes?.length ? `المقاسات: ${data.productDetails.sizes.join("، ")}` : null,
-    typeof data.productDetails?.stockRemaining === "number" ? `المتبقي: ${data.productDetails.stockRemaining}` : null,
-    typeof data.productDetails?.price === "number" ? `السعر: ${data.productDetails.price} ${data.productDetails.currency || "SAR"}` : null,
-    typeof data.productDetails?.discountPercent === "number" ? `الحسم: ${data.productDetails.discountPercent}%` : null,
-    data.productDetails?.shippingInfo ? `الشحن: ${data.productDetails.shippingInfo}` : null,
-    data.productDetails?.contactPhone ? `هاتف: ${data.productDetails.contactPhone}` : null,
-    data.productDetails?.whatsappLink ? `واتساب: ${data.productDetails.whatsappLink}` : null,
+    ...formatProductDetailsForMessage(data.productDetails),
     "",
     data.description,
   ]
@@ -97,6 +90,8 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parsed.data
+    const quote = await quoteAdFromDetails(data.productDetails)
+    const productDetails = applyAdminPricingToDetails(data.productDetails, quote)
 
     if (data.notifyVia === "email" && !user.email) {
       return NextResponse.json(
@@ -112,7 +107,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const message = buildAdMessage(user, data)
+    const message = buildAdMessage(user, { ...data, productDetails })
     let contactId: string | null = null
     let adId: string | null = null
 
@@ -142,7 +137,7 @@ export async function POST(request: NextRequest) {
           link: data.link || "",
           imageUrl: data.imageUrl || "",
           locale: data.locale,
-          productDetails: data.productDetails,
+          productDetails,
         })
         adId = submission.id
       } catch (adError) {
@@ -172,6 +167,7 @@ export async function POST(request: NextRequest) {
         via: adId ? "ad_submission" : "contact",
         notifyVia: data.notifyVia,
         deliveryUrl,
+        quote,
       })
     }
 
@@ -189,7 +185,7 @@ export async function POST(request: NextRequest) {
         imageUrl: data.imageUrl || "",
         locale: data.locale,
         notifyVia: data.notifyVia,
-        productDetails: data.productDetails,
+        productDetails,
       })
       return NextResponse.json({
         success: true,
@@ -197,6 +193,7 @@ export async function POST(request: NextRequest) {
         via: "settings_queue",
         notifyVia: data.notifyVia,
         deliveryUrl,
+        quote,
       })
     } catch (queueError) {
       console.error("Ad settings queue failed:", queueError)

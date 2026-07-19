@@ -49,6 +49,9 @@ import { SiteAdBanner } from "@/components/ads/site-ad-banner"
 import { AdProductDetailsForm } from "@/components/ads/ad-product-details-form"
 import { AdProductDetailsCard } from "@/components/ads/ad-product-details-card"
 import { emptyAdProductDetails, type AdProductDetails } from "@/lib/ad-product-details"
+import type { AdPricingConfig } from "@/lib/ad-pricing"
+import { defaultAdPricingConfig } from "@/lib/ad-pricing"
+import { AdPricingAdminPanel } from "@/components/ads/ad-pricing-admin-panel"
 import { cn } from "@/lib/utils"
 
 type AdsView = "list" | "editor" | "pending"
@@ -107,6 +110,7 @@ export function AdsTab() {
   const [draft, setDraft] = useState(emptyDraft())
   const [reviewingItem, setReviewingItem] = useState<PendingAdRequestItem | null>(null)
   const [reviewDetails, setReviewDetails] = useState<AdProductDetails>(emptyAdProductDetails())
+  const [pricing, setPricing] = useState<AdPricingConfig>(defaultAdPricingConfig())
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -115,6 +119,7 @@ export function AdsTab() {
       const data = await res.json()
       setAds(Array.isArray(data.ads) ? data.ads : [])
       setPending(Array.isArray(data.pending) ? data.pending : [])
+      if (data.pricing) setPricing(data.pricing)
     } catch {
       toast.error(t("admin.ads_load_failed") || "تعذر تحميل الإعلانات")
     } finally {
@@ -301,6 +306,8 @@ export function AdsTab() {
         )}
       </div>
 
+      <AdPricingAdminPanel initialPricing={pricing} isAr={isAr} onSaved={setPricing} />
+
       <div className="flex flex-wrap gap-2">
         {(
           [
@@ -450,6 +457,7 @@ export function AdsTab() {
                     showPlacement
                     showPayment
                     showAdminPaymentStatus
+                    pricingMode="admin"
                   />
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="space-y-2">
@@ -563,6 +571,7 @@ export function AdsTab() {
                 isAr={isAr}
                 showPayment
                 showAdminPaymentStatus
+                pricingMode="admin"
               />
             </section>
 

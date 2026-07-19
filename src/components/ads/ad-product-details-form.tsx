@@ -1,8 +1,11 @@
 "use client"
 
+import { useRef, useState } from "react"
+import { Film, Link2, Loader2, Upload, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -22,14 +25,25 @@ import {
   AD_LISTING_TYPES,
   AD_PAYMENT_METHODS,
   AD_PAYMENT_STATUSES,
+  collectVideoUrls,
   emptyAdProductDetails,
   getListingTypeLabel,
   getPaymentMethodLabel,
   getPaymentStatusLabel,
-  parseCsvList,
   joinList,
+  normalizeVideoUrl,
+  parseCsvList,
+  type AdListingType,
   type AdProductDetails,
 } from "@/lib/ad-product-details"
+import {
+  AD_LISTING_TYPE_CONFIG,
+  getListingTypeConfig,
+  type AdListingFieldDef,
+} from "@/lib/ad-listing-fields"
+import { toast } from "sonner"
+import { AdPricingQuoteBox } from "@/components/ads/ad-pricing-quote-box"
+import type { AdQuote } from "@/lib/ad-pricing"
 
 type AdProductDetailsFormProps = {
   value: AdProductDetails
@@ -38,6 +52,28 @@ type AdProductDetailsFormProps = {
   showPlacement?: boolean
   showPayment?: boolean
   showAdminPaymentStatus?: boolean
+  pricingMode?: "admin" | "advertiser"
+}
+
+function readFieldValue(details: AdProductDetails, field: AdListingFieldDef): string {
+  const raw = details[field.key]
+  if (Array.isArray(raw)) return joinList(raw)
+  if (raw === undefined || raw === null) return ""
+  return String(raw)
+}
+
+function writeFieldValue(
+  details: AdProductDetails,
+  field: AdListingFieldDef,
+  value: string
+): Partial<AdProductDetails> {
+  if (field.type === "csv") {
+    return { [field.key]: parseCsvList(value) } as Partial<AdProductDetails>
+  }
+  if (field.type === "number") {
+    return { [field.key]: value ? Number(value) : undefined } as Partial<AdProductDetails>
+  }
+  return { [field.key]: value || undefined } as Partial<AdProductDetails>
 }
 
 export function AdProductDetailsForm({
@@ -47,59 +83,148 @@ export function AdProductDetailsForm({
   showPlacement = true,
   showPayment = true,
   showAdminPaymentStatus = false,
+  pricingMode = "advertiser",
 }: AdProductDetailsFormProps) {
   const details = { ...emptyAdProductDetails(), ...value }
+  const listingType = (details.listingType || "general") as AdListingType
+  const typeConfig = getListingTypeConfig(listingType)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingVideo, setUploadingVideo] = useState(false)
+  const [videoLinkDraft, setVideoLinkDraft] = useState("")
 
   const patch = (partial: Partial<AdProductDetails>) => onChange({ ...details, ...partial })
+
+  const handleListingTypeChange = (nextType: AdListingType) => {
+    onChange({
+      ...emptyAdProductDetails(),
+      listingType: nextType,
+      currency: details.currency,
+      contactPhone: details.contactPhone,
+      whatsappLink: details.whatsappLink,
+      paymentMethod: details.paymentMethod,
+      paymentStatus: details.paymentStatus,
+      paymentAmount: details.paymentAmount,
+      requestedPlacement: details.requestedPlacement,
+      requestedPosition: details.requestedPosition,
+      requestedDurationDays: details.requestedDurationDays,
+      videoUrl: details.videoUrl,
+      videoUrls: details.videoUrls,
+    })
+  }
+
+  const uploadVideoFile = async (file: File) => {
+    setUploadingVideo(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("category", "general")
+      const res = await fetch("/api/media", { method: "POST", body: formData })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "upload failed")
+      const nextUrls = [...collectVideoUrls(details), data.url].slice(0, 5)
+      patch({ videoUrls: nextUrls, videoUrl: nextUrls[0] })
+      toast.success(isAr ? "تم رفع الفيديو" : "Video uploaded")
+    } catch {
+      toast.error(isAr ? "فشل رفع الفيديو" : "Video upload failed")
+    } finally {
+      setUploadingVideo(false)
+    }
+  }
+
+  const addVideoLink = () => {
+    const normalized = normalizeVideoUrl(videoLinkDraft)
+    if (!normalized) {
+      toast.error(isAr ? "أدخل رابط فيديو صالحاً" : "Enter a valid video link")
+      return
+    }
+    const nextUrls = [...collectVideoUrls(details), normalized].slice(0, 5)
+    patch({ videoUrls: nextUrls, videoUrl: nextUrls[0] })
+    setVideoLinkDraft("")
+    toast.success(isAr ? "تمت إضافة رابط الفيديو" : "Video link added")
+  }
+
+  const removeVideo = (url: string) => {
+    const nextUrls = collectVideoUrls(details).filter((item) => item !== url)
+    patch({ videoUrls: nextUrls, videoUrl: nextUrls[0] || "" })
+  }
+
+  const renderField = (field: AdListingFieldDef) => {
+    const label = isAr ? field.labelAr : field.labelEn
+    const placeholder = isAr ? field.placeholderAr : field.placeholderEn
+    const fieldValue = readFieldValue(details, field)
+
+    if (field.type === "textarea") {
+      return (
+        <div key={String(field.key)} className="space-y-2 sm:col-span-2">
+          <Label>{label}</Label>
+          <Textarea
+            rows={2}
+            value={fieldValue}
+            onChange={(e) => patch(writeFieldValue(details, field, e.target.value))}
+            placeholder={placeholder}
+          />
+        </div>
+      )
+    }
+
+    return (
+      <div key={String(field.key)} className="space-y-2">
+        <Label>{label}</Label>
+        <Input
+          type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+          value={fieldValue}
+          onChange={(e) => patch(writeFieldValue(details, field, e.target.value))}
+          placeholder={placeholder}
+        />
+      </div>
+    )
+  }
+
+  const handleQuote = (quote: AdQuote) => {
+    if (pricingMode !== "advertiser") return
+    if (details.paymentAmount === quote.amount && details.currency === quote.currency) return
+    patch({ paymentAmount: quote.amount, currency: quote.currency })
+  }
+
+  const videoUrls = collectVideoUrls(details)
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>{isAr ? "نوع الإعلان" : "Listing type"}</Label>
-        <Select value={details.listingType || "general"} onValueChange={(v) => patch({ listingType: v as AdProductDetails["listingType"] })}>
+        <Select value={listingType} onValueChange={(v) => handleListingTypeChange(v as AdListingType)}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             {AD_LISTING_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>{getListingTypeLabel(type, isAr)}</SelectItem>
+              <SelectItem key={type} value={type}>
+                {getListingTypeLabel(type, isAr)}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground">
+          {isAr ? typeConfig.descriptionAr : typeConfig.descriptionEn}
+        </p>
       </div>
 
+      {typeConfig.fields.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {typeConfig.fields.map(renderField)}
+        </div>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label>{isAr ? "أنواع القماش" : "Fabric types"}</Label>
-          <Input
-            value={joinList(details.fabricTypes)}
-            onChange={(e) => patch({ fabricTypes: parseCsvList(e.target.value) })}
-            placeholder={isAr ? "قطن، حرير، بوليستر" : "Cotton, silk, polyester"}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>{isAr ? "الألوان" : "Colors"}</Label>
-          <Input
-            value={joinList(details.colors)}
-            onChange={(e) => patch({ colors: parseCsvList(e.target.value) })}
-            placeholder={isAr ? "أبيض، أسود، بيج" : "White, black, beige"}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>{isAr ? "المقاسات" : "Sizes"}</Label>
-          <Input
-            value={joinList(details.sizes)}
-            onChange={(e) => patch({ sizes: parseCsvList(e.target.value) })}
-            placeholder={isAr ? "S, M, L, XL" : "S, M, L, XL"}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>{isAr ? "العدد المتبقي" : "Stock remaining"}</Label>
-          <Input
-            type="number"
-            min={0}
-            value={details.stockRemaining ?? ""}
-            onChange={(e) => patch({ stockRemaining: e.target.value ? Number(e.target.value) : undefined })}
-          />
-        </div>
+        {typeConfig.showStock !== false ? (
+          <div className="space-y-2">
+            <Label>{isAr ? "العدد المتبقي" : "Stock remaining"}</Label>
+            <Input
+              type="number"
+              min={0}
+              value={details.stockRemaining ?? ""}
+              onChange={(e) => patch({ stockRemaining: e.target.value ? Number(e.target.value) : undefined })}
+            />
+          </div>
+        ) : null}
         <div className="space-y-2">
           <Label>{isAr ? "السعر" : "Price"}</Label>
           <Input
@@ -113,59 +238,160 @@ export function AdProductDetailsForm({
           <Label>{isAr ? "العملة" : "Currency"}</Label>
           <Input value={details.currency || "SAR"} onChange={(e) => patch({ currency: e.target.value })} />
         </div>
-        <div className="space-y-2">
-          <Label>{isAr ? "نسبة الحسم %" : "Discount %"}</Label>
-          <Input
-            type="number"
-            min={0}
-            max={100}
-            value={details.discountPercent ?? ""}
-            onChange={(e) => patch({ discountPercent: e.target.value ? Number(e.target.value) : undefined })}
-          />
-        </div>
+        {typeConfig.showDiscount !== false ? (
+          <div className="space-y-2">
+            <Label>{isAr ? "نسبة الحسم %" : "Discount %"}</Label>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              value={details.discountPercent ?? ""}
+              onChange={(e) => patch({ discountPercent: e.target.value ? Number(e.target.value) : undefined })}
+            />
+          </div>
+        ) : null}
         <div className="space-y-2">
           <Label>{isAr ? "رقم الهاتف / واتساب" : "Phone / WhatsApp"}</Label>
-          <Input dir="ltr" value={details.contactPhone || ""} onChange={(e) => patch({ contactPhone: e.target.value })} placeholder="+9665..." />
+          <Input
+            dir="ltr"
+            value={details.contactPhone || ""}
+            onChange={(e) => patch({ contactPhone: e.target.value })}
+            placeholder="+9665..."
+          />
         </div>
       </div>
 
       <div className="space-y-2">
         <Label>{isAr ? "رابط واتساب" : "WhatsApp link"}</Label>
-        <Input dir="ltr" value={details.whatsappLink || ""} onChange={(e) => patch({ whatsappLink: e.target.value })} placeholder="https://wa.me/9665..." />
-      </div>
-
-      <div className="space-y-2">
-        <Label>{isAr ? "الشحن" : "Shipping"}</Label>
-        <Textarea
-          rows={2}
-          value={details.shippingInfo || ""}
-          onChange={(e) => patch({ shippingInfo: e.target.value })}
-          placeholder={isAr ? "مجاني داخل المدينة — 3 أيام توصيل" : "Free in-city — 3-day delivery"}
+        <Input
+          dir="ltr"
+          value={details.whatsappLink || ""}
+          onChange={(e) => patch({ whatsappLink: e.target.value })}
+          placeholder="https://wa.me/9665..."
         />
       </div>
 
-      {showPayment ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>{isAr ? "طريقة الدفع" : "Payment method"}</Label>
-            <Select value={details.paymentMethod || "whatsapp"} onValueChange={(v) => patch({ paymentMethod: v as AdProductDetails["paymentMethod"] })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {AD_PAYMENT_METHODS.map((method) => (
-                  <SelectItem key={method} value={method}>{getPaymentMethodLabel(method, isAr)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>{isAr ? "مبلغ الإعلان" : "Ad payment amount"}</Label>
+      {typeConfig.showShipping !== false ? (
+        <div className="space-y-2">
+          <Label>{isAr ? "الشحن" : "Shipping"}</Label>
+          <Textarea
+            rows={2}
+            value={details.shippingInfo || ""}
+            onChange={(e) => patch({ shippingInfo: e.target.value })}
+            placeholder={isAr ? "مجاني داخل المدينة — 3 أيام توصيل" : "Free in-city — 3-day delivery"}
+          />
+        </div>
+      ) : null}
+
+      <div className="rounded-xl border border-border/50 bg-muted/10 p-4 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Film className="h-4 w-4 text-primary" />
+          {isAr ? "فيديو الإعلان" : "Ad video"}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {isAr
+            ? "ارفع فيديو من جهازك أو الصق رابطاً من يوتيوب، تيك توك، إنستغرام، فيسبوك، أو أي موقع."
+            : "Upload from your device or paste a link from YouTube, TikTok, Instagram, Facebook, or any site."}
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) void uploadVideoFile(file)
+              e.target.value = ""
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-2 rounded-full"
+            disabled={uploadingVideo || videoUrls.length >= 5}
+            onClick={() => videoInputRef.current?.click()}
+          >
+            {uploadingVideo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {isAr ? "رفع من الجهاز" : "Upload from device"}
+          </Button>
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="relative flex-1">
+            <Link2 className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              type="number"
-              min={0}
-              value={details.paymentAmount ?? ""}
-              onChange={(e) => patch({ paymentAmount: e.target.value ? Number(e.target.value) : undefined })}
+              dir="ltr"
+              value={videoLinkDraft}
+              onChange={(e) => setVideoLinkDraft(e.target.value)}
+              placeholder={isAr ? "https://youtube.com/... أو tiktok.com/..." : "https://youtube.com/... or tiktok.com/..."}
+              className="ps-9"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  addVideoLink()
+                }
+              }}
             />
           </div>
+          <Button
+            type="button"
+            variant="secondary"
+            className="rounded-full"
+            disabled={videoUrls.length >= 5}
+            onClick={addVideoLink}
+          >
+            {isAr ? "إضافة الرابط" : "Add link"}
+          </Button>
+        </div>
+
+        {videoUrls.length > 0 ? (
+          <ul className="space-y-2">
+            {videoUrls.map((url) => (
+              <li
+                key={url}
+                className="flex items-center justify-between gap-2 rounded-lg border border-border/40 bg-background/70 px-3 py-2 text-xs"
+              >
+                <span dir="ltr" className="truncate text-muted-foreground">{url}</span>
+                <Button type="button" size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => removeVideo(url)}>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+
+      {showPayment ? (
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>{isAr ? "طريقة الدفع" : "Payment method"}</Label>
+              <Select value={details.paymentMethod || "whatsapp"} onValueChange={(v) => patch({ paymentMethod: v as AdProductDetails["paymentMethod"] })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {AD_PAYMENT_METHODS.map((method) => (
+                    <SelectItem key={method} value={method}>{getPaymentMethodLabel(method, isAr)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {pricingMode === "admin" ? (
+              <div className="space-y-2">
+                <Label>{isAr ? "مبلغ الإعلان (تعديل يدوي)" : "Ad fee (manual override)"}</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={details.paymentAmount ?? ""}
+                  onChange={(e) => patch({ paymentAmount: e.target.value ? Number(e.target.value) : undefined })}
+                />
+              </div>
+            ) : null}
+          </div>
+          {pricingMode === "advertiser" ? (
+            <AdPricingQuoteBox details={details} isAr={isAr} onQuote={handleQuote} />
+          ) : null}
         </div>
       ) : null}
 
