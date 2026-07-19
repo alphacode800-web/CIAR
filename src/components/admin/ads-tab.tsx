@@ -51,7 +51,10 @@ import { AdProductDetailsCard } from "@/components/ads/ad-product-details-card"
 import { emptyAdProductDetails, type AdProductDetails } from "@/lib/ad-product-details"
 import type { AdPricingConfig } from "@/lib/ad-pricing"
 import { defaultAdPricingConfig } from "@/lib/ad-pricing"
+import type { AdListingTypesStore } from "@/lib/ad-listing-types-config"
+import { defaultAdListingTypesStore } from "@/lib/ad-listing-types-config"
 import { AdPricingAdminPanel } from "@/components/ads/ad-pricing-admin-panel"
+import { AdListingTypesAdminPanel } from "@/components/ads/ad-listing-types-admin-panel"
 import { cn } from "@/lib/utils"
 
 type AdsView = "list" | "editor" | "pending"
@@ -111,6 +114,7 @@ export function AdsTab() {
   const [reviewingItem, setReviewingItem] = useState<PendingAdRequestItem | null>(null)
   const [reviewDetails, setReviewDetails] = useState<AdProductDetails>(emptyAdProductDetails())
   const [pricing, setPricing] = useState<AdPricingConfig>(defaultAdPricingConfig())
+  const [listingTypes, setListingTypes] = useState<AdListingTypesStore>(defaultAdListingTypesStore())
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -120,6 +124,7 @@ export function AdsTab() {
       setAds(Array.isArray(data.ads) ? data.ads : [])
       setPending(Array.isArray(data.pending) ? data.pending : [])
       if (data.pricing) setPricing(data.pricing)
+      if (data.listingTypes) setListingTypes(data.listingTypes)
     } catch {
       toast.error(t("admin.ads_load_failed") || "تعذر تحميل الإعلانات")
     } finally {
@@ -306,6 +311,8 @@ export function AdsTab() {
         )}
       </div>
 
+      <AdListingTypesAdminPanel initialStore={listingTypes} isAr={isAr} onSaved={setListingTypes} />
+
       <AdPricingAdminPanel initialPricing={pricing} isAr={isAr} onSaved={setPricing} />
 
       <div className="flex flex-wrap gap-2">
@@ -425,7 +432,7 @@ export function AdsTab() {
                     </div>
                   </div>
                   <div className="mt-3">
-                    <AdProductDetailsCard details={item.productDetails} isAr={isAr} compact />
+                    <AdProductDetailsCard details={item.productDetails} isAr={isAr} compact listingTypesStore={listingTypes} />
                   </div>
                 </div>
               ))
@@ -457,6 +464,8 @@ export function AdsTab() {
                     showPlacement
                     showPayment
                     showAdminPaymentStatus
+                    listingTypesStore={listingTypes}
+                    allListingTypes
                     pricingMode="admin"
                   />
                   <div className="grid gap-3 sm:grid-cols-3">
@@ -571,6 +580,8 @@ export function AdsTab() {
                 isAr={isAr}
                 showPayment
                 showAdminPaymentStatus
+                listingTypesStore={listingTypes}
+                allListingTypes
                 pricingMode="admin"
               />
             </section>

@@ -14,6 +14,8 @@ export type PageRoute =
   | { page: "privacy" }
   | { page: "terms" }
   | { page: "user-auth" }
+  | { page: "subscription" }
+  | { page: "subscription-payment" }
   | { page: "admin-login" }
   | { page: "admin"; tab?: string }
 
@@ -50,6 +52,8 @@ function parseLocationToRoute(): PageRoute {
   if (hash === "/privacy") return { page: "privacy" }
   if (hash === "/terms") return { page: "terms" }
   if (hash === "/login") return { page: "user-auth" }
+  if (hash === "/subscription") return { page: "subscription" }
+  if (hash === "/subscription/payment") return { page: "subscription-payment" }
   if (hash === "/admin-login") return { page: "admin-login" }
   if (hash.startsWith("/admin")) {
     const parts = hash.split("/")
@@ -138,6 +142,12 @@ export function RouterProvider({ children }: { children: React.ReactNode }) {
         break
       case "user-auth":
         hash = "/login"
+        break
+      case "subscription":
+        hash = "/subscription"
+        break
+      case "subscription-payment":
+        hash = "/subscription/payment"
         break
       case "admin-login":
         hash = "/admin-login"

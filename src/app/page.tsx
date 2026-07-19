@@ -26,7 +26,8 @@ const AdvertisePage = lazy(() => import("@/components/pages/advertise-page").the
 const AdsPage = lazy(() => import("@/components/pages/ads-page").then(m => ({ default: m.AdsPage })))
 const PrivacyPolicyPage = lazy(() => import("@/components/pages/legal-page").then(m => ({ default: m.PrivacyPolicyPage })))
 const TermsPage = lazy(() => import("@/components/pages/legal-page").then(m => ({ default: m.TermsPage })))
-const AdminPage = lazy(() => import("@/components/pages/admin-page").then(m => ({ default: m.AdminPage })))
+const SubscriptionPage = lazy(() => import("@/components/pages/subscription-page").then(m => ({ default: m.SubscriptionPage })))
+const SubscriptionPaymentPage = lazy(() => import("@/components/pages/subscription-payment-page").then(m => ({ default: m.SubscriptionPaymentPage })))
 
 const DEFAULT_HOME_BANNERS: HomeBannersConfig = {
   nav: {
@@ -314,6 +315,22 @@ export default function Page() {
             >
               <Suspense fallback={<PageSkeleton />}>
                 <TermsPage />
+              </Suspense>
+            </motion.div>
+          )}
+
+          {route.page === "subscription" && (
+            <motion.div key="subscription" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+              <Suspense fallback={<PageSkeleton />}>
+                <SubscriptionPage />
+              </Suspense>
+            </motion.div>
+          )}
+
+          {route.page === "subscription-payment" && (
+            <motion.div key="subscription-payment" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+              <Suspense fallback={<PageSkeleton />}>
+                <SubscriptionPaymentPage />
               </Suspense>
             </motion.div>
           )}

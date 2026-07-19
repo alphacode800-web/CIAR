@@ -1,0 +1,327 @@
+"use client"
+
+import { FormEvent, useEffect, useMemo, useState } from "react"
+import { ArrowLeft, CreditCard, Loader2, ShieldCheck } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "@/lib/router-context"
+import { useI18n } from "@/lib/i18n-context"
+import {
+  clearPendingSubscriptionId,
+  getPendingSubscriptionId,
+  setPostAuthRedirect,
+  setSelectedSubscriptionPlan,
+} from "@/lib/post-auth-redirect"
+import { getPlanById, getPlanLabel, type SubscriptionPlan } from "@/lib/advertiser-subscription"
+import {
+  getPaymentMethodLabel,
+  validatePaymentDetails,
+  type SitePaymentField,
+  type SitePaymentMethod,
+} from "@/lib/site-payment-methods"
+import { cn } from "@/lib/utils"
+import { toast } from "sonner"
+
+function PaymentFieldInput({
+  field,
+  value,
+  onChange,
+  isAr,
+  error,
+}: {
+  field: SitePaymentField
+  value: string
+  onChange: (value: string) => void
+  isAr: boolean
+  error?: boolean
+}) {
+  const label = isAr ? field.labelAr : field.labelEn
+  const placeholder = isAr ? field.placeholderAr : field.placeholderEn
+  const className = cn(
+    "rounded-xl border-2 border-foreground/15 bg-background h-11",
+    error && "border-destructive"
+  )
+
+  if (field.type === "textarea") {
+    return (
+      <div className="space-y-2">
+        <Label>{label}</Label>
+        <Textarea
+          rows={3}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={cn(className, "h-auto min-h-[88px]")}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input
+        type={field.type === "number" ? "text" : field.type}
+        inputMode={field.type === "tel" ? "tel" : field.type === "number" ? "numeric" : undefined}
+        dir={field.type === "email" || field.type === "tel" ? "ltr" : undefined}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={className}
+      />
+    </div>
+  )
+}
+
+export function SubscriptionPaymentPage() {
+  const { locale } = useI18n()
+  const { user, loading: authLoading } = useAuth()
+  const { navigate } = useRouter()
+  const isAr = locale === "ar"
+
+  const [currency, setCurrency] = useState("SAR")
+  const [plan, setPlan] = useState<SubscriptionPlan | null>(null)
+  const [methods, setMethods] = useState<SitePaymentMethod[]>([])
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null)
+  const [selectedMethodId, setSelectedMethodId] = useState<string>("")
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>({})
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+
+  const selectedMethod = useMemo(
+    () => methods.find((m) => m.id === selectedMethodId) || methods[0],
+    [methods, selectedMethodId]
+  )
+
+  useEffect(() => {
+    if (selectedMethod) {
+      setFieldValues((prev) => {
+        const next: Record<string, string> = {}
+        for (const f of selectedMethod.fields) {
+          next[f.id] = prev[f.id] || ""
+        }
+        return next
+      })
+      setFieldErrors({})
+    }
+  }, [selectedMethod?.id])
+
+  useEffect(() => {
+    if (authLoading) return
+    if (!user) {
+      setPostAuthRedirect("subscription")
+      navigate({ page: "user-auth" })
+      return
+    }
+
+    const init = async () => {
+      setLoading(true)
+      try {
+        const [plansRes, methodsRes] = await Promise.all([
+          fetch("/api/subscriptions/plans"),
+          fetch("/api/payment-methods"),
+        ])
+        const plansJson = await plansRes.json()
+        const methodsJson = await methodsRes.json()
+        if (!plansRes.ok) throw new Error("plans failed")
+        if (!methodsRes.ok) throw new Error("methods failed")
+
+        setCurrency(plansJson.currency || "SAR")
+        setMethods(methodsJson.methods || [])
+        if (methodsJson.methods?.[0]) setSelectedMethodId(methodsJson.methods[0].id)
+
+        let pendingId = getPendingSubscriptionId()
+        const token = localStorage.getItem("ciar_token")
+
+        const meRes = await fetch("/api/subscriptions/me", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+        const meJson = await meRes.json()
+
+        if (!pendingId && meJson.latest?.status === "pending") {
+          pendingId = meJson.latest.id
+        }
+
+        if (!pendingId) {
+          navigate({ page: "subscription" })
+          return
+        }
+
+        setSubscriptionId(pendingId)
+        const selectedPlan = getPlanById(plansJson, meJson.latest?.planId || "")
+        if (selectedPlan) setPlan(selectedPlan)
+      } catch {
+        toast.error(isAr ? "تعذّر تحميل بيانات الدفع" : "Could not load payment details")
+        navigate({ page: "subscription" })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void init()
+  }, [user, authLoading, navigate, isAr])
+
+  const onSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!subscriptionId || !selectedMethod) return
+
+    const validation = validatePaymentDetails(selectedMethod, fieldValues)
+    if (!validation.ok) {
+      setFieldErrors(validation.errors)
+      toast.error(isAr ? "يرجى تعبئة جميع الحقول المطلوبة" : "Please fill all required fields")
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const token = localStorage.getItem("ciar_token")
+      const res = await fetch("/api/subscriptions/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          subscriptionId,
+          paymentMethodId: selectedMethod.id,
+          paymentDetails: fieldValues,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.code || "payment failed")
+
+      clearPendingSubscriptionId()
+      setSelectedSubscriptionPlan("")
+
+      if (data.autoActivated) {
+        toast.success(isAr ? "تم تفعيل اشتراكك — يمكنك نشر إعلان الآن" : "Subscription activated — you can post ads now")
+      } else {
+        toast.success(
+          isAr
+            ? "تم إرسال طلب الدفع — سيتم التفعيل بعد موافقة الإدارة"
+            : "Payment submitted — activation pending admin approval"
+        )
+      }
+      navigate({ page: "advertise" })
+    } catch {
+      toast.error(isAr ? "فشل إرسال الدفع" : "Failed to submit payment")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!plan || !selectedMethod) return null
+
+  const instructions = isAr ? selectedMethod.instructionsAr : selectedMethod.instructionsEn
+  const accountInfo = isAr ? selectedMethod.accountInfoAr : selectedMethod.accountInfoEn
+
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14 space-y-8">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-2">
+          <Badge variant="outline" className="rounded-full">
+            <CreditCard className="h-3.5 w-3.5 me-1" />
+            {isAr ? "الدفع" : "Payment"}
+          </Badge>
+          <h1 className="text-3xl font-bold tracking-tight">{isAr ? "إتمام الدفع" : "Complete payment"}</h1>
+          <p className="text-sm text-muted-foreground">
+            {getPlanLabel(plan, isAr)} — {plan.price.toLocaleString()} {currency}
+          </p>
+        </div>
+        <Button type="button" variant="ghost" className="gap-2 rounded-full" onClick={() => navigate({ page: "subscription" })}>
+          <ArrowLeft className="h-4 w-4" />
+          {isAr ? "تغيير الخطة" : "Change plan"}
+        </Button>
+      </div>
+
+      <form onSubmit={onSubmit} className="space-y-6">
+        <section className="rounded-2xl border border-border/50 bg-card p-6 space-y-4">
+          <p className="text-sm font-semibold">{isAr ? "اختر طريقة الدفع" : "Choose payment method"}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {methods.map((method) => (
+              <button
+                key={method.id}
+                type="button"
+                onClick={() => setSelectedMethodId(method.id)}
+                className={cn(
+                  "flex flex-col items-center gap-2 rounded-xl border p-4 transition-all text-center",
+                  selectedMethodId === method.id
+                    ? "border-[oklch(0.78_0.14_82/50%)] bg-[oklch(0.78_0.14_82/10%)] shadow-sm"
+                    : "border-border/40 hover:border-border/70 bg-background/60"
+                )}
+              >
+                {method.iconUrl ? (
+                  <img src={method.iconUrl} alt="" className="h-10 w-auto object-contain max-w-[80px]" loading="lazy" />
+                ) : null}
+                <span className="text-xs font-semibold leading-tight">{getPaymentMethodLabel(method, isAr)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-border/50 bg-card p-6 space-y-4">
+          <div>
+            <p className="text-sm font-semibold">{getPaymentMethodLabel(selectedMethod, isAr)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {isAr ? selectedMethod.descriptionAr : selectedMethod.descriptionEn}
+            </p>
+          </div>
+          {instructions ? <p className="text-sm text-muted-foreground">{instructions}</p> : null}
+          {accountInfo ? (
+            <div className="rounded-lg border border-border/30 bg-muted/20 p-3 text-sm font-mono whitespace-pre-wrap" dir="ltr">
+              {accountInfo}
+            </div>
+          ) : null}
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {selectedMethod.fields.map((field) => (
+              <div key={field.id} className={field.type === "textarea" ? "sm:col-span-2" : undefined}>
+                <PaymentFieldInput
+                  field={field}
+                  value={fieldValues[field.id] || ""}
+                  onChange={(v) => {
+                    setFieldValues((prev) => ({ ...prev, [field.id]: v }))
+                    setFieldErrors((prev) => {
+                      const next = { ...prev }
+                      delete next[field.id]
+                      return next
+                    })
+                  }}
+                  isAr={isAr}
+                  error={Boolean(fieldErrors[field.id])}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="rounded-xl border border-border/40 bg-muted/20 p-4 flex items-start gap-3 text-sm">
+          <ShieldCheck className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+          <p className="text-muted-foreground">
+            {isAr
+              ? "بعد تأكيد الدفع من الإدارة سيتم تفعيل اشتراكك ويمكنك نشر الإعلانات."
+              : "After admin confirms payment, your subscription will be activated and you can publish ads."}
+          </p>
+        </div>
+
+        <Button type="submit" disabled={submitting} className="w-full btn-gold h-12 rounded-xl gap-2">
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {isAr ? "تأكيد الدفع" : "Confirm payment"}
+        </Button>
+      </form>
+    </div>
+  )
+}

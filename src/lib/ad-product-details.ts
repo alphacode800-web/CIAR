@@ -21,7 +21,8 @@ export const AD_LISTING_TYPES = [
   "health_beauty",
   "product",
 ] as const
-export type AdListingType = (typeof AD_LISTING_TYPES)[number]
+/** Dynamic listing type id — configured by admin in settings. */
+export type AdListingType = string
 
 export const AD_PAYMENT_METHODS = ["cash", "bank", "card", "whatsapp"] as const
 export type AdPaymentMethod = (typeof AD_PAYMENT_METHODS)[number]
@@ -79,6 +80,7 @@ export type AdProductDetails = {
   volume?: string
   specifications?: string
   tags?: string[]
+  customFields?: Record<string, string | number | string[]>
 }
 
 const optionalString = z.string().max(500).optional()
@@ -86,7 +88,7 @@ const optionalShort = z.string().max(120).optional()
 const optionalCsv = z.array(z.string().max(80)).max(30).optional()
 
 export const adProductDetailsSchema = z.object({
-  listingType: z.enum(AD_LISTING_TYPES).optional(),
+  listingType: z.string().max(80).optional(),
   fabricTypes: optionalCsv,
   colors: optionalCsv,
   sizes: z.array(z.string().max(40)).max(30).optional(),
@@ -140,6 +142,12 @@ export const adProductDetailsSchema = z.object({
   volume: optionalShort,
   specifications: optionalString,
   tags: optionalCsv,
+  customFields: z
+    .record(
+      z.string().max(80),
+      z.union([z.string().max(500), z.number(), z.array(z.string().max(80)).max(30)])
+    )
+    .optional(),
 })
 
 export function emptyAdProductDetails(): AdProductDetails {
@@ -149,6 +157,7 @@ export function emptyAdProductDetails(): AdProductDetails {
     colors: [],
     sizes: [],
     tags: [],
+    customFields: {},
     currency: "SAR",
     paymentStatus: "pending",
     requestedPlacement: "home_after_platforms",
@@ -193,7 +202,8 @@ export function serializeAdProductDetails(details?: AdProductDetails): string {
 }
 
 export function getListingTypeLabel(type: AdListingType | undefined, isAr: boolean): string {
-  const map: Record<AdListingType, { ar: string; en: string }> = {
+  const key = type || "general"
+  const map: Record<string, { ar: string; en: string }> = {
     general: { ar: "عام", en: "General" },
     fashion: { ar: "أزياء / بسة", en: "Fashion / clothing" },
     electronics: { ar: "إلكترونيات", en: "Electronics" },
@@ -207,8 +217,84 @@ export function getListingTypeLabel(type: AdListingType | undefined, isAr: boole
     health_beauty: { ar: "صحة / تجميل", en: "Health / beauty" },
     product: { ar: "منتج تجاري", en: "Commercial product" },
   }
-  const key = type || "general"
-  return isAr ? map[key].ar : map[key].en
+  const entry = map[key]
+  if (entry) return isAr ? entry.ar : entry.en
+  return key
+}
+
+const LEGACY_DETAIL_FIELDS = new Set([
+  "fabricTypes",
+  "colors",
+  "sizes",
+  "tags",
+  "brand",
+  "model",
+  "condition",
+  "warranty",
+  "propertyType",
+  "areaSqm",
+  "rooms",
+  "location",
+  "year",
+  "mileage",
+  "cuisineType",
+  "portions",
+  "shelfLife",
+  "serviceScope",
+  "availability",
+  "serviceArea",
+  "eventDate",
+  "venue",
+  "capacity",
+  "jobTitle",
+  "experienceYears",
+  "workType",
+  "salary",
+  "destination",
+  "duration",
+  "includes",
+  "productType",
+  "volume",
+  "specifications",
+])
+
+export function readDetailFieldValue(details: AdProductDetails, fieldId: string): string {
+  const raw = LEGACY_DETAIL_FIELDS.has(fieldId)
+    ? (details as Record<string, unknown>)[fieldId]
+    : details.customFields?.[fieldId]
+  if (Array.isArray(raw)) return joinList(raw as string[])
+  if (raw === undefined || raw === null) return ""
+  return String(raw)
+}
+
+export function writeDetailFieldValue(
+  details: AdProductDetails,
+  fieldId: string,
+  fieldType: "csv" | "text" | "number" | "date" | "textarea",
+  value: string
+): AdProductDetails {
+  let parsed: string | number | string[] | undefined
+  if (fieldType === "csv") parsed = parseCsvList(value)
+  else if (fieldType === "number") parsed = value ? Number(value) : undefined
+  else parsed = value || undefined
+
+  if (LEGACY_DETAIL_FIELDS.has(fieldId)) {
+    return { ...details, [fieldId]: parsed } as AdProductDetails
+  }
+
+  const customFields = { ...(details.customFields || {}) }
+  if (parsed === undefined || parsed === "" || (Array.isArray(parsed) && !parsed.length)) {
+    delete customFields[fieldId]
+  } else {
+    customFields[fieldId] = parsed as string | number | string[]
+  }
+  return { ...details, customFields }
+}
+
+export function formatDetailFieldDisplayValue(value: unknown): string | number | undefined {
+  if (value === undefined || value === null || value === "") return undefined
+  if (Array.isArray(value)) return value.length ? value.join("، ") : undefined
+  return value as string | number
 }
 
 export function getPaymentMethodLabel(method: AdPaymentMethod | undefined, isAr: boolean): string {
@@ -327,6 +413,11 @@ export function formatProductDetailsForMessage(details?: AdProductDetails): stri
   push("هاتف", details.contactPhone)
   push("واتساب", details.whatsappLink)
   collectVideoUrls(details).forEach((url, index) => push(`فيديو ${index + 1}`, url))
+  if (details.customFields) {
+    for (const [key, value] of Object.entries(details.customFields)) {
+      push(key, value)
+    }
+  }
 
   return lines
 }

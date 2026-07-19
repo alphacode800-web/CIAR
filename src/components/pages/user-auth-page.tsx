@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "@/lib/router-context"
 import { useI18n } from "@/lib/i18n-context"
-import { consumePostAuthRedirect } from "@/lib/post-auth-redirect"
+import { resolvePostAuthRoute, setPostAuthRedirect } from "@/lib/post-auth-redirect"
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons"
 
 export function UserAuthPage() {
@@ -34,9 +34,13 @@ export function UserAuthPage() {
     }
   }, [])
 
-  const finishAuth = () => {
-    const redirect = consumePostAuthRedirect()
-    if (redirect === "advertise") {
+  const finishAuth = async () => {
+    const route = await resolvePostAuthRoute()
+    if (route === "subscription") {
+      navigate({ page: "subscription" })
+      return
+    }
+    if (route === "advertise") {
       navigate({ page: "advertise" })
       return
     }
@@ -67,7 +71,7 @@ export function UserAuthPage() {
           return
         }
       }
-      finishAuth()
+      await finishAuth()
     } catch {
       setError(locale === "ar" ? "حدث خطأ غير متوقع" : "Unexpected error")
     } finally {

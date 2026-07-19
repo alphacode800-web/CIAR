@@ -16,7 +16,9 @@ import {
 } from "@/services/site-ads.service"
 import { adProductDetailsSchema } from "@/lib/ad-product-details"
 import { adPricingConfigSchema } from "@/lib/ad-pricing"
+import { adListingTypesStoreSchema } from "@/lib/ad-listing-types-config"
 import { getAdPricingConfig, saveAdPricingConfig } from "@/services/ad-pricing.service"
+import { getAdListingTypesStore, saveAdListingTypesStore } from "@/services/ad-listing-types.service"
 
 const upsertSchema = z.object({
   id: z.string().optional(),
@@ -60,12 +62,13 @@ const rejectSchema = z.object({
 
 export async function GET() {
   try {
-    const [ads, pending, pricing] = await Promise.all([
+    const [ads, pending, pricing, listingTypes] = await Promise.all([
       listManagedAds(),
       listPendingAdRequests(),
       getAdPricingConfig(),
+      getAdListingTypesStore(),
     ])
-    return NextResponse.json({ ads, pending, pricing })
+    return NextResponse.json({ ads, pending, pricing, listingTypes })
   } catch (error) {
     console.error("GET /api/admin/ads error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -101,6 +104,15 @@ export async function POST(request: NextRequest) {
       }
       const pricing = await saveAdPricingConfig(parsed.data)
       return NextResponse.json({ success: true, pricing })
+    }
+
+    if (body.action === "save_listing_types") {
+      const parsed = adListingTypesStoreSchema.safeParse(body.listingTypes)
+      if (!parsed.success) {
+        return NextResponse.json({ error: "Validation error" }, { status: 400 })
+      }
+      const listingTypesSaved = await saveAdListingTypesStore(parsed.data)
+      return NextResponse.json({ success: true, listingTypes: listingTypesSaved })
     }
 
     const parsed = upsertSchema.safeParse(body)

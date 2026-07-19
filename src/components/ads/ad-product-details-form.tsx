@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Film, Link2, Loader2, Upload, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,25 +22,26 @@ import {
   getPositionLabel,
 } from "@/lib/site-ads"
 import {
-  AD_LISTING_TYPES,
   AD_PAYMENT_METHODS,
   AD_PAYMENT_STATUSES,
   collectVideoUrls,
   emptyAdProductDetails,
-  getListingTypeLabel,
   getPaymentMethodLabel,
   getPaymentStatusLabel,
   joinList,
   normalizeVideoUrl,
-  parseCsvList,
-  type AdListingType,
+  readDetailFieldValue,
+  writeDetailFieldValue,
   type AdProductDetails,
 } from "@/lib/ad-product-details"
 import {
-  AD_LISTING_TYPE_CONFIG,
-  getListingTypeConfig,
-  type AdListingFieldDef,
-} from "@/lib/ad-listing-fields"
+  defaultAdListingTypesStore,
+  getEnabledListingTypes,
+  getListingTypeLabelFromStore,
+  type AdListingFieldConfig,
+  type AdListingTypesStore,
+} from "@/lib/ad-listing-types-config"
+import { getListingTypeConfig } from "@/lib/ad-listing-fields"
 import { toast } from "sonner"
 import { AdPricingQuoteBox } from "@/components/ads/ad-pricing-quote-box"
 import type { AdQuote } from "@/lib/ad-pricing"
@@ -53,27 +54,8 @@ type AdProductDetailsFormProps = {
   showPayment?: boolean
   showAdminPaymentStatus?: boolean
   pricingMode?: "admin" | "advertiser"
-}
-
-function readFieldValue(details: AdProductDetails, field: AdListingFieldDef): string {
-  const raw = details[field.key]
-  if (Array.isArray(raw)) return joinList(raw)
-  if (raw === undefined || raw === null) return ""
-  return String(raw)
-}
-
-function writeFieldValue(
-  details: AdProductDetails,
-  field: AdListingFieldDef,
-  value: string
-): Partial<AdProductDetails> {
-  if (field.type === "csv") {
-    return { [field.key]: parseCsvList(value) } as Partial<AdProductDetails>
-  }
-  if (field.type === "number") {
-    return { [field.key]: value ? Number(value) : undefined } as Partial<AdProductDetails>
-  }
-  return { [field.key]: value || undefined } as Partial<AdProductDetails>
+  listingTypesStore?: AdListingTypesStore
+  allListingTypes?: boolean
 }
 
 export function AdProductDetailsForm({
@@ -84,17 +66,46 @@ export function AdProductDetailsForm({
   showPayment = true,
   showAdminPaymentStatus = false,
   pricingMode = "advertiser",
+  listingTypesStore,
+  allListingTypes = false,
 }: AdProductDetailsFormProps) {
+  const [typesStore, setTypesStore] = useState<AdListingTypesStore>(
+    listingTypesStore || defaultAdListingTypesStore()
+  )
   const details = { ...emptyAdProductDetails(), ...value }
-  const listingType = (details.listingType || "general") as AdListingType
-  const typeConfig = getListingTypeConfig(listingType)
+  const listingType = details.listingType || typesStore.defaultTypeId || "general"
+  const typeConfig = getListingTypeConfig(listingType, typesStore)
+  const typeOptions = allListingTypes ? typesStore.types : getEnabledListingTypes(typesStore)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const [uploadingVideo, setUploadingVideo] = useState(false)
   const [videoLinkDraft, setVideoLinkDraft] = useState("")
 
   const patch = (partial: Partial<AdProductDetails>) => onChange({ ...details, ...partial })
 
-  const handleListingTypeChange = (nextType: AdListingType) => {
+  useEffect(() => {
+    if (listingTypesStore) setTypesStore(listingTypesStore)
+  }, [listingTypesStore])
+
+  useEffect(() => {
+    if (listingTypesStore) return
+    const load = async () => {
+      try {
+        const res = await fetch("/api/ads/listing-types")
+        const data = await res.json()
+        if (res.ok && data.types) {
+          setTypesStore({
+            defaultTypeId: data.defaultTypeId || "general",
+            types: data.types,
+          })
+        }
+      } catch {
+        // keep defaults
+      }
+    }
+    void load()
+  }, [listingTypesStore])
+
+  const handleListingTypeChange = (nextType: string) => {
     onChange({
       ...emptyAdProductDetails(),
       listingType: nextType,
@@ -148,19 +159,19 @@ export function AdProductDetailsForm({
     patch({ videoUrls: nextUrls, videoUrl: nextUrls[0] || "" })
   }
 
-  const renderField = (field: AdListingFieldDef) => {
+  const renderField = (field: AdListingFieldConfig) => {
     const label = isAr ? field.labelAr : field.labelEn
     const placeholder = isAr ? field.placeholderAr : field.placeholderEn
-    const fieldValue = readFieldValue(details, field)
+    const fieldValue = readDetailFieldValue(details, field.id)
 
     if (field.type === "textarea") {
       return (
-        <div key={String(field.key)} className="space-y-2 sm:col-span-2">
+        <div key={field.id} className="space-y-2 sm:col-span-2">
           <Label>{label}</Label>
           <Textarea
             rows={2}
             value={fieldValue}
-            onChange={(e) => patch(writeFieldValue(details, field, e.target.value))}
+            onChange={(e) => onChange(writeDetailFieldValue(details, field.id, field.type, e.target.value))}
             placeholder={placeholder}
           />
         </div>
@@ -168,12 +179,12 @@ export function AdProductDetailsForm({
     }
 
     return (
-      <div key={String(field.key)} className="space-y-2">
+      <div key={field.id} className="space-y-2">
         <Label>{label}</Label>
         <Input
           type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
           value={fieldValue}
-          onChange={(e) => patch(writeFieldValue(details, field, e.target.value))}
+          onChange={(e) => onChange(writeDetailFieldValue(details, field.id, field.type, e.target.value))}
           placeholder={placeholder}
         />
       </div>
@@ -192,12 +203,12 @@ export function AdProductDetailsForm({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>{isAr ? "نوع الإعلان" : "Listing type"}</Label>
-        <Select value={listingType} onValueChange={(v) => handleListingTypeChange(v as AdListingType)}>
+        <Select value={listingType} onValueChange={handleListingTypeChange}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
-            {AD_LISTING_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>
-                {getListingTypeLabel(type, isAr)}
+            {typeOptions.map((type) => (
+              <SelectItem key={type.id} value={type.id}>
+                {isAr ? type.labelAr : type.labelEn}
               </SelectItem>
             ))}
           </SelectContent>

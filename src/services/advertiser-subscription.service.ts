@@ -1,0 +1,266 @@
+import type { AuthUser } from "@/lib/auth"
+import {
+  SUBSCRIPTION_PLANS_KEY,
+  USER_SUBSCRIPTIONS_KEY,
+  computeSubscriptionExpiry,
+  defaultSubscriptionPlansConfig,
+  getActiveUserSubscription,
+  getLatestUserSubscription,
+  getPlanById,
+  isSubscriptionRecordActive,
+  newSubscriptionRecordId,
+  parseSubscriptionPlansConfig,
+  parseUserSubscriptionsStore,
+  serializeSubscriptionPlansConfig,
+  serializeUserSubscriptionsStore,
+  subscriptionPlansConfigSchema,
+  type SubscriptionPlansConfig,
+  type UserSubscriptionRecord,
+  type UserSubscriptionsStore,
+} from "@/lib/advertiser-subscription"
+import {
+  formatPaymentDetailsForDisplay,
+  getPaymentMethodById,
+  validatePaymentDetails,
+} from "@/lib/site-payment-methods"
+import { getSitePaymentMethodsStore } from "@/services/site-payment-methods.service"
+import { getSettings, updateSettings } from "@/services/settings.service"
+
+export async function getSubscriptionPlansConfig(): Promise<SubscriptionPlansConfig> {
+  const settings = await getSettings()
+  return parseSubscriptionPlansConfig(settings[SUBSCRIPTION_PLANS_KEY])
+}
+
+export async function saveSubscriptionPlansConfig(config: SubscriptionPlansConfig): Promise<SubscriptionPlansConfig> {
+  const parsed = subscriptionPlansConfigSchema.parse(config)
+  await updateSettings({ [SUBSCRIPTION_PLANS_KEY]: serializeSubscriptionPlansConfig(parsed) })
+  return parsed
+}
+
+export async function getUserSubscriptionsStore(): Promise<UserSubscriptionsStore> {
+  const settings = await getSettings()
+  return parseUserSubscriptionsStore(settings[USER_SUBSCRIPTIONS_KEY])
+}
+
+async function saveUserSubscriptionsStore(store: UserSubscriptionsStore): Promise<UserSubscriptionsStore> {
+  const next = parseUserSubscriptionsStore(serializeUserSubscriptionsStore(store))
+  await updateSettings({ [USER_SUBSCRIPTIONS_KEY]: serializeUserSubscriptionsStore(next) })
+  return next
+}
+
+function touchRecord(record: UserSubscriptionRecord): UserSubscriptionRecord {
+  return { ...record, updatedAt: new Date().toISOString() }
+}
+
+export async function getUserSubscriptionStatus(userId: string) {
+  const [config, store] = await Promise.all([getSubscriptionPlansConfig(), getUserSubscriptionsStore()])
+  const active = getActiveUserSubscription(store, userId)
+  const latest = getLatestUserSubscription(store, userId)
+  return {
+    config: {
+      requireSubscription: config.requireSubscription,
+      currency: config.currency,
+    },
+    active: active || null,
+    latest: latest || null,
+    canPost: Boolean(active && isSubscriptionRecordActive(active)),
+  }
+}
+
+export async function startSubscriptionCheckout(user: AuthUser, planId: string) {
+  const [config, store] = await Promise.all([getSubscriptionPlansConfig(), getUserSubscriptionsStore()])
+  const plan = getPlanById(config, planId)
+  if (!plan || !plan.enabled) {
+    throw new Error("PLAN_NOT_FOUND")
+  }
+
+  const active = getActiveUserSubscription(store, user.id)
+  if (active && isSubscriptionRecordActive(active)) {
+    throw new Error("ALREADY_ACTIVE")
+  }
+
+  const now = new Date().toISOString()
+  const record: UserSubscriptionRecord = {
+    id: newSubscriptionRecordId(),
+    userId: user.id,
+    userName: user.name,
+    userEmail: user.email,
+    userPhone: user.phone,
+    planId: plan.id,
+    status: "pending",
+    paymentStatus: "pending",
+    amount: plan.price,
+    currency: config.currency,
+    createdAt: now,
+    updatedAt: now,
+  }
+
+  const nextStore: UserSubscriptionsStore = {
+    records: [record, ...store.records.filter((r) => !(r.userId === user.id && r.status === "pending"))],
+  }
+  await saveUserSubscriptionsStore(nextStore)
+
+  return { record, plan, config }
+}
+
+export async function submitSubscriptionPayment(
+  user: AuthUser,
+  input: {
+    subscriptionId: string
+    paymentMethodId: string
+    paymentDetails: Record<string, string>
+    paymentNote?: string
+  }
+) {
+  const [config, store, paymentStore] = await Promise.all([
+    getSubscriptionPlansConfig(),
+    getUserSubscriptionsStore(),
+    getSitePaymentMethodsStore(),
+  ])
+  const method = getPaymentMethodById(paymentStore, input.paymentMethodId)
+  if (!method || !method.enabled) throw new Error("PAYMENT_METHOD_NOT_FOUND")
+
+  const validation = validatePaymentDetails(method, input.paymentDetails)
+  if (!validation.ok) throw new Error("VALIDATION_FAILED")
+
+  const index = store.records.findIndex((r) => r.id === input.subscriptionId && r.userId === user.id)
+  if (index < 0) throw new Error("SUBSCRIPTION_NOT_FOUND")
+
+  const current = store.records[index]
+  if (current.status !== "pending") throw new Error("INVALID_STATUS")
+
+  const plan = getPlanById(config, current.planId)
+  if (!plan) throw new Error("PLAN_NOT_FOUND")
+
+  const now = new Date()
+  const startsAt = now.toISOString()
+  const expiresAt = computeSubscriptionExpiry(now, plan.durationDays).toISOString()
+  const detailsSummary = formatPaymentDetailsForDisplay(method, input.paymentDetails, true).join("\n")
+  const paymentNote = input.paymentNote?.trim() || detailsSummary
+
+  const nextRecord: UserSubscriptionRecord = touchRecord({
+    ...current,
+    paymentMethod: input.paymentMethodId,
+    paymentDetails: input.paymentDetails,
+    paymentNote,
+    paymentStatus: config.autoActivateOnPayment ? "paid" : "pending",
+    status: config.autoActivateOnPayment ? "active" : "pending",
+    startsAt: config.autoActivateOnPayment ? startsAt : current.startsAt,
+    expiresAt: config.autoActivateOnPayment ? expiresAt : current.expiresAt,
+  })
+
+  const records = [...store.records]
+  records[index] = nextRecord
+  await saveUserSubscriptionsStore({ records })
+
+  return { record: nextRecord, config, autoActivated: config.autoActivateOnPayment }
+}
+
+export async function activateSubscriptionRecord(subscriptionId: string, adminNote?: string) {
+  const [config, store] = await Promise.all([getSubscriptionPlansConfig(), getUserSubscriptionsStore()])
+  const index = store.records.findIndex((r) => r.id === subscriptionId)
+  if (index < 0) throw new Error("SUBSCRIPTION_NOT_FOUND")
+
+  const current = store.records[index]
+  const plan = getPlanById(config, current.planId)
+  if (!plan) throw new Error("PLAN_NOT_FOUND")
+
+  const now = new Date()
+  const startsAt = now.toISOString()
+  const expiresAt = computeSubscriptionExpiry(now, plan.durationDays).toISOString()
+
+  const records = [...store.records]
+  records[index] = touchRecord({
+    ...current,
+    status: "active",
+    paymentStatus: "paid",
+    startsAt,
+    expiresAt,
+    adminNote: adminNote?.trim() || current.adminNote,
+  })
+  return saveUserSubscriptionsStore({ records })
+}
+
+export async function rejectSubscriptionPayment(subscriptionId: string, adminNote?: string) {
+  const store = await getUserSubscriptionsStore()
+  const index = store.records.findIndex((r) => r.id === subscriptionId)
+  if (index < 0) throw new Error("SUBSCRIPTION_NOT_FOUND")
+
+  const records = [...store.records]
+  records[index] = touchRecord({
+    ...store.records[index],
+    status: "cancelled",
+    paymentStatus: "rejected",
+    adminNote: adminNote?.trim() || store.records[index].adminNote,
+  })
+  return saveUserSubscriptionsStore({ records })
+}
+
+export async function waiveUserSubscription(
+  userId: string,
+  input: { adminNote?: string; durationDays?: number; userName?: string; userEmail?: string | null; userPhone?: string | null }
+) {
+  const config = await getSubscriptionPlansConfig()
+  const store = await getUserSubscriptionsStore()
+  const now = new Date()
+  const durationDays = input.durationDays && input.durationDays > 0 ? input.durationDays : 3650
+  const startsAt = now.toISOString()
+  const expiresAt = computeSubscriptionExpiry(now, durationDays).toISOString()
+  const timestamp = now.toISOString()
+
+  const waived: UserSubscriptionRecord = {
+    id: newSubscriptionRecordId(),
+    userId,
+    userName: input.userName,
+    userEmail: input.userEmail,
+    userPhone: input.userPhone,
+    planId: "waived",
+    status: "waived",
+    paymentStatus: "waived",
+    amount: 0,
+    currency: config.currency,
+    startsAt,
+    expiresAt,
+    waivedByAdmin: true,
+    adminNote: input.adminNote?.trim() || "",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
+
+  const records = [
+    waived,
+    ...store.records.map((r) =>
+      r.userId === userId && (r.status === "active" || r.status === "pending")
+        ? touchRecord({ ...r, status: "cancelled", paymentStatus: r.paymentStatus === "waived" ? "waived" : "rejected" })
+        : r
+    ),
+  ]
+
+  return saveUserSubscriptionsStore({ records })
+}
+
+export async function revokeUserSubscription(userId: string, adminNote?: string) {
+  const store = await getUserSubscriptionsStore()
+  const records = store.records.map((r) => {
+    if (r.userId !== userId) return r
+    if (r.status !== "active" && r.status !== "waived" && r.status !== "pending") return r
+    return touchRecord({
+      ...r,
+      status: "cancelled",
+      paymentStatus: r.paymentStatus === "waived" ? "rejected" : r.paymentStatus,
+      adminNote: adminNote?.trim() || r.adminNote,
+    })
+  })
+  return saveUserSubscriptionsStore({ records })
+}
+
+export async function assertCanPostAdvertisement(user: AuthUser) {
+  const [config, store] = await Promise.all([getSubscriptionPlansConfig(), getUserSubscriptionsStore()])
+  const active = getActiveUserSubscription(store, user.id)
+  const { canPostAdvertisement } = await import("@/lib/advertiser-subscription")
+  if (!canPostAdvertisement(user, active, config)) {
+    throw new Error("SUBSCRIPTION_REQUIRED")
+  }
+}
+
+export { defaultSubscriptionPlansConfig }
