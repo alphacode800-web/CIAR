@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import {
   getPlacementLabel,
@@ -9,12 +10,15 @@ import {
 } from "@/lib/site-ads"
 import {
   collectVideoUrls,
-  getListingTypeLabel,
   getPaymentMethodLabel,
   getPaymentStatusLabel,
-  type AdListingType,
   type AdProductDetails,
 } from "@/lib/ad-product-details"
+import {
+  defaultAdListingTypesStore,
+  getListingTypeLabelFromStore,
+  type AdListingTypesStore,
+} from "@/lib/ad-listing-types-config"
 import { getFieldDisplayValue, getListingTypeConfig } from "@/lib/ad-listing-fields"
 import { whatsappHref } from "@/lib/site-contact"
 import { AdVideoPreview } from "@/components/ads/ad-video-preview"
@@ -23,6 +27,7 @@ type AdProductDetailsCardProps = {
   details?: AdProductDetails
   isAr: boolean
   compact?: boolean
+  listingTypesStore?: AdListingTypesStore
 }
 
 function DetailRow({ label, value }: { label: string; value?: string | number | null }) {
@@ -35,11 +40,39 @@ function DetailRow({ label, value }: { label: string; value?: string | number | 
   )
 }
 
-export function AdProductDetailsCard({ details, isAr, compact = false }: AdProductDetailsCardProps) {
+export function AdProductDetailsCard({
+  details,
+  isAr,
+  compact = false,
+  listingTypesStore,
+}: AdProductDetailsCardProps) {
+  const [typesStore, setTypesStore] = useState<AdListingTypesStore>(
+    listingTypesStore || defaultAdListingTypesStore()
+  )
+
+  useEffect(() => {
+    if (listingTypesStore) {
+      setTypesStore(listingTypesStore)
+      return
+    }
+    const load = async () => {
+      try {
+        const res = await fetch("/api/ads/listing-types")
+        const data = await res.json()
+        if (res.ok && data.types) {
+          setTypesStore({ defaultTypeId: data.defaultTypeId || "general", types: data.types })
+        }
+      } catch {
+        // keep defaults
+      }
+    }
+    void load()
+  }, [listingTypesStore])
+
   if (!details || Object.keys(details).length === 0) return null
 
-  const listingType = (details.listingType || "general") as AdListingType
-  const typeConfig = getListingTypeConfig(listingType)
+  const listingType = details.listingType || typesStore.defaultTypeId
+  const typeConfig = getListingTypeConfig(listingType, typesStore)
   const priceLabel =
     typeof details.price === "number"
       ? `${details.price.toLocaleString()} ${details.currency || "SAR"}`
@@ -49,7 +82,7 @@ export function AdProductDetailsCard({ details, isAr, compact = false }: AdProdu
   return (
     <div className={`rounded-xl border border-border/40 bg-muted/10 ${compact ? "p-3 space-y-2" : "p-4 space-y-3"}`}>
       <div className="flex flex-wrap gap-2">
-        <Badge variant="outline">{getListingTypeLabel(listingType, isAr)}</Badge>
+        <Badge variant="outline">{getListingTypeLabelFromStore(typesStore, listingType, isAr)}</Badge>
         {typeof details.discountPercent === "number" && details.discountPercent > 0 ? (
           <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
             {isAr ? `خصم ${details.discountPercent}%` : `${details.discountPercent}% off`}
@@ -62,7 +95,7 @@ export function AdProductDetailsCard({ details, isAr, compact = false }: AdProdu
 
       {typeConfig.fields.map((field) => (
         <DetailRow
-          key={String(field.key)}
+          key={field.id}
           label={isAr ? field.labelAr : field.labelEn}
           value={getFieldDisplayValue(details, field)}
         />

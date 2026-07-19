@@ -14,6 +14,7 @@ import { getSettings } from "@/services/settings.service"
 import { withSiteContactDefaults } from "@/lib/site-contact"
 import { adProductDetailsSchema, formatProductDetailsForMessage } from "@/lib/ad-product-details"
 import { applyAdminPricingToDetails, quoteAdFromDetails } from "@/services/ad-pricing.service"
+import { assertCanPostAdvertisement } from "@/services/advertiser-subscription.service"
 
 const optionalUrlSchema = z.preprocess(
   (value) => normalizeOptionalUrl(value),
@@ -75,8 +76,17 @@ export async function POST(request: NextRequest) {
     const user = await getAuthUser(request)
     if (!user) {
       return NextResponse.json(
-        { error: "Subscription required", code: "AUTH_REQUIRED" },
+        { error: "Authentication required", code: "AUTH_REQUIRED" },
         { status: 401 }
+      )
+    }
+
+    try {
+      await assertCanPostAdvertisement(user)
+    } catch {
+      return NextResponse.json(
+        { error: "Active subscription required", code: "SUBSCRIPTION_REQUIRED" },
+        { status: 403 }
       )
     }
 
