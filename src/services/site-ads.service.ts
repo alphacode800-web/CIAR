@@ -15,6 +15,7 @@ import { PENDING_AD_REQUESTS_KEY, type PendingAdRequest } from "@/services/adver
 import { getSettings, updateSettings } from "@/services/settings.service"
 import { buildDefaultSiteAds, getDefaultSiteAdsForSlot } from "@/lib/default-site-ads"
 import { parseAdProductDetails, type AdProductDetails } from "@/lib/ad-product-details"
+import { appendAdImageToImageStrip } from "@/services/image-strip-sync.service"
 
 async function loadAdsRaw(): Promise<SiteAdRecord[]> {
   const settings = await getSettings()
@@ -207,6 +208,8 @@ export async function upsertManagedAd(
   else ads.unshift(next)
 
   await saveAds(ads)
+
+  await appendAdImageToImageStrip(next.imageUrl)
 
   if (input.submissionId) {
     try {

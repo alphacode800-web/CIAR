@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import type { AdNotifyChannel } from "@/lib/ad-notify"
 import type { AdProductDetails } from "@/lib/ad-product-details"
 import { serializeAdProductDetails } from "@/lib/ad-product-details"
+import { appendAdImageToImageStrip } from "@/services/image-strip-sync.service"
 import { getSettings, updateSettings } from "@/services/settings.service"
 
 export const PENDING_AD_REQUESTS_KEY = "pending_ad_requests"
@@ -35,7 +36,7 @@ export async function createAdSubmission(data: {
   locale?: string
   productDetails?: AdProductDetails
 }) {
-  return db.adSubmission.create({
+  const submission = await db.adSubmission.create({
     data: {
       userId: data.userId,
       companyName: data.companyName,
@@ -50,6 +51,9 @@ export async function createAdSubmission(data: {
     },
     select: { id: true },
   })
+
+  await appendAdImageToImageStrip(data.imageUrl)
+  return submission
 }
 
 export async function queueAdRequestInSettings(
@@ -78,6 +82,8 @@ export async function queueAdRequestInSettings(
   await updateSettings({
     [PENDING_AD_REQUESTS_KEY]: JSON.stringify(queue.slice(0, 200)),
   })
+
+  await appendAdImageToImageStrip(data.imageUrl)
 
   return id
 }
