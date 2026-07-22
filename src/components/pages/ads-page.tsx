@@ -17,6 +17,7 @@ import {
   type SiteAdRecord,
 } from "@/lib/site-ads"
 import { AdProductDetailsCard } from "@/components/ads/ad-product-details-card"
+import { FittingRoomPromo } from "@/components/fitting-room/FittingRoomPromo"
 import { useFittingRoom } from "@/lib/fitting-room-context"
 import {
   collectFashionGarmentsFromAds,
@@ -193,6 +194,7 @@ export function AdsPage() {
                 {t("nav.advertise") || (isAr ? "أعلن معنا" : "Advertise with us")}
               </Button>
             </div>
+            <FittingRoomPromo isAr={isAr} />
           </motion.div>
         </div>
       </section>
