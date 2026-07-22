@@ -8,7 +8,9 @@ import { RouterProvider } from "@/lib/router-context"
 import { AuthProvider } from "@/lib/auth-context"
 import { CurrencyProvider } from "@/lib/currency-context"
 import { AuthModalProvider } from "@/lib/auth-modal-context"
+import { FittingRoomProvider } from "@/lib/fitting-room-context"
 import { AuthModalWrapper } from "@/components/layout/auth-modal-wrapper"
+import { FittingRoomWrapper } from "@/components/fitting-room/fitting-room-wrapper"
 import { AiAssistantWidget } from "@/components/layout/ai-assistant-widget"
 import { ThemeSettingsApplier } from "@/components/theme-settings-applier"
 
@@ -126,11 +128,14 @@ export default function RootLayout({
               <I18nProvider>
                 <RouterProvider>
                   <AuthModalProvider>
-                    <ThemeSettingsApplier />
-                    <AuthModalWrapper />
-                    {children}
-                    <AiAssistantWidget />
-                    <Toaster position="bottom-right" richColors />
+                    <FittingRoomProvider>
+                      <ThemeSettingsApplier />
+                      <AuthModalWrapper />
+                      <FittingRoomWrapper />
+                      {children}
+                      <AiAssistantWidget />
+                      <Toaster position="bottom-right" richColors />
+                    </FittingRoomProvider>
                   </AuthModalProvider>
                 </RouterProvider>
               </I18nProvider>

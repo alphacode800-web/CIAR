@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { motion, useInView } from "framer-motion"
-import { ExternalLink, Filter, Loader2, Megaphone, Plus, Search } from "lucide-react"
+import { ExternalLink, Filter, Loader2, Megaphone, Plus, ScanFace, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -17,8 +17,27 @@ import {
   type SiteAdRecord,
 } from "@/lib/site-ads"
 import { AdProductDetailsCard } from "@/components/ads/ad-product-details-card"
+import { useFittingRoom } from "@/lib/fitting-room-context"
+import {
+  collectFashionGarmentsFromAds,
+  siteAdToGarment,
+} from "@/lib/virtual-fitting/types"
 
-function AdListingCard({ ad, isAr }: { ad: SiteAdRecord; isAr: boolean }) {
+function isFashionAd(ad: SiteAdRecord) {
+  return ad.productDetails?.listingType === "fashion" && Boolean(ad.imageUrl?.trim())
+}
+
+function AdListingCard({
+  ad,
+  isAr,
+  allAds,
+}: {
+  ad: SiteAdRecord
+  isAr: boolean
+  allAds: SiteAdRecord[]
+}) {
+  const { openFittingRoom } = useFittingRoom()
+  const isFashion = isFashionAd(ad)
   const isDefault = isDefaultSiteAd(ad)
   const isExternal = Boolean(ad.link && /^https?:\/\//i.test(ad.link))
 
@@ -59,6 +78,25 @@ function AdListingCard({ ad, isAr }: { ad: SiteAdRecord; isAr: boolean }) {
           <Badge variant="outline">{getPlacementLabel(ad.placement, isAr ? "ar" : "en")}</Badge>
           <Badge variant="outline">{getPositionLabel(ad.position, isAr ? "ar" : "en")}</Badge>
         </div>
+
+        {isFashion ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="mt-4 w-full rounded-xl gap-2 border-[oklch(0.78_0.14_82/35%)] bg-[oklch(0.78_0.14_82/6%)] hover:bg-[oklch(0.78_0.14_82/12%)]"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              const garments = collectFashionGarmentsFromAds(allAds)
+              if (!siteAdToGarment(ad)) return
+              openFittingRoom({ garments, initialGarmentId: ad.id })
+            }}
+          >
+            <ScanFace className="h-4 w-4 text-[oklch(0.78_0.14_82)]" />
+            {isAr ? "غرفة القياس الافتراضية" : "Virtual fitting room"}
+          </Button>
+        ) : null}
 
         {ad.link ? (
           <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[oklch(0.76_0.19_48)]">
@@ -221,7 +259,7 @@ export function AdsPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {filtered.map((ad) => (
-              <AdListingCard key={ad.id} ad={ad} isAr={isAr} />
+              <AdListingCard key={ad.id} ad={ad} isAr={isAr} allAds={ads} />
             ))}
           </div>
         )}
