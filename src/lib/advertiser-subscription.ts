@@ -22,6 +22,10 @@ export type SubscriptionPlan = {
 }
 
 export type SubscriptionPlansConfig = {
+  /** When false, posting ads is free for everyone (no plans/payment step). */
+  paymentsEnabled: boolean
+  /** User IDs exempt from payment even when payments are enabled. */
+  exemptUserIds: string[]
   requireSubscription: boolean
   currency: string
   bankNameAr: string
@@ -76,6 +80,8 @@ const planSchema = z.object({
 })
 
 export const subscriptionPlansConfigSchema = z.object({
+  paymentsEnabled: z.boolean().default(true),
+  exemptUserIds: z.array(z.string().min(1).max(120)).max(5000).default([]),
   requireSubscription: z.boolean().default(true),
   currency: z.string().max(10).default("SAR"),
   bankNameAr: z.string().max(120).default(""),
@@ -116,6 +122,8 @@ export const userSubscriptionsStoreSchema = z.object({
 
 export function defaultSubscriptionPlansConfig(): SubscriptionPlansConfig {
   return {
+    paymentsEnabled: true,
+    exemptUserIds: [],
     requireSubscription: true,
     currency: "SAR",
     bankNameAr: "البنك الأهلي السعودي",
@@ -309,15 +317,29 @@ export function getActiveUserSubscription(
   return userRecords.find((r) => isSubscriptionRecordActive(r, now))
 }
 
+export function requiresAdvertiserPayment(
+  user: AuthUser,
+  record: UserSubscriptionRecord | null | undefined,
+  config: SubscriptionPlansConfig
+): boolean {
+  if (user.role === "ADMIN" || user.role === "SELLER") return false
+  if (user.id === "ciar-admin") return false
+  if (!config.paymentsEnabled) return false
+  if (config.exemptUserIds?.includes(user.id)) return false
+  if (!config.requireSubscription) return false
+  return !isSubscriptionRecordActive(record)
+}
+
 export function canPostAdvertisement(
   user: AuthUser,
   record: UserSubscriptionRecord | null | undefined,
   config: SubscriptionPlansConfig
 ): boolean {
-  if (user.role === "ADMIN" || user.role === "SELLER") return true
-  if (user.id === "ciar-admin") return true
-  if (!config.requireSubscription) return true
-  return isSubscriptionRecordActive(record)
+  return !requiresAdvertiserPayment(user, record, config)
+}
+
+export function isUserExemptFromPayment(userId: string, config: SubscriptionPlansConfig): boolean {
+  return Boolean(config.exemptUserIds?.includes(userId))
 }
 
 export function subscriptionPaymentMethodLabel(method: SubscriptionPaymentMethod | undefined, isAr: boolean): string {

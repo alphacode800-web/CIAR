@@ -6,6 +6,7 @@ export async function GET() {
   try {
     const config = await getSubscriptionPlansConfig()
     return NextResponse.json({
+      paymentsEnabled: config.paymentsEnabled,
       requireSubscription: config.requireSubscription,
       currency: config.currency,
       bankNameAr: config.bankNameAr,

@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useRef, useState } from "react"
 import {
   ArrowLeft,
   Building2,
-  Crown,
   Globe,
   ImageIcon,
   Link2,
@@ -33,6 +32,7 @@ import { useI18n } from "@/lib/i18n-context"
 import { ContactSenderTypePicker } from "@/components/contact/contact-sender-type-picker"
 import { CONTACT_SENDER_TYPE_IDS, type ContactSenderTypeId } from "@/lib/contact-sender-types"
 import { setPostAuthRedirect } from "@/lib/post-auth-redirect"
+import { getPendingAdDraft, savePendingAdDraft } from "@/lib/ad-draft-storage"
 import { normalizeOptionalUrl } from "@/lib/optional-url"
 import type { AdNotifyChannel } from "@/lib/ad-notify"
 import { AdvertiserPanel } from "@/components/pages/advertiser-panel"
@@ -163,18 +163,28 @@ export function AdvertisePage() {
   const [productDetails, setProductDetails] = useState<AdProductDetails>(emptyAdProductDetails())
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false)
-  const [canPostAds, setCanPostAds] = useState<boolean | null>(null)
-  const [subscriptionPending, setSubscriptionPending] = useState(false)
+  const [requiresPayment, setRequiresPayment] = useState<boolean | null>(null)
+  const [paymentsEnabled, setPaymentsEnabled] = useState(true)
+
+  useEffect(() => {
+    const draft = getPendingAdDraft()
+    if (!draft) return
+    setCompanyName(draft.companyName)
+    setSenderType(draft.senderType)
+    setTitle(draft.title)
+    setDescription(draft.description)
+    setLink(draft.link)
+    setImageUrl(draft.imageUrl)
+    setNotifyVia(draft.notifyVia)
+    setProductDetails(draft.productDetails)
+  }, [])
 
   useEffect(() => {
     if (!user) {
-      setCanPostAds(null)
-      setSubscriptionPending(false)
+      setRequiresPayment(null)
       return
     }
     const loadSubscription = async () => {
-      setSubscriptionLoading(true)
       try {
         const token = localStorage.getItem("ciar_token")
         const res = await fetch("/api/subscriptions/me", {
@@ -182,15 +192,11 @@ export function AdvertisePage() {
         })
         const data = await res.json()
         if (res.ok) {
-          setCanPostAds(Boolean(data.canPost))
-          setSubscriptionPending(data.latest?.status === "pending" && !data.canPost)
-        } else {
-          setCanPostAds(false)
+          setRequiresPayment(Boolean(data.requiresPayment))
+          setPaymentsEnabled(data.paymentsEnabled !== false)
         }
       } catch {
-        setCanPostAds(false)
-      } finally {
-        setSubscriptionLoading(false)
+        setRequiresPayment(null)
       }
     }
     void loadSubscription()
@@ -256,6 +262,23 @@ export function AdvertisePage() {
     setSubmitting(true)
     try {
       const token = localStorage.getItem("ciar_token")
+      const meRes = await fetch("/api/subscriptions/me", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      const meData = await meRes.json()
+      const needsPayment = meRes.ok && Boolean(meData.requiresPayment)
+
+      if (needsPayment) {
+        savePendingAdDraft({ ...parsed.data, locale })
+        toast.info(
+          isAr
+            ? "تم حفظ بيانات إعلانك — اختر خطة الاشتراك لإكمال الإرسال"
+            : "Your ad details were saved — choose a subscription plan to finish submitting"
+        )
+        navigate({ page: "subscription" })
+        return
+      }
+
       const res = await fetch("/api/advertise", {
         method: "POST",
         headers: {
@@ -443,6 +466,19 @@ export function AdvertisePage() {
                 />
                 <StepItem
                   step={3}
+                  title={isAr ? "الاشتراك والدفع" : "Subscription & payment"}
+                  description={
+                    paymentsEnabled
+                      ? isAr
+                        ? "إن لزم الأمر، اختر خطة وادفع بعد إكمال النموذج."
+                        : "If required, choose a plan and pay after completing the form."
+                      : isAr
+                        ? "الخدمة مجانية حالياً — لا يلزم اشتراك."
+                        : "The service is currently free — no subscription needed."
+                  }
+                />
+                <StepItem
+                  step={4}
                   title={isAr ? "انتظر الموافقة" : "Await approval"}
                   description={isAr ? "نتواصل معك خلال 24–48 ساعة." : "We contact you within 24–48 hours."}
                 />
@@ -452,7 +488,7 @@ export function AdvertisePage() {
 
           {/* Form / gate */}
           <AnimatedSection delay={0.2} className="lg:col-span-3">
-            {loading || (user && subscriptionLoading) ? (
+            {loading ? (
               <div className="rounded-2xl border border-border/50 bg-card p-12 text-center text-muted-foreground shadow-sm">
                 <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 {isAr ? "جاري التحميل..." : "Loading..."}
@@ -467,12 +503,12 @@ export function AdvertisePage() {
                     </div>
                     <div className="space-y-2 text-start">
                       <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-                        {isAr ? "الاشتراك مطلوب لإضافة إعلان" : "Subscription required to post an ad"}
+                        {isAr ? "سجّل الدخول لإضافة إعلان" : "Sign in to post an ad"}
                       </h2>
                       <p className="text-sm leading-relaxed text-muted-foreground">
                         {isAr
-                          ? "يجب إنشاء حساب أو تسجيل الدخول قبل إرسال طلب إعلان. بعد الاشتراك ستتمكن من رفع تفاصيل إعلانك مباشرة."
-                          : "You must sign up or log in before submitting an ad. After subscribing you can send your ad details immediately."}
+                          ? "أنشئ حساباً أو سجّل الدخول، ثم املأ تفاصيل إعلانك. إن لزم الاشتراك ستظهر الخطط في الخطوة الأخيرة."
+                          : "Create an account or sign in, then fill in your ad details. If a subscription is required, plans appear as the final step."}
                       </p>
                     </div>
                   </div>
@@ -482,7 +518,7 @@ export function AdvertisePage() {
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Button type="button" className="btn-gold h-12 gap-2 rounded-xl text-sm font-semibold" onClick={() => goSubscribe("register")}>
                       <UserPlus className="h-4 w-4" />
-                      {isAr ? "إنشاء حساب والاشتراك" : "Create account"}
+                      {isAr ? "إنشاء حساب" : "Create account"}
                     </Button>
                     <Button type="button" variant="outline" className="h-12 gap-2 rounded-xl border-2 text-sm font-semibold" onClick={() => goSubscribe("login")}>
                       <LogIn className="h-4 w-4" />
@@ -494,45 +530,15 @@ export function AdvertisePage() {
                   </p>
                 </div>
               </div>
-            ) : canPostAds === false ? (
-              <div className="overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm">
-                <div className="relative border-b border-border/40 bg-gradient-to-br from-[oklch(0.78_0.14_82/12%)] to-transparent px-6 py-8 sm:px-8">
-                  <div className="relative flex items-start gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[oklch(0.78_0.14_82/25%)] to-[oklch(0.72_0.12_75/15%)]">
-                      <Crown className="h-7 w-7 text-[oklch(0.82_0.145_85)]" />
-                    </div>
-                    <div className="space-y-2 text-start">
-                      <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-                        {isAr ? "اشتراك المُعلِن مطلوب" : "Advertiser subscription required"}
-                      </h2>
-                      <p className="text-sm leading-relaxed text-muted-foreground">
-                        {subscriptionPending
-                          ? isAr
-                            ? "طلب اشتراكك قيد المراجعة. أكمل الدفع أو انتظر موافقة الإدارة."
-                            : "Your subscription request is under review. Complete payment or wait for admin approval."
-                          : isAr
-                            ? "لنشر إعلان على CIAR يجب الاشتراك أولاً، ثم إتمام الدفع."
-                            : "To publish an ad on CIAR you must subscribe first, then complete payment."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-4 p-6 sm:p-8">
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <Button type="button" className="btn-gold h-12 gap-2 rounded-xl text-sm font-semibold" onClick={goToSubscription}>
-                      <Crown className="h-4 w-4" />
-                      {isAr ? "اختيار خطة الاشتراك" : "Choose subscription plan"}
-                    </Button>
-                    {subscriptionPending ? (
-                      <Button type="button" variant="outline" className="h-12 gap-2 rounded-xl border-2 text-sm font-semibold" onClick={() => navigate({ page: "subscription-payment" })}>
-                        {isAr ? "إكمال الدفع" : "Complete payment"}
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
             ) : (
               <div className="space-y-6">
+                {requiresPayment && getPendingAdDraft() ? (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-muted-foreground">
+                    {isAr
+                      ? "لديك مسودة إعلان محفوظة — أكمل الاشتراك والدفع لإرسالها."
+                      : "You have a saved ad draft — complete subscription and payment to submit it."}
+                  </div>
+                ) : null}
                 <AdvertiserPanel />
               <div className="overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm">
                 {/* User welcome strip removed — replaced by AdvertiserPanel above */}

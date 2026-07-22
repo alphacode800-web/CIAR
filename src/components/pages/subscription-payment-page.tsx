@@ -16,6 +16,8 @@ import {
   setPostAuthRedirect,
   setSelectedSubscriptionPlan,
 } from "@/lib/post-auth-redirect"
+import { hasPendingAdDraft } from "@/lib/ad-draft-storage"
+import { pendingAdSuccessMessage, submitPendingAdDraft } from "@/lib/submit-pending-ad"
 import { getPlanById, getPlanLabel, type SubscriptionPlan } from "@/lib/advertiser-subscription"
 import {
   getPaymentMethodLabel,
@@ -198,13 +200,33 @@ export function SubscriptionPaymentPage() {
       clearPendingSubscriptionId()
       setSelectedSubscriptionPlan("")
 
+      const trySubmitDraft = async () => {
+        if (!hasPendingAdDraft()) return false
+        const result = await submitPendingAdDraft()
+        if (!result.submitted) return false
+        if (result.deliveryUrl) {
+          window.open(result.deliveryUrl, "_blank", "noopener,noreferrer")
+        }
+        toast.success(pendingAdSuccessMessage(result.notifyVia, isAr))
+        return true
+      }
+
       if (data.autoActivated) {
+        const submitted = await trySubmitDraft()
+        if (submitted) {
+          navigate({ page: "advertise" })
+          return
+        }
         toast.success(isAr ? "تم تفعيل اشتراكك — يمكنك نشر إعلان الآن" : "Subscription activated — you can post ads now")
       } else {
         toast.success(
           isAr
-            ? "تم إرسال طلب الدفع — سيتم التفعيل بعد موافقة الإدارة"
-            : "Payment submitted — activation pending admin approval"
+            ? hasPendingAdDraft()
+              ? "تم إرسال الدفع — بعد موافقة الإدارة سيُرسل إعلانك تلقائياً"
+              : "تم إرسال طلب الدفع — سيتم التفعيل بعد موافقة الإدارة"
+            : hasPendingAdDraft()
+              ? "Payment submitted — your ad will be sent automatically after admin approval"
+              : "Payment submitted — activation pending admin approval"
         )
       }
       navigate({ page: "advertise" })
@@ -310,10 +332,14 @@ export function SubscriptionPaymentPage() {
 
         <div className="rounded-xl border border-border/40 bg-muted/20 p-4 flex items-start gap-3 text-sm">
           <ShieldCheck className="h-5 w-5 shrink-0 text-primary mt-0.5" />
-          <p className="text-muted-foreground">
-            {isAr
-              ? "بعد تأكيد الدفع من الإدارة سيتم تفعيل اشتراكك ويمكنك نشر الإعلانات."
-              : "After admin confirms payment, your subscription will be activated and you can publish ads."}
+          <p className="text-sm text-muted-foreground">
+            {hasPendingAdDraft()
+              ? isAr
+                ? "بعد تأكيد الدفع من الإدارة سيتم تفعيل اشتراكك وإرسال إعلانك المحفوظ."
+                : "After admin confirms payment, your subscription will activate and your saved ad will be submitted."
+              : isAr
+                ? "بعد تأكيد الدفع من الإدارة سيتم تفعيل اشتراكك ويمكنك نشر الإعلانات."
+                : "After admin confirms payment, your subscription will be activated and you can publish ads."}
           </p>
         </div>
 

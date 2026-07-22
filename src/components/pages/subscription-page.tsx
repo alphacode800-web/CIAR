@@ -13,12 +13,15 @@ import {
   setPostAuthRedirect,
   setSelectedSubscriptionPlan,
 } from "@/lib/post-auth-redirect"
+import { hasPendingAdDraft } from "@/lib/ad-draft-storage"
+import { pendingAdSuccessMessage, submitPendingAdDraft } from "@/lib/submit-pending-ad"
 import type { SubscriptionPlan } from "@/lib/advertiser-subscription"
 import { getPlanLabel, subscriptionStatusLabel } from "@/lib/advertiser-subscription"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
 type PlansResponse = {
+  paymentsEnabled: boolean
   requireSubscription: boolean
   currency: string
   plans: SubscriptionPlan[]
@@ -26,8 +29,10 @@ type PlansResponse = {
 
 type MeResponse = {
   canPost: boolean
+  requiresPayment: boolean
+  paymentsEnabled: boolean
   active: { status: string; expiresAt?: string } | null
-  latest: { status: string } | null
+  latest: { status: string; id?: string } | null
 }
 
 export function SubscriptionPage() {
@@ -41,6 +46,8 @@ export function SubscriptionPage() {
   const [loading, setLoading] = useState(true)
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
   const autoCheckoutRef = useRef(false)
+  const autoSubmitRef = useRef(false)
+  const hasDraft = hasPendingAdDraft()
 
   useEffect(() => {
     const load = async () => {
@@ -66,6 +73,39 @@ export function SubscriptionPage() {
     }
     void load()
   }, [user, isAr])
+
+  useEffect(() => {
+    if (autoSubmitRef.current || !user || !meData?.canPost || !hasPendingAdDraft()) return
+    autoSubmitRef.current = true
+    void (async () => {
+      const result = await submitPendingAdDraft()
+      if (result.submitted) {
+        if (result.deliveryUrl) {
+          window.open(result.deliveryUrl, "_blank", "noopener,noreferrer")
+        }
+        toast.success(pendingAdSuccessMessage(result.notifyVia, isAr))
+        navigate({ page: "advertise" })
+        return
+      }
+      if (result.code === "SUBSCRIPTION_REQUIRED") {
+        autoSubmitRef.current = false
+      }
+    })()
+  }, [user, meData?.canPost, isAr, navigate])
+
+  useEffect(() => {
+    if (!user || !plansData || plansData.paymentsEnabled !== false || !hasPendingAdDraft()) return
+    void (async () => {
+      const result = await submitPendingAdDraft()
+      if (result.submitted) {
+        if (result.deliveryUrl) {
+          window.open(result.deliveryUrl, "_blank", "noopener,noreferrer")
+        }
+        toast.success(pendingAdSuccessMessage(result.notifyVia, isAr))
+        navigate({ page: "advertise" })
+      }
+    })()
+  }, [user, plansData, isAr, navigate])
 
   useEffect(() => {
     if (autoCheckoutRef.current || !user || !plansData || meData?.canPost) return
@@ -139,19 +179,45 @@ export function SubscriptionPage() {
             {isAr ? "اشتراك المُعلِن" : "Advertiser subscription"}
           </Badge>
           <h1 className="text-3xl font-bold tracking-tight">
-            {isAr ? "اختر خطة الاشتراك" : "Choose your subscription plan"}
+            {hasDraft
+              ? isAr
+                ? "الخطوة الأخيرة: اختر خطة الاشتراك"
+                : "Final step: choose your subscription plan"
+              : isAr
+                ? "اختر خطة الاشتراك"
+                : "Choose your subscription plan"}
           </h1>
           <p className="max-w-2xl text-sm text-muted-foreground">
-            {isAr
-              ? "الاشتراك مطلوب لنشر الإعلانات على منصة CIAR. بعد اختيار الخطة ستنتقل إلى صفحة الدفع."
-              : "A subscription is required to publish ads on CIAR. After choosing a plan you will proceed to payment."}
+            {hasDraft
+              ? isAr
+                ? "أكملت تفاصيل إعلانك. اختر خطة وادفع لإرسال الطلب — أو انتظر موافقة الإدارة إن كان الدفع يدوياً."
+                : "You completed your ad details. Choose a plan and pay to submit — or wait for admin approval if payment is manual."
+              : isAr
+                ? "اختر خطة للمتابعة إلى الدفع ونشر الإعلانات."
+                : "Choose a plan to proceed to payment and publish ads."}
           </p>
         </div>
         <Button type="button" variant="ghost" className="gap-2 rounded-full" onClick={() => navigate({ page: "advertise" })}>
           <ArrowLeft className="h-4 w-4" />
-          {isAr ? "العودة" : "Back"}
+          {isAr ? "العودة للإعلان" : "Back to ad"}
         </Button>
       </div>
+
+      {hasDraft ? (
+        <div className="rounded-2xl border border-[oklch(0.78_0.14_82/30%)] bg-[oklch(0.78_0.14_82/8%)] p-4 text-sm">
+          {isAr
+            ? "إعلانك جاهز للإرسال. بعد اختيار الخطة وإتمام الدفع (أو تفعيل اشتراكك) سيُرسل تلقائياً."
+            : "Your ad is ready to submit. After choosing a plan and completing payment (or activating your subscription), it will be sent automatically."}
+        </div>
+      ) : null}
+
+      {plansData?.paymentsEnabled === false ? (
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6 text-sm">
+          {isAr
+            ? "الخدمة مجانية حالياً — لا يلزم اشتراك. سيتم إرسال إعلانك إن كان محفوظاً."
+            : "The service is currently free — no subscription required. Your saved ad will be submitted if present."}
+        </div>
+      ) : null}
 
       {!user ? (
         <div className="rounded-2xl border border-border/50 bg-card p-6 sm:p-8 space-y-4">
@@ -180,7 +246,13 @@ export function SubscriptionPage() {
             </div>
           </div>
           <Button className="btn-gold rounded-full" onClick={() => navigate({ page: "advertise" })}>
-            {isAr ? "انتقل لنشر إعلان" : "Go publish an ad"}
+            {hasDraft
+              ? isAr
+                ? "إرسال الإعلان الآن"
+                : "Submit ad now"
+              : isAr
+                ? "انتقل لنشر إعلان"
+                : "Go publish an ad"}
           </Button>
         </div>
       ) : meData?.latest?.status === "pending" ? (
@@ -196,6 +268,7 @@ export function SubscriptionPage() {
         </div>
       ) : null}
 
+      {plansData?.paymentsEnabled !== false ? (
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => {
           const features = isAr ? plan.featuresAr : plan.featuresEn
@@ -247,6 +320,7 @@ export function SubscriptionPage() {
           )
         })}
       </div>
+      ) : null}
 
       {meData?.active ? (
         <p className="text-center text-xs text-muted-foreground">
