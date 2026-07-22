@@ -1,0 +1,5 @@
+export { FittingRoomModal } from "./FittingRoomModal"
+export { ImageUploader } from "./ImageUploader"
+export { GarmentSelector } from "./GarmentSelector"
+export { ResultPreview } from "./ResultPreview"
+export { FittingRoomWrapper } from "./fitting-room-wrapper"
