@@ -2,12 +2,14 @@ import type { AuthUser } from "@/lib/auth"
 import {
   SUBSCRIPTION_PLANS_KEY,
   USER_SUBSCRIPTIONS_KEY,
+  canPostAdvertisement,
   computeSubscriptionExpiry,
   defaultSubscriptionPlansConfig,
   getActiveUserSubscription,
   getLatestUserSubscription,
   getPlanById,
   isSubscriptionRecordActive,
+  isUserExemptFromPayment,
   newSubscriptionRecordId,
   parseSubscriptionPlansConfig,
   parseUserSubscriptionsStore,
@@ -56,14 +58,24 @@ export async function getUserSubscriptionStatus(userId: string) {
   const [config, store] = await Promise.all([getSubscriptionPlansConfig(), getUserSubscriptionsStore()])
   const active = getActiveUserSubscription(store, userId)
   const latest = getLatestUserSubscription(store, userId)
+  const isExempt = isUserExemptFromPayment(userId, config)
+  const canPost = active ? isSubscriptionRecordActive(active) : false
+
   return {
     config: {
+      paymentsEnabled: config.paymentsEnabled,
       requireSubscription: config.requireSubscription,
       currency: config.currency,
     },
     active: active || null,
     latest: latest || null,
-    canPost: Boolean(active && isSubscriptionRecordActive(active)),
+    isExempt,
+    canPost,
+    requiresPayment:
+      config.paymentsEnabled &&
+      config.requireSubscription &&
+      !isExempt &&
+      !(active && isSubscriptionRecordActive(active)),
   }
 }
 
@@ -196,6 +208,28 @@ export async function rejectSubscriptionPayment(subscriptionId: string, adminNot
   return saveUserSubscriptionsStore({ records })
 }
 
+async function addUserToExemptList(userId: string) {
+  const config = await getSubscriptionPlansConfig()
+  const exemptUserIds = [...new Set([...(config.exemptUserIds || []), userId])]
+  await saveSubscriptionPlansConfig({ ...config, exemptUserIds })
+}
+
+async function removeUserFromExemptList(userId: string) {
+  const config = await getSubscriptionPlansConfig()
+  const exemptUserIds = (config.exemptUserIds || []).filter((id) => id !== userId)
+  await saveSubscriptionPlansConfig({ ...config, exemptUserIds })
+}
+
+export async function setPaymentsEnabled(enabled: boolean) {
+  const config = await getSubscriptionPlansConfig()
+  return saveSubscriptionPlansConfig({ ...config, paymentsEnabled: enabled })
+}
+
+export async function removeExemptUser(userId: string) {
+  await removeUserFromExemptList(userId)
+  return getSubscriptionPlansConfig()
+}
+
 export async function waiveUserSubscription(
   userId: string,
   input: { adminNote?: string; durationDays?: number; userName?: string; userEmail?: string | null; userPhone?: string | null }
@@ -236,6 +270,7 @@ export async function waiveUserSubscription(
     ),
   ]
 
+  await addUserToExemptList(userId)
   return saveUserSubscriptionsStore({ records })
 }
 
@@ -251,13 +286,13 @@ export async function revokeUserSubscription(userId: string, adminNote?: string)
       adminNote: adminNote?.trim() || r.adminNote,
     })
   })
+  await removeUserFromExemptList(userId)
   return saveUserSubscriptionsStore({ records })
 }
 
 export async function assertCanPostAdvertisement(user: AuthUser) {
   const [config, store] = await Promise.all([getSubscriptionPlansConfig(), getUserSubscriptionsStore()])
   const active = getActiveUserSubscription(store, user.id)
-  const { canPostAdvertisement } = await import("@/lib/advertiser-subscription")
   if (!canPostAdvertisement(user, active, config)) {
     throw new Error("SUBSCRIPTION_REQUIRED")
   }

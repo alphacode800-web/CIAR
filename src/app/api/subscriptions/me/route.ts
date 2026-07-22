@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAuthUser } from "@/lib/auth"
-import { canPostAdvertisement } from "@/lib/advertiser-subscription"
+import { canPostAdvertisement, requiresAdvertiserPayment } from "@/lib/advertiser-subscription"
 import {
   getSubscriptionPlansConfig,
   getUserSubscriptionStatus,
@@ -23,6 +23,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ...status,
       canPost: canPostAdvertisement(user, active, config),
+      requiresPayment: requiresAdvertiserPayment(user, active, config),
+      paymentsEnabled: config.paymentsEnabled,
+      isExempt: status.isExempt,
     })
   } catch (error) {
     console.error("GET /api/subscriptions/me error:", error)

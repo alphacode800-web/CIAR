@@ -5,8 +5,10 @@ import {
   getSubscriptionPlansConfig,
   getUserSubscriptionsStore,
   rejectSubscriptionPayment,
+  removeExemptUser,
   revokeUserSubscription,
   saveSubscriptionPlansConfig,
+  setPaymentsEnabled,
   waiveUserSubscription,
 } from "@/services/advertiser-subscription.service"
 import { subscriptionPlansConfigSchema } from "@/lib/advertiser-subscription"
@@ -102,7 +104,8 @@ export async function POST(request: NextRequest) {
         userEmail,
         userPhone,
       })
-      return NextResponse.json({ success: true, subscriptions: store.records })
+      const plans = await getSubscriptionPlansConfig()
+      return NextResponse.json({ success: true, subscriptions: store.records, plans })
     }
 
     if (body.action === "revoke") {
@@ -111,7 +114,27 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "userId required" }, { status: 400 })
       }
       const store = await revokeUserSubscription(userId, body.adminNote)
-      return NextResponse.json({ success: true, subscriptions: store.records })
+      const plans = await getSubscriptionPlansConfig()
+      return NextResponse.json({ success: true, subscriptions: store.records, plans })
+    }
+
+    if (body.action === "enable_free_for_all") {
+      const plans = await setPaymentsEnabled(false)
+      return NextResponse.json({ success: true, plans })
+    }
+
+    if (body.action === "enable_payments") {
+      const plans = await setPaymentsEnabled(true)
+      return NextResponse.json({ success: true, plans })
+    }
+
+    if (body.action === "remove_exempt") {
+      const userId = String(body.userId || "")
+      if (!userId) {
+        return NextResponse.json({ error: "userId required" }, { status: 400 })
+      }
+      const plans = await removeExemptUser(userId)
+      return NextResponse.json({ success: true, plans })
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 })

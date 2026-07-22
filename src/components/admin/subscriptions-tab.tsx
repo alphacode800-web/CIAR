@@ -130,6 +130,7 @@ export function SubscriptionsTab() {
     const data = await res.json()
     if (!res.ok) throw new Error("action failed")
     if (data.subscriptions) setRecords(data.subscriptions)
+    if (data.plans) setPlans(data.plans)
   }
 
   const activate = async (subscriptionId: string) => {
@@ -180,6 +181,47 @@ export function SubscriptionsTab() {
     }
   }
 
+  const setFreeForAll = async (enabled: boolean) => {
+    try {
+      const res = await fetch("/api/admin/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: enabled ? "enable_payments" : "enable_free_for_all" }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error("failed")
+      if (data.plans) setPlans(data.plans)
+      toast.success(
+        enabled
+          ? isAr
+            ? "تم تفعيل الدفع والخطط"
+            : "Payments and plans enabled"
+          : isAr
+            ? "الخدمة مجانية للجميع الآن"
+            : "Service is now free for everyone"
+      )
+    } catch {
+      toast.error(isAr ? "فشل تحديث الإعداد" : "Failed to update setting")
+    }
+  }
+
+  const removeExemptUser = async (userId: string) => {
+    if (!confirm(isAr ? "إزالة الإعفاء عن هذا المستخدم؟" : "Remove exemption for this user?")) return
+    try {
+      const res = await fetch("/api/admin/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "remove_exempt", userId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error("failed")
+      if (data.plans) setPlans(data.plans)
+      toast.success(isAr ? "تمت إزالة الإعفاء" : "Exemption removed")
+    } catch {
+      toast.error(isAr ? "فشلت العملية" : "Operation failed")
+    }
+  }
+
   const updatePlan = (planId: string, patch: Partial<(typeof plans.plans)[0]>) => {
     setPlans((prev) => ({
       ...prev,
@@ -209,6 +251,9 @@ export function SubscriptionsTab() {
 
   const pendingRecords = records.filter((r) => r.status === "pending")
   const activeRecords = records.filter((r) => r.status === "active" || r.status === "waived")
+  const exemptUserIds = plans.exemptUserIds || []
+  const exemptUsers = users.filter((u) => exemptUserIds.includes(u.id))
+  const unknownExemptIds = exemptUserIds.filter((id) => !users.some((u) => u.id === id))
 
   return (
     <div className="space-y-8">
@@ -239,6 +284,13 @@ export function SubscriptionsTab() {
 
         <div className="flex flex-wrap gap-6">
           <label className="flex items-center gap-2 text-sm">
+            <Switch
+              checked={plans.paymentsEnabled !== false}
+              onCheckedChange={(v) => void setFreeForAll(v)}
+            />
+            {isAr ? "تفعيل الدفع والخطط" : "Enable payments & plans"}
+          </label>
+          <label className="flex items-center gap-2 text-sm">
             <Switch checked={plans.requireSubscription} onCheckedChange={(v) => setPlans((p) => ({ ...p, requireSubscription: v }))} />
             {isAr ? "اشتراك إلزامي لنشر الإعلانات" : "Require subscription to post ads"}
           </label>
@@ -247,6 +299,20 @@ export function SubscriptionsTab() {
             {isAr ? "تفعيل تلقائي عند تأكيد الدفع" : "Auto-activate on payment submit"}
           </label>
         </div>
+
+        {plans.paymentsEnabled === false ? (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm">
+            {isAr
+              ? "الخدمة مجانية للجميع — لن يُطلب من المُعلِنين اختيار خطة أو الدفع."
+              : "The service is free for everyone — advertisers will not be asked to choose a plan or pay."}
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" className="rounded-full" onClick={() => void setFreeForAll(false)}>
+              {isAr ? "جعل الخدمة مجانية للجميع" : "Make service free for all"}
+            </Button>
+          </div>
+        )}
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-2">
@@ -411,6 +477,31 @@ export function SubscriptionsTab() {
           {isAr ? "إعفاء من الاشتراك" : "Waive subscription"}
         </Button>
       </section>
+
+      {(exemptUsers.length > 0 || unknownExemptIds.length > 0) ? (
+        <section className="space-y-3 rounded-2xl border border-border/40 p-4">
+          <p className="text-sm font-semibold">{isAr ? "مستخدمون معفيون من الدفع" : "Payment-exempt users"}</p>
+          {exemptUsers.map((u) => (
+            <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/30 bg-muted/10 p-3">
+              <div>
+                <p className="font-medium text-sm">{u.name}</p>
+                {u.email ? <p className="text-xs text-muted-foreground">{u.email}</p> : null}
+              </div>
+              <Button size="sm" variant="outline" className="rounded-full" onClick={() => void removeExemptUser(u.id)}>
+                {isAr ? "إزالة الإعفاء" : "Remove exemption"}
+              </Button>
+            </div>
+          ))}
+          {unknownExemptIds.map((id) => (
+            <div key={id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/30 bg-muted/10 p-3">
+              <p className="text-sm font-mono">{id}</p>
+              <Button size="sm" variant="outline" className="rounded-full" onClick={() => void removeExemptUser(id)}>
+                {isAr ? "إزالة الإعفاء" : "Remove exemption"}
+              </Button>
+            </div>
+          ))}
+        </section>
+      ) : null}
 
       {pendingRecords.length > 0 ? (
         <section className="space-y-3">

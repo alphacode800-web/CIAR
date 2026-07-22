@@ -52,16 +52,5 @@ export async function resolvePostAuthRoute(): Promise<"advertise" | "subscriptio
   const redirect = consumePostAuthRedirect()
   if (!redirect) return "home"
   if (redirect === "subscription") return "subscription"
-
-  try {
-    const token = localStorage.getItem("ciar_token")
-    const res = await fetch("/api/subscriptions/me", {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-    if (!res.ok) return "subscription"
-    const data = await res.json()
-    return data.canPost ? "advertise" : "subscription"
-  } catch {
-    return "subscription"
-  }
+  return "advertise"
 }
