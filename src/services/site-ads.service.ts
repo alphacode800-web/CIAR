@@ -13,7 +13,7 @@ import {
 } from "@/lib/site-ads"
 import { PENDING_AD_REQUESTS_KEY, type PendingAdRequest } from "@/services/advertise.service"
 import { getSettings, updateSettings } from "@/services/settings.service"
-import { buildDefaultSiteAds, getDefaultSiteAdsForSlot } from "@/lib/default-site-ads"
+import { buildDefaultSiteAds, getDefaultFashionDemoAds, getDefaultSiteAdsForSlot } from "@/lib/default-site-ads"
 import { parseAdProductDetails, type AdProductDetails } from "@/lib/ad-product-details"
 import { appendAdImageToImageStrip } from "@/services/image-strip-sync.service"
 
@@ -160,8 +160,17 @@ export async function listAllPublicAds(locale?: string): Promise<SiteAdRecord[]>
   const defaults = getDefaultSiteAdsForSlot({ locale }).filter(
     (ad) => !occupiedSlots.has(`${ad.placement}:${ad.position}`)
   )
+  const fashionDemos = getDefaultFashionDemoAds(locale)
 
-  return [...activeManaged, ...defaults].sort(
+  const merged = [...activeManaged, ...defaults, ...fashionDemos]
+  const seen = new Set<string>()
+  const unique = merged.filter((ad) => {
+    if (seen.has(ad.id)) return false
+    seen.add(ad.id)
+    return true
+  })
+
+  return unique.sort(
     (a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
   )
 }

@@ -13,6 +13,7 @@ import { DEFAULT_PAGE_HEADERS, type PageHeaderConfig } from "@/lib/page-headers"
 import { PageHeaderOverlay, PageHeaderTextBlock } from "@/components/layout/page-hero-header"
 import { SiteAdSlot } from "@/components/ads/site-ad-slot"
 import { AiRecommendationsSection } from "@/components/home/ai-recommendations-section"
+import { comparePlatformOrderDesc } from "@/lib/platform-display-order"
 import { cn } from "@/lib/utils"
 
 type Banner = {
@@ -174,7 +175,7 @@ export function SuperPlatformHome({
 
           const filtered = rows
             .filter((m: ModuleWithBanner) => m.visibility === "VISIBLE" && m.isEnabled && m.banner?.isActive)
-            .sort((a: ModuleWithBanner, b: ModuleWithBanner) => a.order - b.order)
+            .sort(comparePlatformOrderDesc)
           setModules(filtered)
         })
         .catch(() => setModules([]))
