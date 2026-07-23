@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { listAllPublicAds } from "@/services/site-ads.service"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest) {
   try {
     const locale = request.nextUrl.searchParams.get("locale") || undefined

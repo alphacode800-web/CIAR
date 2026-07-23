@@ -229,6 +229,23 @@ export function getDefaultFashionDemoAds(locale?: string): SiteAdRecord[] {
   })
 }
 
+/** Ensures fashion demo ads are always available for #/ads and the fitting room. */
+export function mergePublicAdsWithFashionDemos(
+  ads: SiteAdRecord[],
+  locale?: string
+): SiteAdRecord[] {
+  const seen = new Set(ads.map((ad) => ad.id))
+  const merged = [...ads]
+  for (const demo of getDefaultFashionDemoAds(locale)) {
+    if (seen.has(demo.id)) continue
+    seen.add(demo.id)
+    merged.push(demo)
+  }
+  return merged.sort(
+    (a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
+  )
+}
+
 export function getDefaultSiteAdsForSlot(input?: {
   placement?: AdPlacement
   position?: AdPosition
