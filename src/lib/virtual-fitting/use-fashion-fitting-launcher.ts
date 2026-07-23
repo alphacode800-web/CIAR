@@ -4,6 +4,7 @@ import { useCallback, useState } from "react"
 import { toast } from "sonner"
 import { useI18n } from "@/lib/i18n-context"
 import { useFittingRoom } from "@/lib/fitting-room-context"
+import { mergePublicAdsWithFashionDemos } from "@/lib/default-site-ads"
 import { collectFashionGarmentsFromAds } from "@/lib/virtual-fitting/types"
 
 export function useFashionFittingLauncher() {
@@ -18,7 +19,11 @@ export function useFashionFittingLauncher() {
       try {
         const res = await fetch(`/api/ads?locale=${locale}`)
         const data = await res.json()
-        const garments = collectFashionGarmentsFromAds(Array.isArray(data.ads) ? data.ads : [])
+        const ads = mergePublicAdsWithFashionDemos(
+          Array.isArray(data.ads) ? data.ads : [],
+          locale
+        )
+        const garments = collectFashionGarmentsFromAds(ads)
 
         if (garments.length === 0) {
           toast.info(
