@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useI18n } from "@/lib/i18n-context"
 import { useRouter } from "@/lib/router-context"
-import { isDefaultSiteAd } from "@/lib/default-site-ads"
+import { isDefaultSiteAd, mergePublicAdsWithFashionDemos } from "@/lib/default-site-ads"
 import {
   AD_PLACEMENTS,
   getPlacementLabel,
@@ -139,7 +139,9 @@ export function AdsPage() {
     try {
       const res = await fetch(`/api/ads?locale=${locale}`)
       const data = await res.json()
-      setAds(Array.isArray(data.ads) ? data.ads : [])
+      setAds(
+        mergePublicAdsWithFashionDemos(Array.isArray(data.ads) ? data.ads : [], locale)
+      )
     } catch {
       setAds([])
     } finally {
