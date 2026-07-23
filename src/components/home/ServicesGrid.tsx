@@ -24,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { comparePlatformOrderDesc, reversePlatformDisplayOrder } from "@/lib/platform-display-order"
 
 type PlatformItem = {
   slug: string
@@ -49,13 +50,15 @@ const SLUG_ICONS: Record<string, LucideIcon> = {
 }
 
 function buildFallbackPlatforms(): PlatformItem[] {
-  return CIAR_MODULES.filter((module) => module.visibility === "VISIBLE").map((module) => ({
-    slug: module.slug,
-    nameEn: module.nameEn,
-    nameAr: module.nameAr,
-    descriptionEn: module.descriptionEn,
-    descriptionAr: module.descriptionAr,
-  }))
+  return reversePlatformDisplayOrder(
+    CIAR_MODULES.filter((module) => module.visibility === "VISIBLE").map((module) => ({
+      slug: module.slug,
+      nameEn: module.nameEn,
+      nameAr: module.nameAr,
+      descriptionEn: module.descriptionEn,
+      descriptionAr: module.descriptionAr,
+    }))
+  )
 }
 
 const fadeUp = (delay = 0) => ({
@@ -80,7 +83,7 @@ export function ServicesGrid() {
             (module: { visibility?: string; isEnabled?: boolean }) =>
               module.visibility === "VISIBLE" && module.isEnabled
           )
-          .sort((a: { order?: number }, b: { order?: number }) => (a.order ?? 0) - (b.order ?? 0))
+          .sort(comparePlatformOrderDesc)
 
         if (visible.length === 0) return
 

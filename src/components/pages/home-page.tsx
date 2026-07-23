@@ -31,6 +31,7 @@ import {
   type PageHeaderConfig,
 } from "@/lib/page-headers"
 import { PageHeaderTextBlock } from "@/components/layout/page-hero-header"
+import { comparePlatformOrderDesc, reversePlatformDisplayOrder } from "@/lib/platform-display-order"
 
 interface FeaturedProject {
   id: string
@@ -80,7 +81,7 @@ const hero = (a: number, b: number, c: number) => ({
   imageUrl3: DEFAULT_HERO_IMAGE_URLS[c % DEFAULT_HERO_IMAGE_URLS.length],
 })
 
-const FALLBACK_BANNERS: PlatformBanner[] = [
+const FALLBACK_BANNERS_ORDERED: PlatformBanner[] = [
   { id: "fashion", titleEn: "CIAR Fashion", titleAr: "CiAr موضة", descriptionEn: "Women's and men's fashion, dresses, shoes, bags, and accessories.", descriptionAr: "موضة نسائية ورجالية: فساتين، احذية، جزادين، اكسسوارات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(9, 10, 3) },
   { id: "global", titleEn: "CIAR Global Products", titleAr: "CiAr للمنتجات الصينية والدولية", descriptionEn: "Chinese and international products across industries.", descriptionAr: "للمنتجات الصينية والدولية بين الشركات العالمية من كافة الصناعات.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(2, 15, 7) },
   { id: "vip", titleEn: "CIAR VIP", titleAr: "CiAr VIP", descriptionEn: "Premium experience for VIP customers and luxury brands.", descriptionAr: "لكبار الشخصيات، البسة رجالية ونسائية وماركات عالمية.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(12, 13, 10) },
@@ -94,6 +95,8 @@ const FALLBACK_BANNERS: PlatformBanner[] = [
   { id: "marketing", titleEn: "CIAR Ads & Marketing", titleAr: "CiAr استضافة وتصميم الحملات الاعلانية", descriptionEn: "Design and hosting for full ad campaigns.", descriptionAr: "استضافة وتصميم كافة الحملات الاعلانية.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(6, 16, 19) },
   { id: "investment", titleEn: "CIAR Investment", titleAr: "CiAr أسهم المنصة والمكافآت", descriptionEn: "Member shares and rewards in CIAR platform.", descriptionAr: "أسهم منصتنا الخاصة بالأعضاء والمكافآت.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(13, 14, 17) },
 ]
+
+const FALLBACK_BANNERS = reversePlatformDisplayOrder(FALLBACK_BANNERS_ORDERED)
 
 export function HomePage({
   featuredProjects = [],
@@ -208,6 +211,12 @@ export function HomePage({
         const banners = Array.isArray(d?.banners) ? d.banners : []
         const normalized = banners
           .filter((b: any) => b?.module?.visibility === "VISIBLE" && b?.module?.isEnabled && b?.isActive)
+          .sort((a: { module?: { order?: number } }, b: { module?: { order?: number } }) =>
+            comparePlatformOrderDesc(
+              { order: a.module?.order },
+              { order: b.module?.order }
+            )
+          )
           .slice(0, 12)
         if (normalized.length > 0) {
           setPlatformBanners(normalized)
