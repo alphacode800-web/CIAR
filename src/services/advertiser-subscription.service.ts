@@ -15,6 +15,8 @@ import {
   parseUserSubscriptionsStore,
   serializeSubscriptionPlansConfig,
   serializeUserSubscriptionsStore,
+  shouldAutoActivateSubscriptionOnPayment,
+  isSubscriptionTestPaymentMode,
   subscriptionPlansConfigSchema,
   type SubscriptionPlansConfig,
   type UserSubscriptionRecord,
@@ -36,7 +38,7 @@ export async function getSubscriptionPlansConfig(): Promise<SubscriptionPlansCon
 export async function saveSubscriptionPlansConfig(config: SubscriptionPlansConfig): Promise<SubscriptionPlansConfig> {
   const parsed = subscriptionPlansConfigSchema.parse(config)
   await updateSettings({ [SUBSCRIPTION_PLANS_KEY]: serializeSubscriptionPlansConfig(parsed) })
-  return parsed
+  return parseSubscriptionPlansConfig(serializeSubscriptionPlansConfig(parsed))
 }
 
 export async function getUserSubscriptionsStore(): Promise<UserSubscriptionsStore> {
@@ -132,8 +134,11 @@ export async function submitSubscriptionPayment(
   const method = getPaymentMethodById(paymentStore, input.paymentMethodId)
   if (!method || !method.enabled) throw new Error("PAYMENT_METHOD_NOT_FOUND")
 
-  const validation = validatePaymentDetails(method, input.paymentDetails)
-  if (!validation.ok) throw new Error("VALIDATION_FAILED")
+  const testMode = isSubscriptionTestPaymentMode(config)
+  if (!testMode) {
+    const validation = validatePaymentDetails(method, input.paymentDetails)
+    if (!validation.ok) throw new Error("VALIDATION_FAILED")
+  }
 
   const index = store.records.findIndex((r) => r.id === input.subscriptionId && r.userId === user.id)
   let resolvedIndex = index
@@ -151,25 +156,28 @@ export async function submitSubscriptionPayment(
   const now = new Date()
   const startsAt = now.toISOString()
   const expiresAt = computeSubscriptionExpiry(now, plan.durationDays).toISOString()
+  const autoActivate = shouldAutoActivateSubscriptionOnPayment(config)
   const detailsSummary = formatPaymentDetailsForDisplay(method, input.paymentDetails, true).join("\n")
-  const paymentNote = input.paymentNote?.trim() || detailsSummary
+  const paymentNote = testMode
+    ? `دفع تجريبي — تفعيل تلقائي${detailsSummary ? `\n${detailsSummary}` : ""}`
+    : input.paymentNote?.trim() || detailsSummary
 
   const nextRecord: UserSubscriptionRecord = touchRecord({
     ...current,
     paymentMethod: input.paymentMethodId,
     paymentDetails: input.paymentDetails,
     paymentNote,
-    paymentStatus: config.autoActivateOnPayment ? "paid" : "pending",
-    status: config.autoActivateOnPayment ? "active" : "pending",
-    startsAt: config.autoActivateOnPayment ? startsAt : current.startsAt,
-    expiresAt: config.autoActivateOnPayment ? expiresAt : current.expiresAt,
+    paymentStatus: autoActivate ? "paid" : "pending",
+    status: autoActivate ? "active" : "pending",
+    startsAt: autoActivate ? startsAt : current.startsAt,
+    expiresAt: autoActivate ? expiresAt : current.expiresAt,
   })
 
   const records = [...store.records]
   records[resolvedIndex] = nextRecord
   await saveUserSubscriptionsStore({ records })
 
-  return { record: nextRecord, config, autoActivated: config.autoActivateOnPayment }
+  return { record: nextRecord, config, autoActivated: autoActivate, testMode }
 }
 
 export async function activateSubscriptionRecord(subscriptionId: string, adminNote?: string) {
