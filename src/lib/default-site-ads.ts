@@ -221,12 +221,19 @@ export function isDefaultSiteAd(ad: SiteAdRecord): boolean {
 
 export function getDefaultFashionDemoAds(locale?: string): SiteAdRecord[] {
   const now = new Date()
+  const farFuture = new Date(now)
+  farFuture.setFullYear(farFuture.getFullYear() + 5)
+
   return DEFAULT_FASHION_DEMO_ADS.filter((ad) => {
-    if (ad.status !== "active") return false
-    if (new Date(ad.endsAt) < now) return false
     if (locale && ad.locale !== locale && ad.locale !== "ar") return false
     return true
-  })
+  }).map((ad) => ({
+    ...ad,
+    status: "active" as const,
+    startsAt: now.toISOString(),
+    endsAt: farFuture.toISOString(),
+    productDetails: ad.productDetails ? { ...ad.productDetails } : ad.productDetails,
+  }))
 }
 
 /** Ensures fashion demo ads are always available for #/ads and the fitting room. */
@@ -234,14 +241,12 @@ export function mergePublicAdsWithFashionDemos(
   ads: SiteAdRecord[],
   locale?: string
 ): SiteAdRecord[] {
-  const seen = new Set(ads.map((ad) => ad.id))
-  const merged = [...ads]
+  const byId = new Map<string, SiteAdRecord>()
+  for (const ad of ads) byId.set(ad.id, ad)
   for (const demo of getDefaultFashionDemoAds(locale)) {
-    if (seen.has(demo.id)) continue
-    seen.add(demo.id)
-    merged.push(demo)
+    byId.set(demo.id, demo)
   }
-  return merged.sort(
+  return [...byId.values()].sort(
     (a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
   )
 }

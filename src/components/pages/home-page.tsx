@@ -205,7 +205,7 @@ export function HomePage({
   }, [])
 
   useEffect(() => {
-    fetch("/api/super-platform/banners")
+      fetch("/api/super-platform/banners", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         const banners = Array.isArray(d?.banners) ? d.banners : []

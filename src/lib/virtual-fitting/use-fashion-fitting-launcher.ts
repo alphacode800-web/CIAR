@@ -17,7 +17,7 @@ export function useFashionFittingLauncher() {
     async (initialGarmentId?: string) => {
       setLoading(true)
       try {
-        const res = await fetch(`/api/ads?locale=${locale}`)
+        const res = await fetch(`/api/ads?locale=${locale}`, { cache: "no-store" })
         const data = await res.json()
         const ads = mergePublicAdsWithFashionDemos(
           Array.isArray(data.ads) ? data.ads : [],

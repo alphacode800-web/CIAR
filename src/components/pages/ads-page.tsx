@@ -127,7 +127,7 @@ export function AdsPage() {
   const { t, locale } = useI18n()
   const { navigate } = useRouter()
   const isAr = locale === "ar"
-  const [ads, setAds] = useState<SiteAdRecord[]>([])
+  const [ads, setAds] = useState<SiteAdRecord[]>(() => mergePublicAdsWithFashionDemos([], "ar"))
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [placementFilter, setPlacementFilter] = useState<AdPlacement | "all">("all")
@@ -135,15 +135,16 @@ export function AdsPage() {
   const headerInView = useInView(headerRef, { once: true, margin: "-80px" })
 
   const loadAds = useCallback(async () => {
+    setAds((prev) => mergePublicAdsWithFashionDemos(prev, locale))
     setLoading(true)
     try {
-      const res = await fetch(`/api/ads?locale=${locale}`)
+      const res = await fetch(`/api/ads?locale=${locale}`, { cache: "no-store" })
       const data = await res.json()
       setAds(
         mergePublicAdsWithFashionDemos(Array.isArray(data.ads) ? data.ads : [], locale)
       )
     } catch {
-      setAds([])
+      setAds((prev) => mergePublicAdsWithFashionDemos(prev, locale))
     } finally {
       setLoading(false)
     }
