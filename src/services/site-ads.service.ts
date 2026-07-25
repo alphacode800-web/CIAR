@@ -162,15 +162,11 @@ export async function listAllPublicAds(locale?: string): Promise<SiteAdRecord[]>
   )
   const fashionDemos = getDefaultFashionDemoAds(locale)
 
-  const merged = [...activeManaged, ...defaults, ...fashionDemos]
-  const seen = new Set<string>()
-  const unique = merged.filter((ad) => {
-    if (seen.has(ad.id)) return false
-    seen.add(ad.id)
-    return true
-  })
+  const byId = new Map<string, SiteAdRecord>()
+  for (const ad of [...activeManaged, ...defaults]) byId.set(ad.id, ad)
+  for (const demo of fashionDemos) byId.set(demo.id, demo)
 
-  return unique.sort(
+  return [...byId.values()].sort(
     (a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
   )
 }
