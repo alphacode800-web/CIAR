@@ -7,7 +7,9 @@ export async function GET(request: NextRequest) {
   try {
     const locale = request.nextUrl.searchParams.get("locale") || undefined
     const ads = await listAllPublicAds(locale)
-    return NextResponse.json({ ads, total: ads.length })
+    return NextResponse.json({ ads, total: ads.length }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    })
   } catch (error) {
     console.error("GET /api/ads error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

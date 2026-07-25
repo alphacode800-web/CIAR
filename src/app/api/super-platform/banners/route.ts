@@ -3,6 +3,29 @@ import { prisma } from "@/lib/prisma"
 import { ensureSuperPlatformSeed, getFallbackBanners } from "@/features/super-platform/server"
 import { canAccessSuperAdmin } from "@/features/super-platform/authz"
 import { platformImageSlotsToPayload } from "@/lib/platform-card-images"
+import { comparePlatformOrderDesc } from "@/lib/platform-display-order"
+
+export const dynamic = "force-dynamic"
+
+const NO_STORE = { "Cache-Control": "no-store, no-cache, must-revalidate" }
+
+function sortBannersDesc<
+  T extends { module?: { order?: number; visibility?: string; isEnabled?: boolean }; isActive?: boolean },
+>(banners: T[]): T[] {
+  return banners
+    .filter(
+      (banner) =>
+        banner.isActive !== false &&
+        banner.module?.visibility === "VISIBLE" &&
+        banner.module?.isEnabled !== false
+    )
+    .sort((a, b) =>
+      comparePlatformOrderDesc(
+        { order: a.module?.order },
+        { order: b.module?.order }
+      )
+    )
+}
 
 function buildBannerImagePayload(body: Record<string, unknown>) {
   return Array.isArray(body.imageUrls)
@@ -21,9 +44,12 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
       include: { module: true },
     })
-    return NextResponse.json({ banners })
+    return NextResponse.json({ banners: sortBannersDesc(banners) }, { headers: NO_STORE })
   } catch {
-    return NextResponse.json({ banners: getFallbackBanners(), fallback: true })
+    return NextResponse.json(
+      { banners: sortBannersDesc(getFallbackBanners()), fallback: true },
+      { headers: NO_STORE }
+    )
   }
 }
 

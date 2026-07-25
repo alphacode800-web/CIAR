@@ -74,7 +74,7 @@ export function ServicesGrid() {
   const [platforms, setPlatforms] = useState<PlatformItem[]>(buildFallbackPlatforms)
 
   useEffect(() => {
-    fetch("/api/super-platform/modules")
+    fetch("/api/super-platform/modules", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         const rows = Array.isArray(data?.modules) ? data.modules : []

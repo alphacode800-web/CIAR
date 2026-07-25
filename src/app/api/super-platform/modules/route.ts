@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ensureSuperPlatformSeed, getFallbackModules } from "@/features/super-platform/server"
 import { canAccessSuperAdmin } from "@/features/super-platform/authz"
+import { sortPlatformModulesDesc } from "@/lib/platform-display-order"
+
+export const dynamic = "force-dynamic"
+
+const NO_STORE = { "Cache-Control": "no-store, no-cache, must-revalidate" }
 
 export async function GET(request: NextRequest) {
   const includeHidden = request.nextUrl.searchParams.get("includeHidden") === "true"
@@ -24,12 +29,18 @@ export async function GET(request: NextRequest) {
       })
     }
     if (modules.length === 0) {
-      return NextResponse.json({ modules: getFallbackModules(includeHidden), fallback: true })
+      return NextResponse.json(
+        { modules: sortPlatformModulesDesc(getFallbackModules(includeHidden)), fallback: true },
+        { headers: NO_STORE }
+      )
     }
-    return NextResponse.json({ modules })
+    return NextResponse.json({ modules: sortPlatformModulesDesc(modules) }, { headers: NO_STORE })
   } catch {
     const modules = getFallbackModules(includeHidden)
-    return NextResponse.json({ modules, fallback: true })
+    return NextResponse.json(
+      { modules: sortPlatformModulesDesc(modules), fallback: true },
+      { headers: NO_STORE }
+    )
   }
 }
 

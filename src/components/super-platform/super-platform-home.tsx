@@ -118,7 +118,7 @@ export function SuperPlatformHome({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetch("/api/super-platform/modules")
+      fetch("/api/super-platform/modules", { cache: "no-store" })
         .then((r) => r.json())
         .then((d) => {
           let rows = Array.isArray(d.modules) ? d.modules : []
