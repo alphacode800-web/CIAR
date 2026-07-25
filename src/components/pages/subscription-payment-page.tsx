@@ -13,6 +13,8 @@ import { useI18n } from "@/lib/i18n-context"
 import {
   clearPendingSubscriptionId,
   getPendingSubscriptionId,
+  getSelectedSubscriptionPlan,
+  setPendingSubscriptionId,
   setPostAuthRedirect,
   setSelectedSubscriptionPlan,
 } from "@/lib/post-auth-redirect"
@@ -27,6 +29,25 @@ import {
 } from "@/lib/site-payment-methods"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+
+function paymentErrorMessage(code: string | undefined, isAr: boolean): string {
+  switch (code) {
+    case "AUTH_REQUIRED":
+      return isAr ? "يرجى تسجيل الدخول مجدداً" : "Please sign in again"
+    case "NOT_FOUND":
+      return isAr
+        ? "انتهت صلاحية طلب الاشتراك — ارجع واختر الخطة من جديد"
+        : "Subscription request expired — go back and select your plan again"
+    case "INVALID_STATUS":
+      return isAr ? "تم إرسال الدفع مسبقاً — انتظر موافقة الإدارة" : "Payment already submitted — await admin approval"
+    case "METHOD_NOT_FOUND":
+      return isAr ? "طريقة الدفع غير متاحة — اختر طريقة أخرى" : "Payment method unavailable — choose another"
+    case "VALIDATION_FAILED":
+      return isAr ? "يرجى تعبئة جميع الحقول المطلوبة" : "Please fill all required fields"
+    default:
+      return isAr ? "فشل إرسال الدفع — حاول مرة أخرى" : "Failed to submit payment — try again"
+  }
+}
 
 function PaymentFieldInput({
   field,
@@ -125,8 +146,8 @@ export function SubscriptionPaymentPage() {
       setLoading(true)
       try {
         const [plansRes, methodsRes] = await Promise.all([
-          fetch("/api/subscriptions/plans"),
-          fetch("/api/payment-methods"),
+          fetch("/api/subscriptions/plans", { cache: "no-store" }),
+          fetch("/api/payment-methods", { cache: "no-store" }),
         ])
         const plansJson = await plansRes.json()
         const methodsJson = await methodsRes.json()
@@ -137,16 +158,24 @@ export function SubscriptionPaymentPage() {
         setMethods(methodsJson.methods || [])
         if (methodsJson.methods?.[0]) setSelectedMethodId(methodsJson.methods[0].id)
 
-        let pendingId = getPendingSubscriptionId()
         const token = localStorage.getItem("ciar_token")
-
         const meRes = await fetch("/api/subscriptions/me", {
+          cache: "no-store",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
         const meJson = await meRes.json()
 
-        if (!pendingId && meJson.latest?.status === "pending") {
+        if (meJson.canPost) {
+          navigate({ page: "advertise" })
+          return
+        }
+
+        let pendingId: string | null = null
+        if (meJson.latest?.status === "pending" && meJson.latest?.id) {
           pendingId = meJson.latest.id
+          setPendingSubscriptionId(pendingId)
+        } else {
+          pendingId = getPendingSubscriptionId()
         }
 
         if (!pendingId) {
@@ -156,7 +185,13 @@ export function SubscriptionPaymentPage() {
 
         setSubscriptionId(pendingId)
         const selectedPlan = getPlanById(plansJson, meJson.latest?.planId || "")
-        if (selectedPlan) setPlan(selectedPlan)
+        if (selectedPlan) {
+          setPlan(selectedPlan)
+        } else {
+          const savedPlanId = getSelectedSubscriptionPlan()
+          const fallbackPlan = savedPlanId ? getPlanById(plansJson, savedPlanId) : undefined
+          if (fallbackPlan) setPlan(fallbackPlan)
+        }
       } catch {
         toast.error(isAr ? "تعذّر تحميل بيانات الدفع" : "Could not load payment details")
         navigate({ page: "subscription" })
@@ -184,6 +219,7 @@ export function SubscriptionPaymentPage() {
       const token = localStorage.getItem("ciar_token")
       const res = await fetch("/api/subscriptions/payment", {
         method: "POST",
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -194,8 +230,15 @@ export function SubscriptionPaymentPage() {
           paymentDetails: fieldValues,
         }),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.code || "payment failed")
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        toast.error(paymentErrorMessage(typeof data?.code === "string" ? data.code : undefined, isAr))
+        if (data?.code === "NOT_FOUND") {
+          clearPendingSubscriptionId()
+          navigate({ page: "subscription" })
+        }
+        return
+      }
 
       clearPendingSubscriptionId()
       setSelectedSubscriptionPlan("")
@@ -231,7 +274,7 @@ export function SubscriptionPaymentPage() {
       }
       navigate({ page: "advertise" })
     } catch {
-      toast.error(isAr ? "فشل إرسال الدفع" : "Failed to submit payment")
+      toast.error(paymentErrorMessage(undefined, isAr))
     } finally {
       setSubmitting(false)
     }

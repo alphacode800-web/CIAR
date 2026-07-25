@@ -136,9 +136,13 @@ export async function submitSubscriptionPayment(
   if (!validation.ok) throw new Error("VALIDATION_FAILED")
 
   const index = store.records.findIndex((r) => r.id === input.subscriptionId && r.userId === user.id)
-  if (index < 0) throw new Error("SUBSCRIPTION_NOT_FOUND")
+  let resolvedIndex = index
+  if (resolvedIndex < 0) {
+    resolvedIndex = store.records.findIndex((r) => r.userId === user.id && r.status === "pending")
+  }
+  if (resolvedIndex < 0) throw new Error("SUBSCRIPTION_NOT_FOUND")
 
-  const current = store.records[index]
+  const current = store.records[resolvedIndex]
   if (current.status !== "pending") throw new Error("INVALID_STATUS")
 
   const plan = getPlanById(config, current.planId)
@@ -162,7 +166,7 @@ export async function submitSubscriptionPayment(
   })
 
   const records = [...store.records]
-  records[index] = nextRecord
+  records[resolvedIndex] = nextRecord
   await saveUserSubscriptionsStore({ records })
 
   return { record: nextRecord, config, autoActivated: config.autoActivateOnPayment }
