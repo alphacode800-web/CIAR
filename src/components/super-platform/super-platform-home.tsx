@@ -13,66 +13,15 @@ import { DEFAULT_PAGE_HEADERS, type PageHeaderConfig } from "@/lib/page-headers"
 import { PageHeaderOverlay, PageHeaderTextBlock } from "@/components/layout/page-hero-header"
 import { SiteAdSlot } from "@/components/ads/site-ad-slot"
 import { AiRecommendationsSection } from "@/components/home/ai-recommendations-section"
-import { comparePlatformOrderDesc } from "@/lib/platform-display-order"
+import {
+  filterPublicPlatformModules,
+  mergeLocalProjectsIntoModules,
+  type PublicPlatformBanner,
+  type PublicPlatformModule,
+} from "@/lib/public-platform-modules"
 import { cn } from "@/lib/utils"
 
-type Banner = {
-  id: string
-  titleEn: string
-  titleAr: string
-  descriptionEn: string
-  descriptionAr: string
-  ctaTextEn: string
-  ctaTextAr: string
-  ctaHref: string
-  imageUrl1: string
-  imageUrl2: string
-  imageUrl3: string
-  module: {
-    nameEn: string
-    nameAr: string
-    visibility: "VISIBLE" | "HIDDEN"
-    isEnabled: boolean
-  }
-}
-
-type ModuleWithBanner = {
-  id: string
-  slug: string
-  nameEn: string
-  nameAr: string
-  descriptionEn: string
-  descriptionAr: string
-  visibility: "VISIBLE" | "HIDDEN"
-  isEnabled: boolean
-  order: number
-  banner: Banner | null
-}
-
-type CachedProject = {
-  slug: string
-  category: string
-  featured: boolean
-  published: boolean
-  imageUrl: string
-  imageUrls?: string[]
-  translations?: { locale: string; name: string; tagline: string; description: string }[]
-}
-
-const LOCAL_PROJECTS_CACHE_KEY = "ciar-admin-projects-local-cache"
-
-function moduleSlugToProjectSlug(moduleSlug: string): string {
-  return `ciar-${moduleSlug.toLowerCase().replace(/_/g, "-")}`
-}
-
-function pickTranslation(
-  translations: CachedProject["translations"] = [],
-  locale: "ar" | "en"
-) {
-  const direct = translations.find((tr) => tr.locale === locale)
-  if (direct) return direct
-  return translations.find((tr) => tr.locale === "en") || translations[0]
-}
+type ModuleWithBanner = PublicPlatformModule
 
 const whyChooseItems = [
   { icon: ShieldCheck, title: "Enterprise-Grade Security", text: "Role-based controls and secure architecture for large-scale operations." },
@@ -121,62 +70,13 @@ export function SuperPlatformHome({
       fetch("/api/super-platform/modules", { cache: "no-store" })
         .then((r) => r.json())
         .then((d) => {
-          let rows = Array.isArray(d.modules) ? d.modules : []
+          let rows: ModuleWithBanner[] = Array.isArray(d.modules) ? d.modules : []
 
-          // In fallback mode, merge admin local project edits so the public
-          // platform reflects changes immediately even when DB is offline.
-          if (d?.fallback && typeof window !== "undefined") {
-            try {
-              const cachedRaw = localStorage.getItem(LOCAL_PROJECTS_CACHE_KEY)
-              const cachedProjects: CachedProject[] = cachedRaw ? JSON.parse(cachedRaw) : []
-              if (Array.isArray(cachedProjects) && cachedProjects.length > 0) {
-                rows = rows.map((moduleItem: ModuleWithBanner) => {
-                  const matched = cachedProjects.find(
-                    (project) => project.slug === moduleSlugToProjectSlug(moduleItem.slug)
-                  )
-                  if (!matched) return moduleItem
-
-                  const ar = pickTranslation(matched.translations, "ar")
-                  const en = pickTranslation(matched.translations, "en")
-                  const images =
-                    Array.isArray(matched.imageUrls) && matched.imageUrls.length > 0
-                      ? matched.imageUrls
-                      : matched.imageUrl
-                        ? [matched.imageUrl]
-                        : []
-
-                  return {
-                    ...moduleItem,
-                    nameEn: en?.name || moduleItem.nameEn,
-                    nameAr: ar?.name || moduleItem.nameAr,
-                    descriptionEn: en?.description || moduleItem.descriptionEn,
-                    descriptionAr: ar?.description || moduleItem.descriptionAr,
-                    isEnabled: matched.published,
-                    banner: moduleItem.banner
-                      ? {
-                          ...moduleItem.banner,
-                          titleEn: en?.name || moduleItem.banner.titleEn,
-                          titleAr: ar?.name || moduleItem.banner.titleAr,
-                          descriptionEn: en?.description || moduleItem.banner.descriptionEn,
-                          descriptionAr: ar?.description || moduleItem.banner.descriptionAr,
-                          imageUrls: images,
-                          imageUrl1: images[0] || moduleItem.banner.imageUrl1,
-                          imageUrl2: images[1] || moduleItem.banner.imageUrl2,
-                          imageUrl3: images[2] || moduleItem.banner.imageUrl3,
-                        }
-                      : moduleItem.banner,
-                  }
-                })
-              }
-            } catch {
-              // ignore cached merge issues and keep API rows
-            }
+          if (d?.fallback) {
+            rows = mergeLocalProjectsIntoModules(rows)
           }
 
-          const filtered = rows
-            .filter((m: ModuleWithBanner) => m.visibility === "VISIBLE" && m.isEnabled && m.banner?.isActive)
-            .sort(comparePlatformOrderDesc)
-          setModules(filtered)
+          setModules(filterPublicPlatformModules(rows))
         })
         .catch(() => setModules([]))
     }, 0)
@@ -367,7 +267,7 @@ function PlatformCard({
 }: {
   card: {
     module: ModuleWithBanner
-    banner: Banner | null
+    banner: PublicPlatformBanner | null
     images: string[]
   }
   locale: "en" | "ar"

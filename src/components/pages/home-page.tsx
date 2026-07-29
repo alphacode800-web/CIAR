@@ -31,7 +31,11 @@ import {
   type PageHeaderConfig,
 } from "@/lib/page-headers"
 import { PageHeaderTextBlock } from "@/components/layout/page-hero-header"
-import { comparePlatformOrderDesc, reversePlatformDisplayOrder } from "@/lib/platform-display-order"
+import {
+  fetchPublicPlatformModules,
+  modulesToHomePlatformCards,
+  type HomePlatformCard,
+} from "@/lib/public-platform-modules"
 
 interface FeaturedProject {
   id: string
@@ -58,22 +62,7 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
 })
 
-type PlatformBanner = {
-  id: string
-  titleEn: string
-  titleAr: string
-  descriptionEn: string
-  descriptionAr: string
-  ctaTextEn: string
-  ctaTextAr: string
-  ctaHref: string
-  imageUrl1: string
-  imageUrl2: string
-  imageUrl3: string
-  module?: {
-    slug?: string
-  }
-}
+type PlatformBanner = HomePlatformCard
 
 const hero = (a: number, b: number, c: number) => ({
   imageUrl1: DEFAULT_HERO_IMAGE_URLS[a % DEFAULT_HERO_IMAGE_URLS.length],
@@ -96,7 +85,7 @@ const FALLBACK_BANNERS_ORDERED: PlatformBanner[] = [
   { id: "investment", titleEn: "CIAR Investment", titleAr: "CiAr أسهم المنصة والمكافآت", descriptionEn: "Member shares and rewards in CIAR platform.", descriptionAr: "أسهم منصتنا الخاصة بالأعضاء والمكافآت.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(13, 14, 17) },
 ]
 
-const FALLBACK_BANNERS = reversePlatformDisplayOrder(FALLBACK_BANNERS_ORDERED)
+const FALLBACK_BANNERS = FALLBACK_BANNERS_ORDERED
 
 export function HomePage({
   featuredProjects = [],
@@ -205,22 +194,10 @@ export function HomePage({
   }, [])
 
   useEffect(() => {
-      fetch("/api/super-platform/banners", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d) => {
-        const banners = Array.isArray(d?.banners) ? d.banners : []
-        const normalized = banners
-          .filter((b: any) => b?.module?.visibility === "VISIBLE" && b?.module?.isEnabled && b?.isActive)
-          .sort((a: { module?: { order?: number } }, b: { module?: { order?: number } }) =>
-            comparePlatformOrderDesc(
-              { order: a.module?.order },
-              { order: b.module?.order }
-            )
-          )
-          .slice(0, 12)
-        if (normalized.length > 0) {
-          setPlatformBanners(normalized)
-        }
+    fetchPublicPlatformModules()
+      .then((modules) => {
+        const cards = modulesToHomePlatformCards(modules)
+        if (cards.length > 0) setPlatformBanners(cards)
       })
       .catch(() => {
         setPlatformBanners(FALLBACK_BANNERS)
