@@ -1,10 +1,13 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { Check, ChevronLeft, ChevronRight, Shirt } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { FittingGarment } from "@/lib/virtual-fitting/types"
+
+const FALLBACK_GARMENT_IMAGE =
+  "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&q=75"
 
 type GarmentSelectorProps = {
   garments: FittingGarment[]
@@ -22,6 +25,16 @@ export function GarmentSelector({
   disabled,
 }: GarmentSelectorProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(() => new Set())
+
+  const markBroken = (id: string) => {
+    setBrokenImages((prev) => {
+      if (prev.has(id)) return prev
+      const next = new Set(prev)
+      next.add(id)
+      return next
+    })
+  }
 
   const scroll = (dir: "prev" | "next") => {
     const el = scrollRef.current
@@ -71,6 +84,7 @@ export function GarmentSelector({
       >
         {garments.map((garment) => {
           const selected = garment.id === selectedId
+          const imageSrc = brokenImages.has(garment.id) ? FALLBACK_GARMENT_IMAGE : garment.imageUrl
           return (
             <motion.button
               key={garment.id}
@@ -90,10 +104,11 @@ export function GarmentSelector({
             >
               <div className="aspect-[4/5] overflow-hidden bg-muted">
                 <img
-                  src={garment.imageUrl}
+                  src={imageSrc}
                   alt={garment.title}
                   className="h-full w-full object-cover"
                   loading="lazy"
+                  onError={() => markBroken(garment.id)}
                 />
               </div>
               <div className="space-y-0.5 p-2.5">

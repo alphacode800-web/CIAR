@@ -24,7 +24,6 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { reversePlatformDisplayOrder } from "@/lib/platform-display-order"
 import { fetchPublicPlatformModules } from "@/lib/public-platform-modules"
 
 type PlatformItem = {
@@ -51,15 +50,13 @@ const SLUG_ICONS: Record<string, LucideIcon> = {
 }
 
 function buildFallbackPlatforms(): PlatformItem[] {
-  return reversePlatformDisplayOrder(
-    CIAR_MODULES.filter((module) => module.visibility === "VISIBLE").map((module) => ({
-      slug: module.slug,
-      nameEn: module.nameEn,
-      nameAr: module.nameAr,
-      descriptionEn: module.descriptionEn,
-      descriptionAr: module.descriptionAr,
-    }))
-  )
+  return CIAR_MODULES.filter((module) => module.visibility === "VISIBLE").map((module) => ({
+    slug: module.slug,
+    nameEn: module.nameEn,
+    nameAr: module.nameAr,
+    descriptionEn: module.descriptionEn,
+    descriptionAr: module.descriptionAr,
+  }))
 }
 
 const fadeUp = (delay = 0) => ({

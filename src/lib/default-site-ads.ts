@@ -143,7 +143,7 @@ export const DEFAULT_FASHION_DEMO_ADS: SiteAdRecord[] = [
     title: "فستان سهرة عصري",
     description: "فستان بلون جذاب — جرّب مقاسك افتراضياً قبل الطلب.",
     link: "/#/ads",
-    imageUrl: adUnsplash("1515886656123-9f3515b0a78d"),
+    imageUrl: adUnsplash("1590548784585-643d2b9f2925"),
     placement: "platform_details",
     position: "slot_2",
     productDetails: {
@@ -162,7 +162,7 @@ export const DEFAULT_FASHION_DEMO_ADS: SiteAdRecord[] = [
     title: "بلazer رجالي كلاسيك",
     description: "سترة رسمية أنيقة — مثالية لتجربة القياس الافتراضي للرجال.",
     link: "/#/ads",
-    imageUrl: adUnsplash("1594935197842-48a48754b58d"),
+    imageUrl: adUnsplash("1617038220319-276d3cfab638"),
     placement: "projects_top",
     position: "slot_1",
     productDetails: {

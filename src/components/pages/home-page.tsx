@@ -31,7 +31,6 @@ import {
   type PageHeaderConfig,
 } from "@/lib/page-headers"
 import { PageHeaderTextBlock } from "@/components/layout/page-hero-header"
-import { reversePlatformDisplayOrder } from "@/lib/platform-display-order"
 import {
   fetchPublicPlatformModules,
   modulesToHomePlatformCards,
@@ -86,7 +85,7 @@ const FALLBACK_BANNERS_ORDERED: PlatformBanner[] = [
   { id: "investment", titleEn: "CIAR Investment", titleAr: "CiAr أسهم المنصة والمكافآت", descriptionEn: "Member shares and rewards in CIAR platform.", descriptionAr: "أسهم منصتنا الخاصة بالأعضاء والمكافآت.", ctaTextEn: "Explore", ctaTextAr: "استكشف", ctaHref: "#", ...hero(13, 14, 17) },
 ]
 
-const FALLBACK_BANNERS = reversePlatformDisplayOrder(FALLBACK_BANNERS_ORDERED)
+const FALLBACK_BANNERS = FALLBACK_BANNERS_ORDERED
 
 export function HomePage({
   featuredProjects = [],
