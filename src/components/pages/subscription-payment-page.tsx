@@ -115,6 +115,7 @@ export function SubscriptionPaymentPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [testPaymentMode, setTestPaymentMode] = useState(true)
 
   const selectedMethod = useMemo(
     () => methods.find((m) => m.id === selectedMethodId) || methods[0],
@@ -155,6 +156,7 @@ export function SubscriptionPaymentPage() {
         if (!methodsRes.ok) throw new Error("methods failed")
 
         setCurrency(plansJson.currency || "SAR")
+        setTestPaymentMode(plansJson.testPaymentMode !== false)
         setMethods(methodsJson.methods || [])
         if (methodsJson.methods?.[0]) setSelectedMethodId(methodsJson.methods[0].id)
 
@@ -208,7 +210,7 @@ export function SubscriptionPaymentPage() {
     if (!subscriptionId || !selectedMethod) return
 
     const validation = validatePaymentDetails(selectedMethod, fieldValues)
-    if (!validation.ok) {
+    if (!testPaymentMode && !validation.ok) {
       setFieldErrors(validation.errors)
       toast.error(isAr ? "يرجى تعبئة جميع الحقول المطلوبة" : "Please fill all required fields")
       return
@@ -254,13 +256,21 @@ export function SubscriptionPaymentPage() {
         return true
       }
 
-      if (data.autoActivated) {
+      if (data.autoActivated || data.testMode) {
         const submitted = await trySubmitDraft()
         if (submitted) {
           navigate({ page: "advertise" })
           return
         }
-        toast.success(isAr ? "تم تفعيل اشتراكك — يمكنك نشر إعلان الآن" : "Subscription activated — you can post ads now")
+        toast.success(
+          data.testMode
+            ? isAr
+              ? "تم التفعيل التجريبي — يمكنك نشر إعلانك الآن"
+              : "Trial activation complete — you can post your ad now"
+            : isAr
+              ? "تم تفعيل اشتراكك — يمكنك نشر إعلان الآن"
+              : "Subscription activated — you can post ads now"
+        )
       } else {
         toast.success(
           isAr
@@ -311,6 +321,19 @@ export function SubscriptionPaymentPage() {
           {isAr ? "تغيير الخطة" : "Change plan"}
         </Button>
       </div>
+
+      {testPaymentMode ? (
+        <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 px-5 py-4 text-sm">
+          <p className="font-semibold text-amber-900 dark:text-amber-100">
+            {isAr ? "وضع الدفع التجريبي مفعّل" : "Trial payment mode is active"}
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            {isAr
+              ? "لن يُخصم مبلغ حقيقي — اضغط «تفعيل تجريبي» لتفعيل اشتراكك فوراً وإرسال إعلانك المحفوظ."
+              : "No real charge — click “Trial activate” to enable your subscription instantly and submit your saved ad."}
+          </p>
+        </div>
+      ) : null}
 
       <form onSubmit={onSubmit} className="space-y-6">
         <section className="rounded-2xl border border-border/50 bg-card p-6 space-y-4">
@@ -388,7 +411,13 @@ export function SubscriptionPaymentPage() {
 
         <Button type="submit" disabled={submitting} className="w-full btn-gold h-12 rounded-xl gap-2">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {isAr ? "تأكيد الدفع" : "Confirm payment"}
+          {testPaymentMode
+            ? isAr
+              ? "تفعيل تجريبي"
+              : "Trial activate"
+            : isAr
+              ? "تأكيد الدفع"
+              : "Confirm payment"}
         </Button>
       </form>
     </div>

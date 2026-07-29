@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         autoActivated: result.autoActivated,
+        testMode: result.testMode,
         subscription: result.record,
       },
       { headers: NO_STORE }
