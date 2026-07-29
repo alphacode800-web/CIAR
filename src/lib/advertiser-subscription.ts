@@ -34,6 +34,8 @@ export type SubscriptionPlansConfig = {
   bankIban: string
   paymentNoteAr: string
   paymentNoteEn: string
+  /** Trial/sandbox: skip validation and activate subscription immediately on submit. */
+  testPaymentMode: boolean
   autoActivateOnPayment: boolean
   plans: SubscriptionPlan[]
 }
@@ -90,6 +92,7 @@ export const subscriptionPlansConfigSchema = z.object({
   bankIban: z.string().max(120).default(""),
   paymentNoteAr: z.string().max(1000).default(""),
   paymentNoteEn: z.string().max(1000).default(""),
+  testPaymentMode: z.boolean().default(true),
   autoActivateOnPayment: z.boolean().default(false),
   plans: z.array(planSchema).min(1).max(30),
 })
@@ -132,6 +135,7 @@ export function defaultSubscriptionPlansConfig(): SubscriptionPlansConfig {
     bankIban: "",
     paymentNoteAr: "بعد التحويل، أرسل إيصال الدفع عبر واتساب أو في الملاحظات أدناه.",
     paymentNoteEn: "After transfer, send your payment receipt via WhatsApp or in the notes below.",
+    testPaymentMode: true,
     autoActivateOnPayment: false,
     plans: [
       {
@@ -247,14 +251,35 @@ export function defaultSubscriptionPlansConfig(): SubscriptionPlansConfig {
 }
 
 export function parseSubscriptionPlansConfig(raw: string | undefined): SubscriptionPlansConfig {
-  if (!raw) return defaultSubscriptionPlansConfig()
+  const defaults = defaultSubscriptionPlansConfig()
+  if (!raw) return applySubscriptionEnvOverrides(defaults)
   try {
     const parsed = subscriptionPlansConfigSchema.safeParse(JSON.parse(raw))
-    if (!parsed.success) return defaultSubscriptionPlansConfig()
-    return parsed.data
+    if (!parsed.success) return applySubscriptionEnvOverrides(defaults)
+    return applySubscriptionEnvOverrides({
+      ...defaults,
+      ...parsed.data,
+      testPaymentMode: parsed.data.testPaymentMode ?? defaults.testPaymentMode,
+    })
   } catch {
-    return defaultSubscriptionPlansConfig()
+    return applySubscriptionEnvOverrides(defaults)
   }
+}
+
+/** Env override: SUBSCRIPTION_TEST_PAYMENT=true|false */
+export function applySubscriptionEnvOverrides(config: SubscriptionPlansConfig): SubscriptionPlansConfig {
+  const env = process.env.SUBSCRIPTION_TEST_PAYMENT?.trim().toLowerCase()
+  if (env === "true") return { ...config, testPaymentMode: true }
+  if (env === "false") return { ...config, testPaymentMode: false }
+  return config
+}
+
+export function isSubscriptionTestPaymentMode(config: SubscriptionPlansConfig): boolean {
+  return config.testPaymentMode === true
+}
+
+export function shouldAutoActivateSubscriptionOnPayment(config: SubscriptionPlansConfig): boolean {
+  return config.autoActivateOnPayment || isSubscriptionTestPaymentMode(config)
 }
 
 export function serializeSubscriptionPlansConfig(config: SubscriptionPlansConfig): string {
