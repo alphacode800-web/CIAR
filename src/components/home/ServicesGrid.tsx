@@ -24,7 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { comparePlatformOrderDesc, reversePlatformDisplayOrder } from "@/lib/platform-display-order"
+import { fetchPublicPlatformModules } from "@/lib/public-platform-modules"
 
 type PlatformItem = {
   slug: string
@@ -50,15 +50,13 @@ const SLUG_ICONS: Record<string, LucideIcon> = {
 }
 
 function buildFallbackPlatforms(): PlatformItem[] {
-  return reversePlatformDisplayOrder(
-    CIAR_MODULES.filter((module) => module.visibility === "VISIBLE").map((module) => ({
-      slug: module.slug,
-      nameEn: module.nameEn,
-      nameAr: module.nameAr,
-      descriptionEn: module.descriptionEn,
-      descriptionAr: module.descriptionAr,
-    }))
-  )
+  return CIAR_MODULES.filter((module) => module.visibility === "VISIBLE").map((module) => ({
+    slug: module.slug,
+    nameEn: module.nameEn,
+    nameAr: module.nameAr,
+    descriptionEn: module.descriptionEn,
+    descriptionAr: module.descriptionAr,
+  }))
 }
 
 const fadeUp = (delay = 0) => ({
@@ -74,35 +72,17 @@ export function ServicesGrid() {
   const [platforms, setPlatforms] = useState<PlatformItem[]>(buildFallbackPlatforms)
 
   useEffect(() => {
-    fetch("/api/super-platform/modules", { cache: "no-store" })
-      .then((res) => res.json())
-      .then((data) => {
-        const rows = Array.isArray(data?.modules) ? data.modules : []
-        const visible = rows
-          .filter(
-            (module: { visibility?: string; isEnabled?: boolean }) =>
-              module.visibility === "VISIBLE" && module.isEnabled
-          )
-          .sort(comparePlatformOrderDesc)
-
-        if (visible.length === 0) return
-
+    fetchPublicPlatformModules()
+      .then((modules) => {
+        if (modules.length === 0) return
         setPlatforms(
-          visible.map(
-            (module: {
-              slug: string
-              nameEn: string
-              nameAr: string
-              descriptionEn: string
-              descriptionAr: string
-            }) => ({
-              slug: module.slug,
-              nameEn: module.nameEn,
-              nameAr: module.nameAr,
-              descriptionEn: module.descriptionEn,
-              descriptionAr: module.descriptionAr,
-            })
-          )
+          modules.map((module) => ({
+            slug: module.slug,
+            nameEn: module.nameEn,
+            nameAr: module.nameAr,
+            descriptionEn: module.descriptionEn,
+            descriptionAr: module.descriptionAr,
+          }))
         )
       })
       .catch(() => {
