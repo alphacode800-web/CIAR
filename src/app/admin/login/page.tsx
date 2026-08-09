@@ -11,8 +11,6 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const defaultAdminUser = "CIAR800"
-  const defaultAdminPassword = "CIAR-8000"
   const hasValues = useMemo(() => identifier.trim().length > 0 && password.trim().length > 0, [identifier, password])
 
   const onSubmit = async (event: FormEvent) => {
@@ -57,16 +55,6 @@ export default function AdminLoginPage() {
           <h1 className="text-2xl font-semibold mt-1">تسجيل دخول الأدمن</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             استخدم بيانات حساب الأدمن للدخول إلى لوحة التحكم.
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm space-y-1">
-          <p className="font-medium">بيانات تسجيل الأدمن:</p>
-          <p>
-            <span className="text-muted-foreground">يوزر:</span> {defaultAdminUser}
-          </p>
-          <p>
-            <span className="text-muted-foreground">الباسوورد:</span> {defaultAdminPassword}
           </p>
         </div>
 
