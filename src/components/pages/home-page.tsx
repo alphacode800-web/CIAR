@@ -87,6 +87,108 @@ const FALLBACK_BANNERS_ORDERED: PlatformBanner[] = [
 
 const FALLBACK_BANNERS = FALLBACK_BANNERS_ORDERED
 
+function PlatformCardWithAnimation({
+  banner,
+  idx,
+  title,
+  description,
+  locale,
+  activeHeroImages,
+  onNavigate,
+}: {
+  banner: PlatformBanner
+  idx: number
+  title: string
+  description: string
+  locale: string
+  activeHeroImages: string[]
+  onNavigate: () => void
+}) {
+  const [imgIdx, setImgIdx] = useState(0)
+
+  const cardImages = useMemo(() => {
+    const images = [banner.imageUrl1, banner.imageUrl2, banner.imageUrl3].filter(Boolean) as string[]
+    if (images.length === 0) {
+      return [activeHeroImages[idx % activeHeroImages.length] || DEFAULT_HERO_IMAGE_URLS[0]]
+    }
+    return images
+  }, [banner, idx, activeHeroImages])
+
+  useEffect(() => {
+    if (cardImages.length <= 1) return
+    const interval = setInterval(() => {
+      setImgIdx((s) => (s + 1) % cardImages.length)
+    }, 2600)
+    return () => clearInterval(interval)
+  }, [cardImages.length])
+
+  useEffect(() => {
+    cardImages.forEach((src) => {
+      if (!src) return
+      const img = new Image()
+      img.src = src
+    })
+  }, [cardImages])
+
+  const activeImage = cardImages[imgIdx] || ""
+
+  return (
+    <motion.article
+      {...fadeUp(idx * 0.05)}
+      className="group overflow-hidden rounded-2xl border border-primary/15 bg-card shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/35 hover:shadow-[0_20px_50px_-12px_oklch(0.78_0.14_82/25%)]"
+    >
+      <div className="relative h-56 overflow-hidden bg-muted">
+        {activeImage && (
+          <AnimatePresence mode="sync">
+            <motion.img
+              key={`${banner.id}-${imgIdx}-${activeImage}`}
+              src={activeImage}
+              alt={title}
+              className="absolute inset-0 h-full w-full object-cover"
+              initial={{ opacity: 0, scale: 1.02 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.45 }}
+              loading="lazy"
+            />
+          </AnimatePresence>
+        )}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/55 to-transparent" />
+        <div className="absolute bottom-3 inset-x-3 flex items-end justify-between gap-2">
+          <Badge className="border-0 bg-primary/90 text-primary-foreground text-[10px] font-semibold shadow-lg">
+            {locale === "ar" ? "منصة" : "Platform"}
+          </Badge>
+          {cardImages.length > 1 && (
+            <div className="flex gap-1.5">
+              {cardImages.map((_, dot) => (
+                <span
+                  key={dot}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all duration-300",
+                    dot === imgIdx ? "w-6 bg-white" : "w-2 bg-white/50"
+                  )}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="space-y-2.5 p-5">
+        <h3 className="text-xl font-bold tracking-tight text-black dark:text-white">{title}</h3>
+        <p className="line-clamp-2 text-sm leading-relaxed text-black/75 dark:text-white/80">{description}</p>
+        <button
+          type="button"
+          onClick={onNavigate}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-black transition-colors hover:text-black/70 dark:text-white dark:hover:text-white/80"
+        >
+          {locale === "ar" ? banner.ctaTextAr || "استكشف القسم" : banner.ctaTextEn || "Explore section"}
+          <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+        </button>
+      </div>
+    </motion.article>
+  )
+}
+
 export function HomePage({
   featuredProjects = [],
   homeConfig,
@@ -341,38 +443,16 @@ export function HomePage({
               const title = locale === "ar" ? banner.titleAr : banner.titleEn
               const description = locale === "ar" ? banner.descriptionAr : banner.descriptionEn
               return (
-                <motion.article
+                <PlatformCardWithAnimation
                   key={banner.id}
-                  {...fadeUp(idx * 0.05)}
-                  className="group overflow-hidden rounded-2xl border border-primary/15 bg-card shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/35 hover:shadow-[0_20px_50px_-12px_oklch(0.78_0.14_82/25%)]"
-                >
-                  <div className="relative h-56 overflow-hidden bg-muted">
-                    <img
-                      src={banner.imageUrl1 || activeHeroImages[idx % activeHeroImages.length] || DEFAULT_HERO_IMAGE_URLS[0]}
-                      alt={title}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/55 to-transparent" />
-                    <div className="absolute bottom-3 inset-x-3 flex items-end justify-between gap-2">
-                      <Badge className="border-0 bg-primary/90 text-primary-foreground text-[10px] font-semibold shadow-lg">
-                        {locale === "ar" ? "منصة" : "Platform"}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-2.5 p-5">
-                    <h3 className="text-xl font-bold tracking-tight text-black dark:text-white">{title}</h3>
-                    <p className="line-clamp-2 text-sm leading-relaxed text-black/75 dark:text-white/80">{description}</p>
-                    <button
-                      type="button"
-                      onClick={() => navigate({ page: "platform", slug: resolvePlatformSlug(banner) })}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-black transition-colors hover:text-black/70 dark:text-white dark:hover:text-white/80"
-                    >
-                      {locale === "ar" ? banner.ctaTextAr || "استكشف القسم" : banner.ctaTextEn || "Explore section"}
-                      <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
-                    </button>
-                  </div>
-                </motion.article>
+                  banner={banner}
+                  idx={idx}
+                  title={title}
+                  description={description}
+                  locale={locale}
+                  activeHeroImages={activeHeroImages}
+                  onNavigate={() => navigate({ page: "platform", slug: resolvePlatformSlug(banner) })}
+                />
               )
             })}
           </div>

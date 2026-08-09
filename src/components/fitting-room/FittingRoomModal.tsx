@@ -94,6 +94,14 @@ export function FittingRoomModal() {
     <Dialog open={isOpen} onOpenChange={(open) => !open && closeFittingRoom()}>
       <DialogContent
         showCloseButton={false}
+        // Keep the modal open when the OS file picker steals focus (upload flow).
+        onFocusOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => {
+          const target = e.target as HTMLElement | null
+          if (target?.closest?.('input[type="file"]')) {
+            e.preventDefault()
+          }
+        }}
         className={cn(
           "max-w-[min(1100px,calc(100vw-1rem))] gap-0 overflow-hidden border-white/10 p-0",
           "bg-gradient-to-br from-background/95 via-background/90 to-[oklch(0.78_0.14_82/6%)]",

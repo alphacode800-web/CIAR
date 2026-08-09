@@ -6,8 +6,29 @@ export const USER_IMAGE_CONSTRAINTS = {
   maxHeight: 8192,
   /** width / height — portrait full-body range */
   minAspectRatio: 0.3,
-  maxAspectRatio: 0.9,
+  maxAspectRatio: 1.05,
   allowedTypes: ["image/jpeg", "image/png", "image/webp"] as const,
+  acceptAttr: "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
+}
+
+const EXT_TO_MIME: Record<string, (typeof USER_IMAGE_CONSTRAINTS.allowedTypes)[number]> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+}
+
+/** Resolve MIME even when browsers (esp. Linux) leave `file.type` empty. */
+export function resolveUserImageMime(
+  file: File
+): (typeof USER_IMAGE_CONSTRAINTS.allowedTypes)[number] | null {
+  const type = file.type.toLowerCase()
+  if ((USER_IMAGE_CONSTRAINTS.allowedTypes as readonly string[]).includes(type)) {
+    return type as (typeof USER_IMAGE_CONSTRAINTS.allowedTypes)[number]
+  }
+  const ext = file.name.split(".").pop()?.toLowerCase()
+  if (ext && EXT_TO_MIME[ext]) return EXT_TO_MIME[ext]
+  return null
 }
 
 export type ImageValidationErrorCode =
@@ -64,10 +85,9 @@ function readImageDimensions(file: File): Promise<{ width: number; height: numbe
 }
 
 export async function validateUserBodyImage(file: File): Promise<ImageValidationResult> {
-  const { allowedTypes, maxBytes, minWidth, minHeight, minAspectRatio, maxAspectRatio } =
-    USER_IMAGE_CONSTRAINTS
+  const { maxBytes, minWidth, minHeight, minAspectRatio, maxAspectRatio } = USER_IMAGE_CONSTRAINTS
 
-  if (!allowedTypes.includes(file.type as (typeof allowedTypes)[number])) {
+  if (!resolveUserImageMime(file)) {
     return { ok: false, code: "INVALID_TYPE" }
   }
 

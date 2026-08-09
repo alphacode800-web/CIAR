@@ -7,7 +7,7 @@ import type {
   TryOnResult,
   UserImageState,
 } from "@/lib/virtual-fitting/types"
-import { fileToBase64 } from "@/lib/virtual-fitting/validate-user-image"
+import { fileToBase64, resolveUserImageMime } from "@/lib/virtual-fitting/validate-user-image"
 import { submitVirtualTryOn, VirtualFittingError } from "@/lib/virtual-fitting/client-service"
 
 type FittingRoomState = {
@@ -155,6 +155,15 @@ export function FittingRoomProvider({ children }: { children: React.ReactNode })
         return
       }
 
+      const photoMime = resolveUserImageMime(state.userImage.file)
+      if (!photoMime) {
+        dispatch({
+          type: "SET_ERROR",
+          error: isAr ? "صيغة الصورة غير مدعومة" : "Unsupported image format",
+        })
+        return
+      }
+
       dispatch({ type: "SET_ERROR", error: null })
       dispatch({ type: "SET_STATUS", status: "uploading" })
       dispatch({ type: "SET_PROGRESS", progress: 12 })
@@ -173,7 +182,7 @@ export function FittingRoomProvider({ children }: { children: React.ReactNode })
         try {
           const result = await submitVirtualTryOn({
             userImageBase64: base64,
-            userImageMimeType: state.userImage.file.type as "image/jpeg" | "image/png" | "image/webp",
+            userImageMimeType: photoMime,
             garmentImageUrl: selectedGarment.imageUrl,
             garmentId: selectedGarment.id,
           })
