@@ -20,6 +20,7 @@ export type UserImageState = {
   previewUrl: string
   width: number
   height: number
+  notes?: string
 }
 
 export type TryOnResult = {
